@@ -1,0 +1,2815 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>マンション管理組合会計エンジン</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .account-balance {
+            font-family: 'Courier New', monospace;
+        }
+        .debit {
+            color: #0d6efd;
+        }
+        .credit {
+            color: #dc3545;
+        }
+        .journal-entry {
+            border-left: 4px solid #0d6efd;
+            padding-left: 15px;
+            margin-bottom: 15px;
+        }
+        .validation-error {
+            color: #dc3545;
+            font-size: 0.875em;
+        }
+        .total-row {
+            font-weight: bold;
+            border-top: 2px solid #000;
+        }
+        .financial-statement {
+            font-size: 0.9em;
+        }
+        .statement-section {
+            margin-bottom: 2rem;
+        }
+        .nav-tabs .nav-link {
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <h1 class="text-center my-4">マンション管理組合会計エンジン</h1>
+        
+        <div class="row">
+            <!-- 仕訳入力部分 -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>仕訳入力</h3>
+                    </div>
+                    <div class="card-body">
+                        <form id="journalForm">
+                            <div class="mb-3">
+                                <label for="journalDate" class="form-label">日付</label>
+                                <input type="date" class="form-control" id="journalDate" required>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="description" class="form-label">摘要</label>
+                                <input type="text" class="form-control" id="description" placeholder="例：3月分管理費収入" required>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="reference" class="form-label">伝票番号</label>
+                                <input type="text" class="form-control" id="reference" placeholder="自動生成">
+                            </div>
+                            
+                            <h5>仕訳明細</h5>
+                            <div id="journalDetails">
+                                <div class="journal-detail mb-3 p-3 border rounded">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <label class="form-label">借方科目</label>
+                                            <select class="form-control debit-account" required>
+                                                <option value="">科目を選択</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">借方金額</label>
+                                            <input type="number" class="form-control debit-amount" min="0" step="1">
+                                        </div>
+                                    </div>
+                                    <div class="row mt-2">
+                                        <div class="col-md-6">
+                                            <label class="form-label">貸方科目</label>
+                                            <select class="form-control credit-account" required>
+                                                <option value="">科目を選択</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">貸方金額</label>
+                                            <input type="number" class="form-control credit-amount" min="0" step="1">
+                                        </div>
+                                    </div>
+                                    <button type="button" class="btn btn-sm btn-danger mt-2 remove-detail">削除</button>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <button type="button" class="btn btn-secondary" id="addDetail">明細追加</button>
+                            </div>
+                            
+                            <div id="validationMessage" class="validation-error mb-3"></div>
+                            
+                            <div class="d-flex justify-content-between">
+                                <span class="account-balance">借方合計: <span id="debitTotal" class="debit">¥0</span></span>
+                                <span class="account-balance">貸方合計: <span id="creditTotal" class="credit">¥0</span></span>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary w-100 mt-3">仕訳作成</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 表示部分 -->
+            <div class="col-md-6">
+                <!-- タブナビゲーション -->
+                <ul class="nav nav-tabs" id="displayTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="journal-tab" data-bs-toggle="tab" data-bs-target="#journal" type="button" role="tab">仕訳帳</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="trial-tab" data-bs-toggle="tab" data-bs-target="#trial" type="button" role="tab">試算表</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="pl-tab" data-bs-toggle="tab" data-bs-target="#pl" type="button" role="tab">損益計算書</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="bs-tab" data-bs-toggle="tab" data-bs-target="#bs" type="button" role="tab">貸借対照表</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="json-spec-tab" data-bs-toggle="tab" data-bs-target="#json-spec" type="button" role="tab">JSON仕様</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="division-tab" data-bs-toggle="tab" data-bs-target="#division" type="button" role="tab">区分経理</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="auxiliary-tab" data-bs-toggle="tab" data-bs-target="#auxiliary" type="button" role="tab">補助元帳</button>
+                    </li>
+                </ul>
+                
+                <div class="tab-content" id="displayTabContent">
+                    <!-- 仕訳帳タブ -->
+                    <div class="tab-pane fade show active" id="journal" role="tabpanel">
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">仕訳帳</h5>
+                                <div>
+                                    <button class="btn btn-sm btn-success" id="loadSampleData">サンプルデータ読込</button>
+                                    <button class="btn btn-sm btn-primary" id="importJsonData">JSON読込</button>
+                                    <input type="file" id="jsonFileInput" accept=".json" style="display: none;">
+                                    <button class="btn btn-sm btn-outline-primary" id="clearJournals">クリア</button>
+                                </div>
+                            </div>
+                            <div class="card-body" style="max-height: 400px; overflow-y: auto;">
+                                <div id="journalLedger"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 試算表タブ -->
+                    <div class="tab-pane fade" id="trial" role="tabpanel">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">試算表</h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="trialBalance"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 損益計算書タブ -->
+                    <div class="tab-pane fade" id="pl" role="tabpanel">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">損益計算書（令和6年3月期）</h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="incomeStatement"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 区分経理タブ -->
+                    <div class="tab-pane fade" id="division" role="tabpanel">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">区分経理状況</h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="divisionAccounting"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 補助元帳タブ -->
+                    <div class="tab-pane fade" id="auxiliary" role="tabpanel">
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">補助元帳</h5>
+                                <div>
+                                    <button class="btn btn-sm btn-primary" id="monthlyBilling">月次請求作成</button>
+                                    <button class="btn btn-sm btn-success" id="editUnitOwners">組合員管理</button>
+                                    <button class="btn btn-sm btn-info" id="debugAuxiliary">デバッグ情報</button>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div id="auxiliaryLedger"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 貸借対照表タブ -->
+                    <div class="tab-pane fade" id="bs" role="tabpanel">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">貸借対照表（令和6年3月31日現在）</h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="balanceSheet"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- JSON仕様書タブ -->
+                    <div class="tab-pane fade" id="json-spec" role="tabpanel">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5>JSONインポート仕様書</h5>
+                            </div>
+                            <div class="card-body">
+                                <h6>基本構造</h6>
+                                <pre><code>{
+  "clearExisting": true,  // 既存データをクリアするか（任意、デフォルト: true）
+  "journals": [           // 仕訳データ（必須）
+    {
+      "date": "2024-03-01",           // 日付（必須、YYYY-MM-DD形式）
+      "description": "管理費収入",     // 摘要（必須）
+      "reference": "J001",            // 伝票番号（任意、未指定時は自動生成）
+      "details": [                    // 仕訳明細（必須、配列）
+        {
+          "accountCode": "1112",      // 勘定科目コード（必須）
+          "debitAmount": 100000,      // 借方金額（0以上の数値）
+          "creditAmount": 0           // 貸方金額（0以上の数値）
+        },
+        {
+          "accountCode": "4111",
+          "debitAmount": 0,
+          "creditAmount": 100000
+        }
+      ]
+    }
+  ],
+  "unitOwners": [         // 組合員データ（任意）
+    {
+      "unitNumber": "101",            // 部屋番号（必須）
+      "ownerName": "田中太郎",        // 組合員名（必須）
+      "floor": 1,                     // 階数（任意、デフォルト: 1）
+      "area": 70.5,                   // 専有面積（任意、デフォルト: 0）
+      "managementFee": 25000,         // 月額管理費（任意、デフォルト: 0）
+      "repairReserve": 15000,         // 月額修繕積立金（任意、デフォルト: 0）
+      "contact": "090-1234-5678",     // 連絡先（任意）
+      "bankAccount": "12345-67890",   // 口座情報（任意）
+      "isActive": true                // 有効フラグ（任意、デフォルト: true）
+    }
+  ],
+  "vendors": [            // 業者データ（任意）
+    {
+      "vendorCode": "V001",           // 業者コード（必須）
+      "vendorName": "管理会社A",      // 業者名（必須）
+      "category": "管理会社",         // カテゴリ（任意）
+      "contact": "03-1234-5678",      // 連絡先（任意）
+      "bankAccount": "98765-43210",   // 口座情報（任意）
+      "taxNumber": "T1234567890123",  // 税務番号（任意）
+      "isActive": true                // 有効フラグ（任意、デフォルト: true）
+    }
+  ]
+}</code></pre>
+                                
+                                <h6 class="mt-4">勘定科目コード一覧</h6>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h7>資産</h7>
+                                        <ul class="list-unstyled small">
+                                            <li>1111 - 現金</li>
+                                            <li>1112 - 普通預金（管理費会計）</li>
+                                            <li>1113 - 普通預金（修繕積立金会計）</li>
+                                            <li>1114 - 普通預金（駐車場会計）</li>
+                                            <li>1121 - 未収管理費</li>
+                                            <li>1122 - 未収修繕積立金</li>
+                                            <li>1131 - 前払費用</li>
+                                            <li>1141 - 長期前払費用</li>
+                                        </ul>
+                                        
+                                        <h7>負債</h7>
+                                        <ul class="list-unstyled small">
+                                            <li>2111 - 未払費用</li>
+                                            <li>2121 - 預り金</li>
+                                            <li>2131 - 前受管理費</li>
+                                            <li>2132 - 前受修繕積立金</li>
+                                        </ul>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <h7>正味財産</h7>
+                                        <ul class="list-unstyled small">
+                                            <li>3111 - 前期繰越収支差額</li>
+                                            <li>3121 - 当期収支差額</li>
+                                        </ul>
+                                        
+                                        <h7>収益</h7>
+                                        <ul class="list-unstyled small">
+                                            <li>4111 - 管理費収入</li>
+                                            <li>4211 - 修繕積立金収入</li>
+                                            <li>4311 - 駐車場使用料収入</li>
+                                            <li>4911 - 雑収入</li>
+                                        </ul>
+                                        
+                                        <h7>費用</h7>
+                                        <ul class="list-unstyled small">
+                                            <li>5111 - 管理会社委託費</li>
+                                            <li>5121 - 清掃費</li>
+                                            <li>5123 - エレベーター保守費</li>
+                                            <li>5124 - 電気代</li>
+                                            <li>5141 - 保険料</li>
+                                            <li>5211 - 修繕工事費</li>
+                                            <li>5911 - 雑費</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                
+                                <h6 class="mt-4">使用例</h6>
+                                <pre><code>{
+  "clearExisting": true,
+  "journals": [
+    {
+      "date": "2024-03-01",
+      "description": "3月分管理費請求",
+      "details": [
+        {
+          "accountCode": "1121",
+          "debitAmount": 500000,
+          "creditAmount": 0
+        },
+        {
+          "accountCode": "4111",
+          "debitAmount": 0,
+          "creditAmount": 500000
+        }
+      ]
+    }
+  ]
+}</code></pre>
+                                
+                                <div class="alert alert-info">
+                                    <strong>注意事項：</strong>
+                                    <ul class="mb-0">
+                                        <li>各仕訳の借方合計と貸方合計は一致する必要があります</li>
+                                        <li>金額は正の数値で入力してください</li>
+                                        <li>存在しない勘定科目コードを指定するとエラーになります</li>
+                                        <li>日付は YYYY-MM-DD 形式で入力してください</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 会計エンジンクラス定義
+        // 補助元帳クラス
+        class AuxiliaryLedger {
+            constructor(masterAccountCode, auxiliaryCode, name, attributes = {}) {
+                this.masterAccountCode = masterAccountCode;
+                this.auxiliaryCode = auxiliaryCode;
+                this.name = name;
+                this.attributes = attributes; // 部屋番号、所有者情報等
+                this.balance = 0;
+                this.transactions = [];
+                this.isActive = true;
+                this.createdAt = new Date();
+            }
+            
+            addTransaction(amount, isDebit, journalId, description) {
+                const transaction = {
+                    date: new Date(),
+                    amount: amount,
+                    isDebit: isDebit,
+                    journalId: journalId,
+                    description: description,
+                    balance: this.balance
+                };
+                
+                if (isDebit) {
+                    this.balance += amount;
+                } else {
+                    this.balance -= amount;
+                }
+                
+                transaction.balanceAfter = this.balance;
+                this.transactions.push(transaction);
+            }
+            
+            getDisplayBalance() {
+                return Math.abs(this.balance);
+            }
+            
+            isDebitBalance() {
+                return this.balance >= 0;
+            }
+        }
+
+        class HierarchicalAccount {
+            constructor(code, name, type, normalBalance = 'DEBIT', level = 4, parentCode = null, division = null) {
+                this.code = code;
+                this.name = name;
+                this.type = type; // ASSET, LIABILITY, EQUITY, REVENUE, EXPENSE
+                this.normalBalance = normalBalance; // DEBIT or CREDIT
+                this.level = level; // 1:大分類, 2:中分類, 3:小分類, 4:勘定科目, 5:補助科目
+                this.parentCode = parentCode;
+                this.division = division; // 会計区分: KANRI, SHUZEN, PARKING, SPECIAL
+                this.children = [];
+                this.balance = 0;
+                this.auxiliaryLedgers = new Map(); // 補助元帳
+                this.hasAuxiliary = false; // 補助科目を持つか
+                this.isPostable = level >= 4; // 仕訳可能は勘定科目レベル以下
+                this.isActive = true;
+            }
+            
+            // 補助元帳を作成
+            createAuxiliaryLedger(auxiliaryCode, name, attributes = {}) {
+                const auxiliary = new AuxiliaryLedger(this.code, auxiliaryCode, name, attributes);
+                this.auxiliaryLedgers.set(auxiliaryCode, auxiliary);
+                this.hasAuxiliary = true;
+                return auxiliary;
+            }
+            
+            // 補助元帳を取得
+            getAuxiliaryLedger(auxiliaryCode) {
+                return this.auxiliaryLedgers.get(auxiliaryCode);
+            }
+            
+            // すべての補助元帳を取得
+            getAllAuxiliaryLedgers() {
+                return Array.from(this.auxiliaryLedgers.values());
+            }
+            
+            // 補助元帳の残高合計を取得
+            getAuxiliaryTotalBalance() {
+                let total = 0;
+                this.auxiliaryLedgers.forEach(auxiliary => {
+                    total += auxiliary.balance;
+                });
+                return total;
+            }
+            
+            addToBalance(amount, isDebit) {
+                if (isDebit) {
+                    this.balance += (this.normalBalance === 'DEBIT') ? amount : -amount;
+                } else {
+                    this.balance += (this.normalBalance === 'CREDIT') ? amount : -amount;
+                }
+            }
+            
+            getDisplayBalance() {
+                return Math.abs(this.balance);
+            }
+            
+            isDebitBalance() {
+                return (this.normalBalance === 'DEBIT' && this.balance >= 0) || 
+                       (this.normalBalance === 'CREDIT' && this.balance < 0);
+            }
+            
+            getHierarchyPath() {
+                const path = [];
+                let current = this;
+                while (current) {
+                    path.unshift(current.name);
+                    current = current.parent;
+                }
+                return path.join(' > ');
+            }
+            
+            addChild(child) {
+                this.children.push(child);
+                child.parent = this;
+            }
+            
+            getAggregatedBalance() {
+                let total = this.balance;
+                this.children.forEach(child => {
+                    total += child.getAggregatedBalance();
+                });
+                return total;
+            }
+        }
+
+        // 下位互換性のためのエイリアス
+        class Account extends HierarchicalAccount {
+            constructor(code, name, type, normalBalance = 'DEBIT') {
+                super(code, name, type, normalBalance, 4, null, null);
+            }
+        }
+
+        class JournalDetail {
+            constructor(accountCode, debitAmount, creditAmount, description = '', auxiliaryCode = null) {
+                this.accountCode = accountCode;
+                this.debitAmount = debitAmount || 0;
+                this.creditAmount = creditAmount || 0;
+                this.description = description;
+                this.auxiliaryCode = auxiliaryCode; // 補助科目コード
+            }
+            
+            getAmount() {
+                return this.debitAmount || this.creditAmount;
+            }
+            
+            isDebit() {
+                return this.debitAmount > 0;
+            }
+        }
+
+        class Journal {
+            constructor(date, description, reference = '') {
+                this.id = Date.now().toString();
+                this.number = reference || this.generateNumber();
+                this.date = date;
+                this.description = description;
+                this.details = [];
+                this.status = 'DRAFT';
+                this.createdAt = new Date();
+            }
+            
+            generateNumber() {
+                const date = new Date(this.date);
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const seq = String(Math.floor(Math.random() * 9999) + 1).padStart(4, '0');
+                return `J${year}${month}-${seq}`;
+            }
+            
+            addDetail(detail) {
+                this.details.push(detail);
+            }
+            
+            getTotalDebit() {
+                return this.details.reduce((sum, detail) => sum + detail.debitAmount, 0);
+            }
+            
+            getTotalCredit() {
+                return this.details.reduce((sum, detail) => sum + detail.creditAmount, 0);
+            }
+            
+            isBalanced() {
+                return Math.abs(this.getTotalDebit() - this.getTotalCredit()) < 0.01;
+            }
+            
+            validate() {
+                const errors = [];
+                
+                if (this.details.length === 0) {
+                    errors.push('仕訳明細がありません');
+                }
+                
+                if (!this.isBalanced()) {
+                    errors.push('借方と貸方の金額が一致しません');
+                }
+                
+                if (this.details.some(detail => detail.debitAmount < 0 || detail.creditAmount < 0)) {
+                    errors.push('金額は0以上である必要があります');
+                }
+                
+                return errors;
+            }
+        }
+
+        // 会計区分管理クラス
+        class AccountingDivision {
+            constructor(code, name, description, isRequired = true) {
+                this.code = code;
+                this.name = name;
+                this.description = description;
+                this.isRequired = isRequired;
+                this.balance = 0;
+                this.isActive = true;
+                this.transferLimits = {};
+            }
+            
+            canTransferTo(targetDivision, amount) {
+                // 修繕積立金の目的外使用制限
+                if (this.code === 'SHUZEN' && targetDivision !== 'SHUZEN') {
+                    return { allowed: false, reason: '修繕積立金は目的外使用が制限されています' };
+                }
+                
+                // 振替限度額チェック
+                const limit = this.transferLimits[targetDivision];
+                if (limit && amount > limit) {
+                    return { allowed: false, reason: `振替限度額（¥${limit.toLocaleString()}）を超過しています` };
+                }
+                
+                return { allowed: true };
+            }
+            
+            setTransferLimit(targetDivision, limit) {
+                this.transferLimits[targetDivision] = limit;
+            }
+        }
+
+        class AccountingEngine {
+            constructor() {
+                this.accounts = new Map();
+                this.journals = [];
+                this.divisions = new Map();
+                this.unitOwners = new Map(); // 組合員マスタ
+                this.vendors = new Map(); // 業者マスタ
+                this.initializeAccounts();
+                this.initializeDivisions();
+                this.initializeUnitOwners();
+                this.initializeVendors();
+                // アカウント初期化後に補助科目を作成
+                this.createUnitOwnerAuxiliaryAccounts();
+            }
+            
+            initializeUnitOwners() {
+                // サンプル組合員データ
+                const unitOwnersData = [
+                    ['101', '田中太郎', 1, 70.5, 25000, 15000],
+                    ['102', '佐藤花子', 1, 65.2, 25000, 15000],
+                    ['201', '鈴木一郎', 2, 75.8, 30000, 18000],
+                    ['202', '高橋二郎', 2, 72.3, 28000, 17000],
+                    ['301', '山田三郎', 3, 80.0, 32000, 20000]
+                ];
+                
+                unitOwnersData.forEach(([unitNumber, ownerName, floor, area, managementFee, repairReserve]) => {
+                    this.unitOwners.set(unitNumber, {
+                        unitNumber: unitNumber,
+                        ownerName: ownerName,
+                        floor: floor,
+                        area: area,
+                        managementFee: managementFee,
+                        repairReserve: repairReserve,
+                        contact: '',
+                        bankAccount: '',
+                        isActive: true
+                    });
+                });
+                
+                // 補助科目作成はconstructor内で行う
+            }
+            
+            initializeVendors() {
+                // サンプル業者データ
+                const vendorsData = [
+                    ['V001', '株式会社マンション管理', '管理会社', '03-1234-5678'],
+                    ['V002', '清掃サービス株式会社', '清掃業者', '03-2345-6789'],
+                    ['V003', 'エレベーターメンテナンス', '保守業者', '03-3456-7890'],
+                    ['V004', '東京電力', '電力会社', '0120-995-007'],
+                    ['V005', '東京都水道局', '水道局', '03-5320-6507']
+                ];
+                
+                vendorsData.forEach(([vendorCode, vendorName, category, contact]) => {
+                    this.vendors.set(vendorCode, {
+                        vendorCode: vendorCode,
+                        vendorName: vendorName,
+                        category: category,
+                        contact: contact,
+                        bankAccount: '',
+                        taxNumber: '',
+                        isActive: true
+                    });
+                });
+            }
+            
+            createUnitOwnerAuxiliaryAccounts() {
+                console.log('Creating unit owner auxiliary accounts...');
+                
+                // 未収管理費の補助科目を作成
+                const receivableManagementFeeAccount = this.accounts.get('1121');
+                const receivableRepairReserveAccount = this.accounts.get('1122');
+                
+                console.log('Management fee account found:', !!receivableManagementFeeAccount);
+                console.log('Repair reserve account found:', !!receivableRepairReserveAccount);
+                console.log('Unit owners count:', this.unitOwners.size);
+                
+                if (receivableManagementFeeAccount) {
+                    this.unitOwners.forEach((owner, unitNumber) => {
+                        console.log(`Creating management fee auxiliary for ${unitNumber}: ${owner.ownerName}`);
+                        receivableManagementFeeAccount.createAuxiliaryLedger(
+                            unitNumber,
+                            `${unitNumber}号室`,
+                            {
+                                unitNumber: unitNumber,
+                                ownerName: owner.ownerName,
+                                floor: owner.floor,
+                                area: owner.area,
+                                monthlyAmount: owner.managementFee
+                            }
+                        );
+                    });
+                    console.log('Management fee account auxiliary ledgers:', receivableManagementFeeAccount.auxiliaryLedgers.size);
+                }
+                
+                if (receivableRepairReserveAccount) {
+                    this.unitOwners.forEach((owner, unitNumber) => {
+                        console.log(`Creating repair reserve auxiliary for ${unitNumber}: ${owner.ownerName}`);
+                        receivableRepairReserveAccount.createAuxiliaryLedger(
+                            unitNumber,
+                            `${unitNumber}号室`,
+                            {
+                                unitNumber: unitNumber,
+                                ownerName: owner.ownerName,
+                                floor: owner.floor,
+                                area: owner.area,
+                                monthlyAmount: owner.repairReserve
+                            }
+                        );
+                    });
+                    console.log('Repair reserve account auxiliary ledgers:', receivableRepairReserveAccount.auxiliaryLedgers.size);
+                }
+                
+                console.log('Unit owner auxiliary accounts creation completed');
+            }
+            
+            initializeDivisions() {
+                // 標準的な会計区分を初期化
+                const divisionData = [
+                    ['KANRI', '管理費会計', '日常的な管理運営費用を管理', true],
+                    ['SHUZEN', '修繕積立金会計', '修繕・改良工事費用を管理', true],
+                    ['PARKING', '駐車場会計', '駐車場運営収支を管理', false],
+                    ['SPECIAL', '特別会計', '特定目的の収支を管理', false]
+                ];
+                
+                divisionData.forEach(([code, name, description, isRequired]) => {
+                    const division = new AccountingDivision(code, name, description, isRequired);
+                    this.divisions.set(code, division);
+                });
+                
+                // 振替制限設定
+                const shuzenDivision = this.divisions.get('SHUZEN');
+                shuzenDivision.setTransferLimit('KANRI', 1000000); // 緊急立替限度額
+            }
+            
+            initializeAccounts() {
+                // 階層的なマンション管理組合勘定科目体系
+                const hierarchicalAccountData = [
+                    // 大分類 (Level 1)
+                    ['1', '資産の部', 'ASSET', 'DEBIT', 1, null, null],
+                    ['2', '負債の部', 'LIABILITY', 'CREDIT', 1, null, null],
+                    ['3', '正味財産の部', 'EQUITY', 'CREDIT', 1, null, null],
+                    ['4', '収益の部', 'REVENUE', 'CREDIT', 1, null, null],
+                    ['5', '費用の部', 'EXPENSE', 'DEBIT', 1, null, null],
+                    
+                    // 中分類 (Level 2)
+                    ['11', '流動資産', 'ASSET', 'DEBIT', 2, '1', null],
+                    ['12', '固定資産', 'ASSET', 'DEBIT', 2, '1', null],
+                    ['21', '流動負債', 'LIABILITY', 'CREDIT', 2, '2', null],
+                    ['31', '繰越収支差額', 'EQUITY', 'CREDIT', 2, '3', null],
+                    ['41', '管理費会計収益', 'REVENUE', 'CREDIT', 2, '4', null],
+                    ['42', '修繕積立金会計収益', 'REVENUE', 'CREDIT', 2, '4', null],
+                    ['43', '駐車場会計収益', 'REVENUE', 'CREDIT', 2, '4', null],
+                    ['51', '管理費会計費用', 'EXPENSE', 'DEBIT', 2, '5', null],
+                    ['52', '修繕積立金会計費用', 'EXPENSE', 'DEBIT', 2, '5', null],
+                    
+                    // 小分類 (Level 3)
+                    ['111', '現金預金', 'ASSET', 'DEBIT', 3, '11', null],
+                    ['112', '未収入金', 'ASSET', 'DEBIT', 3, '11', null],
+                    ['113', '前払金', 'ASSET', 'DEBIT', 3, '11', null],
+                    ['121', '建物設備', 'ASSET', 'DEBIT', 3, '12', null],
+                    ['211', '未払金', 'LIABILITY', 'CREDIT', 3, '21', null],
+                    ['212', '預り金', 'LIABILITY', 'CREDIT', 3, '21', null],
+                    ['311', '前期繰越収支差額', 'EQUITY', 'CREDIT', 3, '31', null],
+                    ['312', '当期収支差額', 'EQUITY', 'CREDIT', 3, '31', null],
+                    ['411', '基本収益', 'REVENUE', 'CREDIT', 3, '41', null],
+                    ['412', 'その他収益', 'REVENUE', 'CREDIT', 3, '41', null],
+                    ['421', '積立金収益', 'REVENUE', 'CREDIT', 3, '42', null],
+                    ['431', '駐車場収益', 'REVENUE', 'CREDIT', 3, '43', null],
+                    ['511', '管理業務費', 'EXPENSE', 'DEBIT', 3, '51', null],
+                    ['512', '維持管理費', 'EXPENSE', 'DEBIT', 3, '51', null],
+                    ['513', '事務費', 'EXPENSE', 'DEBIT', 3, '51', null],
+                    ['514', 'その他費用', 'EXPENSE', 'DEBIT', 3, '51', null],
+                    ['521', '修繕工事費', 'EXPENSE', 'DEBIT', 3, '52', null],
+                    ['522', '専門家費用', 'EXPENSE', 'DEBIT', 3, '52', null],
+                    
+                    // 勘定科目 (Level 4) - 仕訳入力可能
+                    ['1111', '現金', 'ASSET', 'DEBIT', 4, '111', null],
+                    ['1112', '普通預金（管理費会計）', 'ASSET', 'DEBIT', 4, '111', 'KANRI'],
+                    ['1113', '普通預金（修繕積立金会計）', 'ASSET', 'DEBIT', 4, '111', 'SHUZEN'],
+                    ['1114', '普通預金（駐車場会計）', 'ASSET', 'DEBIT', 4, '111', 'PARKING'],
+                    ['1115', '定期預金（修繕積立金）', 'ASSET', 'DEBIT', 4, '111', 'SHUZEN'],
+                    ['1121', '未収管理費', 'ASSET', 'DEBIT', 4, '112', 'KANRI'],
+                    ['1122', '未収修繕積立金', 'ASSET', 'DEBIT', 4, '112', 'SHUZEN'],
+                    ['1123', '未収駐車場使用料', 'ASSET', 'DEBIT', 4, '112', 'PARKING'],
+                    ['1131', '前払保険料', 'ASSET', 'DEBIT', 4, '113', 'KANRI'],
+                    ['1132', '前払管理委託費', 'ASSET', 'DEBIT', 4, '113', 'KANRI'],
+                    ['1211', '建物', 'ASSET', 'DEBIT', 4, '121', null],
+                    ['1212', '設備', 'ASSET', 'DEBIT', 4, '121', null],
+                    ['1213', '減価償却累計額', 'ASSET', 'CREDIT', 4, '121', null],
+                    
+                    ['2111', '未払金', 'LIABILITY', 'CREDIT', 4, '211', null],
+                    ['2112', '未払費用', 'LIABILITY', 'CREDIT', 4, '211', null],
+                    ['2113', '前受金', 'LIABILITY', 'CREDIT', 4, '211', null],
+                    ['2121', '預り金', 'LIABILITY', 'CREDIT', 4, '212', null],
+                    ['2122', '修繕積立金会計借受金', 'LIABILITY', 'CREDIT', 4, '212', null],
+                    
+                    ['3111', '前期繰越収支差額', 'EQUITY', 'CREDIT', 4, '311', null],
+                    ['3121', '当期収支差額', 'EQUITY', 'CREDIT', 4, '312', null],
+                    
+                    ['4111', '管理費収入', 'REVENUE', 'CREDIT', 4, '411', 'KANRI'],
+                    ['4121', '受取利息（管理費）', 'REVENUE', 'CREDIT', 4, '412', 'KANRI'],
+                    ['4122', 'その他収入', 'REVENUE', 'CREDIT', 4, '412', 'KANRI'],
+                    ['4211', '修繕積立金収入', 'REVENUE', 'CREDIT', 4, '421', 'SHUZEN'],
+                    ['4212', '受取利息（修繕積立金）', 'REVENUE', 'CREDIT', 4, '421', 'SHUZEN'],
+                    ['4213', '一時金収入', 'REVENUE', 'CREDIT', 4, '421', 'SHUZEN'],
+                    ['4311', '駐車場使用料収入', 'REVENUE', 'CREDIT', 4, '431', 'PARKING'],
+                    ['4312', '専用使用料収入', 'REVENUE', 'CREDIT', 4, '431', 'PARKING'],
+                    
+                    ['5111', '管理会社委託費', 'EXPENSE', 'DEBIT', 4, '511', 'KANRI'],
+                    ['5112', '管理員人件費', 'EXPENSE', 'DEBIT', 4, '511', 'KANRI'],
+                    ['5121', '清掃費', 'EXPENSE', 'DEBIT', 4, '512', 'KANRI'],
+                    ['5122', '設備保守費', 'EXPENSE', 'DEBIT', 4, '512', 'KANRI'],
+                    ['5123', 'エレベーター保守費', 'EXPENSE', 'DEBIT', 4, '512', 'KANRI'],
+                    ['5124', '共用部電気代', 'EXPENSE', 'DEBIT', 4, '512', 'KANRI'],
+                    ['5125', '共用部水道代', 'EXPENSE', 'DEBIT', 4, '512', 'KANRI'],
+                    ['5126', '植栽管理費', 'EXPENSE', 'DEBIT', 4, '512', 'KANRI'],
+                    ['5131', '理事会運営費', 'EXPENSE', 'DEBIT', 4, '513', 'KANRI'],
+                    ['5132', '総会費用', 'EXPENSE', 'DEBIT', 4, '513', 'KANRI'],
+                    ['5133', '通信費', 'EXPENSE', 'DEBIT', 4, '513', 'KANRI'],
+                    ['5134', '事務用品費', 'EXPENSE', 'DEBIT', 4, '513', 'KANRI'],
+                    ['5141', '火災保険料', 'EXPENSE', 'DEBIT', 4, '514', 'KANRI'],
+                    ['5142', '小修繕費', 'EXPENSE', 'DEBIT', 4, '514', 'KANRI'],
+                    ['5143', '消耗品費', 'EXPENSE', 'DEBIT', 4, '514', 'KANRI'],
+                    ['5144', '租税公課', 'EXPENSE', 'DEBIT', 4, '514', 'KANRI'],
+                    
+                    ['5211', '建物修繕工事費', 'EXPENSE', 'DEBIT', 4, '521', 'SHUZEN'],
+                    ['5212', '設備修繕工事費', 'EXPENSE', 'DEBIT', 4, '521', 'SHUZEN'],
+                    ['5213', '緊急修繕工事費', 'EXPENSE', 'DEBIT', 4, '521', 'SHUZEN'],
+                    ['5221', '建物診断費用', 'EXPENSE', 'DEBIT', 4, '522', 'SHUZEN'],
+                    ['5222', '設計監理費', 'EXPENSE', 'DEBIT', 4, '522', 'SHUZEN'],
+                    ['5223', '長期修繕計画作成費', 'EXPENSE', 'DEBIT', 4, '522', 'SHUZEN']
+                ];
+                
+                // 階層構造を構築
+                this.buildAccountHierarchy(hierarchicalAccountData);
+            }
+            
+            buildAccountHierarchy(accountData) {
+                // まず全ての勘定科目を作成
+                accountData.forEach(([code, name, type, normalBalance, level, parentCode, division]) => {
+                    const account = new HierarchicalAccount(code, name, type, normalBalance, level, parentCode, division);
+                    this.accounts.set(code, account);
+                });
+                
+                // 親子関係を構築
+                this.accounts.forEach(account => {
+                    if (account.parentCode) {
+                        const parent = this.accounts.get(account.parentCode);
+                        if (parent) {
+                            parent.addChild(account);
+                        }
+                    }
+                });
+            }
+            
+            createJournal(journalData) {
+                const journal = new Journal(journalData.date, journalData.description, journalData.reference);
+                
+                journalData.details.forEach(detailData => {
+                    const detail = new JournalDetail(
+                        detailData.accountCode,
+                        detailData.debitAmount,
+                        detailData.creditAmount,
+                        detailData.description,
+                        detailData.auxiliaryCode
+                    );
+                    journal.addDetail(detail);
+                });
+                
+                const errors = journal.validate();
+                if (errors.length > 0) {
+                    return { success: false, errors };
+                }
+                
+                // 区分経理の検証
+                const divisionErrors = this.validateDivisionAccounting(journal);
+                if (divisionErrors.length > 0) {
+                    return { success: false, errors: divisionErrors };
+                }
+                
+                // 仕訳を投稿して残高を更新
+                this.postJournal(journal);
+                this.journals.push(journal);
+                
+                return { success: true, journal };
+            }
+            
+            validateDivisionAccounting(journal) {
+                const errors = [];
+                const divisionBalances = new Map();
+                
+                // 仕訳明細ごとに会計区分をチェック
+                journal.details.forEach(detail => {
+                    const account = this.accounts.get(detail.accountCode);
+                    if (account && account.division) {
+                        const division = account.division;
+                        if (!divisionBalances.has(division)) {
+                            divisionBalances.set(division, 0);
+                        }
+                        
+                        const amount = detail.debitAmount - detail.creditAmount;
+                        divisionBalances.set(division, divisionBalances.get(division) + amount);
+                    }
+                });
+                
+                // 区分間振替のチェック
+                const divisions = Array.from(divisionBalances.keys());
+                if (divisions.length > 1) {
+                    // 複数の会計区分にまたがる仕訳の場合、振替制限をチェック
+                    for (let i = 0; i < divisions.length; i++) {
+                        for (let j = i + 1; j < divisions.length; j++) {
+                            const fromDiv = this.divisions.get(divisions[i]);
+                            const toDiv = divisions[j];
+                            const amount = Math.abs(divisionBalances.get(divisions[i]));
+                            
+                            if (fromDiv) {
+                                const canTransfer = fromDiv.canTransferTo(toDiv, amount);
+                                if (!canTransfer.allowed) {
+                                    errors.push(`${fromDiv.name}から${this.divisions.get(toDiv)?.name || toDiv}への振替: ${canTransfer.reason}`);
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                return errors;
+            }
+            
+            postJournal(journal) {
+                journal.details.forEach(detail => {
+                    const account = this.accounts.get(detail.accountCode);
+                    if (account) {
+                        if (detail.debitAmount > 0) {
+                            account.addToBalance(detail.debitAmount, true);
+                        }
+                        if (detail.creditAmount > 0) {
+                            account.addToBalance(detail.creditAmount, false);
+                        }
+                        
+                        // 補助元帳の更新
+                        if (detail.auxiliaryCode && account.hasAuxiliary) {
+                            const auxiliary = account.getAuxiliaryLedger(detail.auxiliaryCode);
+                            if (auxiliary) {
+                                const amount = detail.debitAmount || detail.creditAmount;
+                                const isDebit = detail.debitAmount > 0;
+                                auxiliary.addTransaction(amount, isDebit, journal.id, journal.description);
+                            }
+                        }
+                        
+                        // 会計区分別残高の更新
+                        if (account.division) {
+                            const division = this.divisions.get(account.division);
+                            if (division) {
+                                const amount = detail.debitAmount - detail.creditAmount;
+                                if (account.normalBalance === 'DEBIT') {
+                                    division.balance += amount;
+                                } else {
+                                    division.balance -= amount;
+                                }
+                            }
+                        }
+                    }
+                });
+                journal.status = 'POSTED';
+            }
+            
+            getTrialBalance() {
+                const trialBalance = [];
+                let totalDebit = 0;
+                let totalCredit = 0;
+                
+                this.accounts.forEach(account => {
+                    if (account.balance !== 0) {
+                        const balance = account.getDisplayBalance();
+                        trialBalance.push({
+                            code: account.code,
+                            name: account.name,
+                            debitBalance: account.isDebitBalance() ? balance : 0,
+                            creditBalance: !account.isDebitBalance() ? balance : 0
+                        });
+                        
+                        if (account.isDebitBalance()) {
+                            totalDebit += balance;
+                        } else {
+                            totalCredit += balance;
+                        }
+                    }
+                });
+                
+                trialBalance.sort((a, b) => a.code.localeCompare(b.code));
+                
+                return {
+                    accounts: trialBalance,
+                    totalDebit,
+                    totalCredit,
+                    isBalanced: Math.abs(totalDebit - totalCredit) < 0.01
+                };
+            }
+            
+            getAccounts() {
+                return Array.from(this.accounts.values()).sort((a, b) => a.code.localeCompare(b.code));
+            }
+            
+            getIncomeStatement() {
+                const revenues = [];
+                const expenses = [];
+                let totalRevenue = 0;
+                let totalExpense = 0;
+                
+                this.accounts.forEach(account => {
+                    if (account.balance !== 0) {
+                        if (account.type === 'REVENUE') {
+                            const amount = account.getDisplayBalance();
+                            revenues.push({
+                                code: account.code,
+                                name: account.name,
+                                amount: amount
+                            });
+                            totalRevenue += amount;
+                        } else if (account.type === 'EXPENSE') {
+                            const amount = account.getDisplayBalance();
+                            expenses.push({
+                                code: account.code,
+                                name: account.name,
+                                amount: amount
+                            });
+                            totalExpense += amount;
+                        }
+                    }
+                });
+                
+                revenues.sort((a, b) => a.code.localeCompare(b.code));
+                expenses.sort((a, b) => a.code.localeCompare(b.code));
+                
+                const netIncome = totalRevenue - totalExpense;
+                
+                return {
+                    revenues,
+                    expenses,
+                    totalRevenue,
+                    totalExpense,
+                    netIncome
+                };
+            }
+            
+            getBalanceSheet() {
+                const assets = [];
+                const liabilities = [];
+                const equity = [];
+                let totalAssets = 0;
+                let totalLiabilities = 0;
+                let totalEquity = 0;
+                
+                this.accounts.forEach(account => {
+                    if (account.balance !== 0) {
+                        const amount = account.getDisplayBalance();
+                        
+                        if (account.type === 'ASSET') {
+                            assets.push({
+                                code: account.code,
+                                name: account.name,
+                                amount: amount
+                            });
+                            totalAssets += amount;
+                        } else if (account.type === 'LIABILITY') {
+                            liabilities.push({
+                                code: account.code,
+                                name: account.name,
+                                amount: amount
+                            });
+                            totalLiabilities += amount;
+                        } else if (account.type === 'EQUITY') {
+                            equity.push({
+                                code: account.code,
+                                name: account.name,
+                                amount: amount
+                            });
+                            totalEquity += amount;
+                        }
+                    }
+                });
+                
+                // 当期純利益を正味財産に加算
+                const incomeStatement = this.getIncomeStatement();
+                if (incomeStatement.netIncome !== 0) {
+                    equity.push({
+                        code: '3002',
+                        name: '当期収支差額',
+                        amount: Math.abs(incomeStatement.netIncome)
+                    });
+                    totalEquity += Math.abs(incomeStatement.netIncome);
+                }
+                
+                assets.sort((a, b) => a.code.localeCompare(b.code));
+                liabilities.sort((a, b) => a.code.localeCompare(b.code));
+                equity.sort((a, b) => a.code.localeCompare(b.code));
+                
+                return {
+                    assets,
+                    liabilities,
+                    equity,
+                    totalAssets,
+                    totalLiabilities,
+                    totalEquity,
+                    isBalanced: Math.abs(totalAssets - (totalLiabilities + totalEquity)) < 0.01
+                };
+            }
+            
+            importJsonData(jsonData) {
+                try {
+                    // データ構造の検証
+                    if (!jsonData.journals || !Array.isArray(jsonData.journals)) {
+                        throw new Error('JSONデータに正しい形式のjournals配列が含まれていません');
+                    }
+                    
+                    // 既存データをクリア（オプション）
+                    if (jsonData.clearExisting !== false) {
+                        this.clearAll();
+                    }
+                    
+                    // 組合員データの読み込み（存在する場合）
+                    if (jsonData.unitOwners && Array.isArray(jsonData.unitOwners)) {
+                        this.unitOwners.clear();
+                        jsonData.unitOwners.forEach(owner => {
+                            this.unitOwners.set(owner.unitNumber, {
+                                unitNumber: owner.unitNumber,
+                                ownerName: owner.ownerName,
+                                floor: owner.floor || 1,
+                                area: owner.area || 0,
+                                managementFee: owner.managementFee || 0,
+                                repairReserve: owner.repairReserve || 0,
+                                contact: owner.contact || '',
+                                bankAccount: owner.bankAccount || '',
+                                isActive: owner.isActive !== false
+                            });
+                        });
+                        // 補助科目を再作成
+                        this.createUnitOwnerAuxiliaryAccounts();
+                    }
+                    
+                    // 業者データの読み込み（存在する場合）
+                    if (jsonData.vendors && Array.isArray(jsonData.vendors)) {
+                        this.vendors.clear();
+                        jsonData.vendors.forEach(vendor => {
+                            this.vendors.set(vendor.vendorCode, {
+                                vendorCode: vendor.vendorCode,
+                                vendorName: vendor.vendorName,
+                                category: vendor.category || '',
+                                contact: vendor.contact || '',
+                                bankAccount: vendor.bankAccount || '',
+                                taxNumber: vendor.taxNumber || '',
+                                isActive: vendor.isActive !== false
+                            });
+                        });
+                    }
+                    
+                    // 仕訳データの読み込み
+                    const results = [];
+                    jsonData.journals.forEach((journalData, index) => {
+                        // 必須フィールドの検証
+                        if (!journalData.date || !journalData.description || !journalData.details) {
+                            results.push({
+                                index: index,
+                                success: false,
+                                error: '日付、摘要、仕訳明細は必須項目です'
+                            });
+                            return;
+                        }
+                        
+                        // 仕訳明細の検証
+                        if (!Array.isArray(journalData.details) || journalData.details.length === 0) {
+                            results.push({
+                                index: index,
+                                success: false,
+                                error: '仕訳明細が正しい形式ではありません'
+                            });
+                            return;
+                        }
+                        
+                        // 各明細の検証
+                        let detailsValid = true;
+                        for (const detail of journalData.details) {
+                            if (!detail.accountCode || 
+                                (detail.debitAmount === undefined && detail.creditAmount === undefined) ||
+                                (detail.debitAmount < 0 || detail.creditAmount < 0)) {
+                                detailsValid = false;
+                                break;
+                            }
+                        }
+                        
+                        if (!detailsValid) {
+                            results.push({
+                                index: index,
+                                success: false,
+                                error: '仕訳明細の形式が正しくありません（勘定科目コード、借方金額または貸方金額が必要）'
+                            });
+                            return;
+                        }
+                        
+                        // 仕訳を作成
+                        const result = this.createJournal(journalData);
+                        results.push({
+                            index: index,
+                            success: result.success,
+                            error: result.success ? null : result.errors.join(', ')
+                        });
+                    });
+                    
+                    const successCount = results.filter(r => r.success).length;
+                    const failureCount = results.length - successCount;
+                    
+                    return {
+                        success: true,
+                        totalJournals: jsonData.journals.length,
+                        successCount: successCount,
+                        failureCount: failureCount,
+                        results: results
+                    };
+                    
+                } catch (error) {
+                    return {
+                        success: false,
+                        error: error.message
+                    };
+                }
+            }
+
+            loadSampleData() {
+                // サンプルデータをクリア
+                this.clearAll();
+                
+                // 階層的勘定科目に対応したサンプル仕訳データ
+                const sampleJournals = [
+                    {
+                        date: '2024-03-01',
+                        description: '3月分管理費請求',
+                        details: [
+                            { accountCode: '1121', debitAmount: 2000000, creditAmount: 0 },
+                            { accountCode: '4111', debitAmount: 0, creditAmount: 2000000 }
+                        ]
+                    },
+                    {
+                        date: '2024-03-01',
+                        description: '3月分修繕積立金請求',
+                        details: [
+                            { accountCode: '1122', debitAmount: 1500000, creditAmount: 0 },
+                            { accountCode: '4211', debitAmount: 0, creditAmount: 1500000 }
+                        ]
+                    },
+                    {
+                        date: '2024-03-05',
+                        description: '管理費入金（口座振替）',
+                        details: [
+                            { accountCode: '1112', debitAmount: 1800000, creditAmount: 0 },
+                            { accountCode: '1121', debitAmount: 0, creditAmount: 1800000 }
+                        ]
+                    },
+                    {
+                        date: '2024-03-05',
+                        description: '修繕積立金入金（口座振替）',
+                        details: [
+                            { accountCode: '1113', debitAmount: 1400000, creditAmount: 0 },
+                            { accountCode: '1122', debitAmount: 0, creditAmount: 1400000 }
+                        ]
+                    },
+                    {
+                        date: '2024-03-10',
+                        description: '管理会社委託費支払い',
+                        details: [
+                            { accountCode: '5111', debitAmount: 500000, creditAmount: 0 },
+                            { accountCode: '1112', debitAmount: 0, creditAmount: 500000 }
+                        ]
+                    },
+                    {
+                        date: '2024-03-12',
+                        description: '清掃費支払い',
+                        details: [
+                            { accountCode: '5121', debitAmount: 150000, creditAmount: 0 },
+                            { accountCode: '1112', debitAmount: 0, creditAmount: 150000 }
+                        ]
+                    },
+                    {
+                        date: '2024-03-15',
+                        description: 'エレベーター保守費支払い',
+                        details: [
+                            { accountCode: '5123', debitAmount: 80000, creditAmount: 0 },
+                            { accountCode: '1112', debitAmount: 0, creditAmount: 80000 }
+                        ]
+                    },
+                    {
+                        date: '2024-03-20',
+                        description: '共用部電気代支払い',
+                        details: [
+                            { accountCode: '5124', debitAmount: 45000, creditAmount: 0 },
+                            { accountCode: '1112', debitAmount: 0, creditAmount: 45000 }
+                        ]
+                    },
+                    {
+                        date: '2024-03-25',
+                        description: '大規模修繕工事費支払い',
+                        details: [
+                            { accountCode: '5211', debitAmount: 800000, creditAmount: 0 },
+                            { accountCode: '1113', debitAmount: 0, creditAmount: 800000 }
+                        ]
+                    },
+                    {
+                        date: '2024-03-28',
+                        description: '駐車場使用料収入',
+                        details: [
+                            { accountCode: '1114', debitAmount: 120000, creditAmount: 0 },
+                            { accountCode: '4311', debitAmount: 0, creditAmount: 120000 }
+                        ]
+                    },
+                    {
+                        date: '2024-03-30',
+                        description: '火災保険料支払い',
+                        details: [
+                            { accountCode: '5141', debitAmount: 200000, creditAmount: 0 },
+                            { accountCode: '1112', debitAmount: 0, creditAmount: 200000 }
+                        ]
+                    },
+                    {
+                        date: '2024-03-31',
+                        description: '前期繰越残高',
+                        details: [
+                            { accountCode: '1112', debitAmount: 5000000, creditAmount: 0 },
+                            { accountCode: '1113', debitAmount: 8000000, creditAmount: 0 },
+                            { accountCode: '3111', debitAmount: 0, creditAmount: 13000000 }
+                        ]
+                    }
+                ];
+                
+                // サンプル仕訳を作成
+                sampleJournals.forEach(journalData => {
+                    const result = this.createJournal(journalData);
+                    if (!result.success) {
+                        console.error('Sample data creation failed:', result.errors);
+                    }
+                });
+                
+                return true;
+            }
+            
+            clearAll() {
+                this.journals = [];
+                this.accounts.forEach(account => {
+                    account.balance = 0;
+                    // 補助元帳もクリア
+                    account.auxiliaryLedgers.forEach(auxiliary => {
+                        auxiliary.balance = 0;
+                        auxiliary.transactions = [];
+                    });
+                });
+                this.divisions.forEach(division => {
+                    division.balance = 0;
+                });
+            }
+            
+            // 補助元帳一覧を取得
+            getAuxiliaryLedgerSummary() {
+                const summary = [];
+                
+                this.accounts.forEach(account => {
+                    if (account.hasAuxiliary && account.auxiliaryLedgers.size > 0) {
+                        const auxiliaries = account.getAllAuxiliaryLedgers()
+                            .filter(aux => aux.balance !== 0 || aux.transactions.length > 0)
+                            .map(aux => ({
+                                masterAccountCode: account.code,
+                                masterAccountName: account.name,
+                                auxiliaryCode: aux.auxiliaryCode,
+                                auxiliaryName: aux.name,
+                                balance: aux.balance,
+                                displayBalance: aux.getDisplayBalance(),
+                                isDebitBalance: aux.isDebitBalance(),
+                                attributes: aux.attributes,
+                                transactionCount: aux.transactions.length
+                            }));
+                        
+                        summary.push(...auxiliaries);
+                    }
+                });
+                
+                return summary.sort((a, b) => {
+                    if (a.masterAccountCode !== b.masterAccountCode) {
+                        return a.masterAccountCode.localeCompare(b.masterAccountCode);
+                    }
+                    return a.auxiliaryCode.localeCompare(b.auxiliaryCode);
+                });
+            }
+            
+            // 部屋別未収金一覧を取得
+            getUnitReceivablesSummary() {
+                const summary = [];
+                const managementFeeAccount = this.accounts.get('1121');
+                const repairReserveAccount = this.accounts.get('1122');
+                
+                this.unitOwners.forEach((owner, unitNumber) => {
+                    const managementFeeAux = managementFeeAccount?.getAuxiliaryLedger(unitNumber);
+                    const repairReserveAux = repairReserveAccount?.getAuxiliaryLedger(unitNumber);
+                    
+                    const managementFeeBalance = managementFeeAux?.balance || 0;
+                    const repairReserveBalance = repairReserveAux?.balance || 0;
+                    const totalBalance = managementFeeBalance + repairReserveBalance;
+                    
+                    if (totalBalance !== 0) {
+                        summary.push({
+                            unitNumber: unitNumber,
+                            ownerName: owner.ownerName,
+                            floor: owner.floor,
+                            managementFeeBalance: managementFeeBalance,
+                            repairReserveBalance: repairReserveBalance,
+                            totalBalance: totalBalance,
+                            monthlyManagementFee: owner.managementFee,
+                            monthlyRepairReserve: owner.repairReserve
+                        });
+                    }
+                });
+                
+                return summary.sort((a, b) => a.unitNumber.localeCompare(b.unitNumber));
+            }
+            
+            // 組合員別請求仕訳を作成
+            createMonthlyBilling(billingDate) {
+                const journalData = {
+                    date: billingDate,
+                    description: `${billingDate.substring(0, 7)}月分管理費・修繕積立金請求`,
+                    details: []
+                };
+                
+                let totalManagementFee = 0;
+                let totalRepairReserve = 0;
+                
+                this.unitOwners.forEach((owner, unitNumber) => {
+                    if (owner.isActive) {
+                        // 管理費請求
+                        journalData.details.push({
+                            accountCode: '1121',
+                            debitAmount: owner.managementFee,
+                            creditAmount: 0,
+                            auxiliaryCode: unitNumber
+                        });
+                        totalManagementFee += owner.managementFee;
+                        
+                        // 修繕積立金請求
+                        journalData.details.push({
+                            accountCode: '1122',
+                            debitAmount: owner.repairReserve,
+                            creditAmount: 0,
+                            auxiliaryCode: unitNumber
+                        });
+                        totalRepairReserve += owner.repairReserve;
+                    }
+                });
+                
+                // 収益計上
+                journalData.details.push(
+                    {
+                        accountCode: '4111',
+                        debitAmount: 0,
+                        creditAmount: totalManagementFee
+                    },
+                    {
+                        accountCode: '4211',
+                        debitAmount: 0,
+                        creditAmount: totalRepairReserve
+                    }
+                );
+                
+                return this.createJournal(journalData);
+            }
+            
+            // 補助科目を再構築（組合員マスタ変更時）
+            rebuildAuxiliaryAccounts() {
+                console.log('Rebuilding auxiliary accounts...');
+                
+                // 既存の補助科目をクリア
+                const managementFeeAccount = this.accounts.get('1121');
+                const repairReserveAccount = this.accounts.get('1122');
+                
+                if (managementFeeAccount) {
+                    managementFeeAccount.auxiliaryLedgers.clear();
+                    managementFeeAccount.hasAuxiliary = false;
+                }
+                
+                if (repairReserveAccount) {
+                    repairReserveAccount.auxiliaryLedgers.clear();
+                    repairReserveAccount.hasAuxiliary = false;
+                }
+                
+                // 新しい補助科目を作成
+                this.createUnitOwnerAuxiliaryAccounts();
+                
+                console.log('Auxiliary accounts rebuilt successfully');
+            }
+            
+            // 会計区分別の試算表を取得
+            getDivisionTrialBalance() {
+                const divisionBalances = new Map();
+                
+                // 各会計区分の初期化
+                this.divisions.forEach((division, code) => {
+                    divisionBalances.set(code, {
+                        name: division.name,
+                        assets: [],
+                        liabilities: [],
+                        equity: [],
+                        revenues: [],
+                        expenses: [],
+                        totalAssets: 0,
+                        totalLiabilities: 0,
+                        totalEquity: 0,
+                        totalRevenues: 0,
+                        totalExpenses: 0
+                    });
+                });
+                
+                // その他（区分なし）
+                divisionBalances.set('OTHER', {
+                    name: 'その他',
+                    assets: [],
+                    liabilities: [],
+                    equity: [],
+                    revenues: [],
+                    expenses: [],
+                    totalAssets: 0,
+                    totalLiabilities: 0,
+                    totalEquity: 0,
+                    totalRevenues: 0,
+                    totalExpenses: 0
+                });
+                
+                // 勘定科目別残高を会計区分別に集計
+                this.accounts.forEach(account => {
+                    if (account.balance !== 0) {
+                        const divisionCode = account.division || 'OTHER';
+                        const division = divisionBalances.get(divisionCode);
+                        
+                        if (division) {
+                            const amount = account.getDisplayBalance();
+                            const accountData = {
+                                code: account.code,
+                                name: account.name,
+                                amount: amount
+                            };
+                            
+                            switch (account.type) {
+                                case 'ASSET':
+                                    division.assets.push(accountData);
+                                    division.totalAssets += amount;
+                                    break;
+                                case 'LIABILITY':
+                                    division.liabilities.push(accountData);
+                                    division.totalLiabilities += amount;
+                                    break;
+                                case 'EQUITY':
+                                    division.equity.push(accountData);
+                                    division.totalEquity += amount;
+                                    break;
+                                case 'REVENUE':
+                                    division.revenues.push(accountData);
+                                    division.totalRevenues += amount;
+                                    break;
+                                case 'EXPENSE':
+                                    division.expenses.push(accountData);
+                                    division.totalExpenses += amount;
+                                    break;
+                            }
+                        }
+                    }
+                });
+                
+                return divisionBalances;
+            }
+            
+            // 区分間振替仕訳の作成
+            createDivisionTransfer(fromDivision, toDivision, amount, description) {
+                const fromDiv = this.divisions.get(fromDivision);
+                const toDiv = this.divisions.get(toDivision);
+                
+                if (!fromDiv || !toDiv) {
+                    return { success: false, errors: ['指定された会計区分が存在しません'] };
+                }
+                
+                // 振替可能性チェック
+                const canTransfer = fromDiv.canTransferTo(toDivision, amount);
+                if (!canTransfer.allowed) {
+                    return { success: false, errors: [canTransfer.reason] };
+                }
+                
+                // 区分間振替仕訳を生成
+                const journalData = {
+                    date: new Date().toISOString().split('T')[0],
+                    description: description || `${fromDiv.name}から${toDiv.name}への振替`,
+                    details: [
+                        // 振替元から資金を移動（例：修繕積立金会計の普通預金から減額）
+                        { 
+                            accountCode: this.findDivisionCashAccount(fromDivision), 
+                            debitAmount: 0, 
+                            creditAmount: amount 
+                        },
+                        // 振替先へ資金を移動（例：管理費会計の普通預金へ増額）
+                        { 
+                            accountCode: this.findDivisionCashAccount(toDivision), 
+                            debitAmount: amount, 
+                            creditAmount: 0 
+                        }
+                    ]
+                };
+                
+                return this.createJournal(journalData);
+            }
+            
+            findDivisionCashAccount(divisionCode) {
+                // 指定された会計区分の現金預金勘定を探す
+                for (const [code, account] of this.accounts) {
+                    if (account.division === divisionCode && 
+                        account.type === 'ASSET' && 
+                        account.name.includes('普通預金')) {
+                        return code;
+                    }
+                }
+                // 見つからない場合は汎用現金勘定
+                return '1111';
+            }
+        }
+
+        // UI制御
+        const engine = new AccountingEngine();
+        
+        function initializeUI() {
+            // 今日の日付を設定
+            document.getElementById('journalDate').value = new Date().toISOString().split('T')[0];
+            
+            // 勘定科目選択肢を設定
+            populateAccountSelects();
+            
+            // イベントリスナー設定
+            document.getElementById('journalForm').addEventListener('submit', handleJournalSubmit);
+            document.getElementById('addDetail').addEventListener('click', addJournalDetail);
+            document.getElementById('clearJournals').addEventListener('click', clearJournals);
+            document.getElementById('loadSampleData').addEventListener('click', loadSampleData);
+            document.getElementById('importJsonData').addEventListener('click', handleJsonImport);
+            document.getElementById('jsonFileInput').addEventListener('change', handleJsonFileSelect);
+            document.getElementById('monthlyBilling').addEventListener('click', createMonthlyBilling);
+            document.getElementById('debugAuxiliary').addEventListener('click', debugAuxiliary);
+            document.getElementById('editUnitOwners').addEventListener('click', showUnitOwnerEditor);
+            
+            // タブ切り替えイベント
+            document.querySelectorAll('[data-bs-toggle="tab"]').forEach(tab => {
+                tab.addEventListener('shown.bs.tab', function (event) {
+                    updateDisplays();
+                });
+            });
+            
+            // 金額変更イベント
+            document.addEventListener('input', handleAmountChange);
+            document.addEventListener('click', handleDetailRemove);
+            
+            updateTotals();
+            updateDisplays();
+        }
+        
+        function populateAccountSelects() {
+            const accounts = engine.getAccounts();
+            const selects = document.querySelectorAll('.debit-account, .credit-account');
+            
+            selects.forEach(select => {
+                select.innerHTML = '<option value="">科目を選択</option>';
+                
+                // 階層的にグループ分けして表示
+                const groupedAccounts = groupAccountsByHierarchy(accounts);
+                
+                Object.keys(groupedAccounts).forEach(groupName => {
+                    if (groupedAccounts[groupName].length > 0) {
+                        const optgroup = document.createElement('optgroup');
+                        optgroup.label = groupName;
+                        
+                        groupedAccounts[groupName].forEach(account => {
+                            // 仕訳入力可能なアカウント（レベル4以上）のみ表示
+                            if (account.isPostable) {
+                                const option = document.createElement('option');
+                                option.value = account.code;
+                                // 会計区分を表示に追加
+                                const divisionText = account.division ? ` [${account.division}]` : '';
+                                option.textContent = `${account.code} - ${account.name}${divisionText}`;
+                                optgroup.appendChild(option);
+                            }
+                        });
+                        
+                        if (optgroup.children.length > 0) {
+                            select.appendChild(optgroup);
+                        }
+                    }
+                });
+            });
+        }
+        
+        function groupAccountsByHierarchy(accounts) {
+            const groups = {
+                '資産の部': [],
+                '負債の部': [],
+                '正味財産の部': [],
+                '収益の部': [],
+                '費用の部': []
+            };
+            
+            accounts.forEach(account => {
+                switch (account.type) {
+                    case 'ASSET':
+                        groups['資産の部'].push(account);
+                        break;
+                    case 'LIABILITY':
+                        groups['負債の部'].push(account);
+                        break;
+                    case 'EQUITY':
+                        groups['正味財産の部'].push(account);
+                        break;
+                    case 'REVENUE':
+                        groups['収益の部'].push(account);
+                        break;
+                    case 'EXPENSE':
+                        groups['費用の部'].push(account);
+                        break;
+                }
+            });
+            
+            return groups;
+        }
+        
+        function addJournalDetail() {
+            const detailsContainer = document.getElementById('journalDetails');
+            const newDetail = document.querySelector('.journal-detail').cloneNode(true);
+            
+            // フィールドをクリア
+            newDetail.querySelectorAll('select').forEach(select => select.value = '');
+            newDetail.querySelectorAll('input').forEach(input => input.value = '');
+            
+            detailsContainer.appendChild(newDetail);
+            populateAccountSelects();
+        }
+        
+        function handleDetailRemove(event) {
+            if (event.target.classList.contains('remove-detail')) {
+                const details = document.querySelectorAll('.journal-detail');
+                if (details.length > 1) {
+                    event.target.closest('.journal-detail').remove();
+                    updateTotals();
+                }
+            }
+        }
+        
+        function handleAmountChange(event) {
+            if (event.target.classList.contains('debit-amount') || 
+                event.target.classList.contains('credit-amount')) {
+                updateTotals();
+            }
+        }
+        
+        function updateTotals() {
+            let debitTotal = 0;
+            let creditTotal = 0;
+            
+            document.querySelectorAll('.debit-amount').forEach(input => {
+                debitTotal += parseFloat(input.value) || 0;
+            });
+            
+            document.querySelectorAll('.credit-amount').forEach(input => {
+                creditTotal += parseFloat(input.value) || 0;
+            });
+            
+            document.getElementById('debitTotal').textContent = `¥${debitTotal.toLocaleString()}`;
+            document.getElementById('creditTotal').textContent = `¥${creditTotal.toLocaleString()}`;
+        }
+        
+        function handleJournalSubmit(event) {
+            event.preventDefault();
+            
+            const formData = new FormData(event.target);
+            const journalData = {
+                date: document.getElementById('journalDate').value,
+                description: document.getElementById('description').value,
+                reference: document.getElementById('reference').value,
+                details: []
+            };
+            
+            // 仕訳明細を収集
+            document.querySelectorAll('.journal-detail').forEach(detail => {
+                const debitAccount = detail.querySelector('.debit-account').value;
+                const debitAmount = parseFloat(detail.querySelector('.debit-amount').value) || 0;
+                const creditAccount = detail.querySelector('.credit-account').value;
+                const creditAmount = parseFloat(detail.querySelector('.credit-amount').value) || 0;
+                
+                if (debitAccount && debitAmount > 0) {
+                    journalData.details.push({
+                        accountCode: debitAccount,
+                        debitAmount: debitAmount,
+                        creditAmount: 0
+                    });
+                }
+                
+                if (creditAccount && creditAmount > 0) {
+                    journalData.details.push({
+                        accountCode: creditAccount,
+                        debitAmount: 0,
+                        creditAmount: creditAmount
+                    });
+                }
+            });
+            
+            const result = engine.createJournal(journalData);
+            
+            if (result.success) {
+                // フォームをリセット
+                event.target.reset();
+                document.getElementById('journalDate').value = new Date().toISOString().split('T')[0];
+                
+                // 明細を1つだけに戻す
+                const detailsContainer = document.getElementById('journalDetails');
+                const details = detailsContainer.querySelectorAll('.journal-detail');
+                for (let i = 1; i < details.length; i++) {
+                    details[i].remove();
+                }
+                
+                populateAccountSelects();
+                updateTotals();
+                updateDisplays();
+                clearValidationMessage();
+            } else {
+                showValidationMessage(result.errors.join('<br>'));
+            }
+        }
+        
+        function showValidationMessage(message) {
+            document.getElementById('validationMessage').innerHTML = message;
+        }
+        
+        function clearValidationMessage() {
+            document.getElementById('validationMessage').innerHTML = '';
+        }
+        
+        function updateDisplays() {
+            updateJournalLedger();
+            updateTrialBalance();
+            updateIncomeStatement();
+            updateBalanceSheet();
+            updateDivisionAccounting();
+            updateAuxiliaryLedger();
+        }
+        
+        function updateDivisionAccounting() {
+            const divisionBalances = engine.getDivisionTrialBalance();
+            const container = document.getElementById('divisionAccounting');
+            
+            let html = '<div class="row">';
+            
+            divisionBalances.forEach((division, code) => {
+                if (code !== 'OTHER' || division.totalAssets > 0 || division.totalLiabilities > 0 || 
+                    division.totalRevenues > 0 || division.totalExpenses > 0) {
+                    
+                    const netIncome = division.totalRevenues - division.totalExpenses;
+                    
+                    html += `
+                        <div class="col-md-6 mb-4">
+                            <div class="card">
+                                <div class="card-header bg-primary text-white">
+                                    <h6 class="mb-0">${division.name}</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <h6 class="text-info">資産</h6>
+                                            <ul class="list-unstyled small">
+                    `;
+                    
+                    if (division.assets.length === 0) {
+                        html += '<li class="text-muted">なし</li>';
+                    } else {
+                        division.assets.forEach(account => {
+                            html += `<li>${account.name}: ¥${account.amount.toLocaleString()}</li>`;
+                        });
+                    }
+                    
+                    html += `
+                                            </ul>
+                                            <strong>資産計: ¥${division.totalAssets.toLocaleString()}</strong>
+                                        </div>
+                                        <div class="col-6">
+                                            <h6 class="text-warning">負債</h6>
+                                            <ul class="list-unstyled small">
+                    `;
+                    
+                    if (division.liabilities.length === 0) {
+                        html += '<li class="text-muted">なし</li>';
+                    } else {
+                        division.liabilities.forEach(account => {
+                            html += `<li>${account.name}: ¥${account.amount.toLocaleString()}</li>`;
+                        });
+                    }
+                    
+                    html += `
+                                            </ul>
+                                            <strong>負債計: ¥${division.totalLiabilities.toLocaleString()}</strong>
+                                        </div>
+                                    </div>
+                                    
+                                    <hr>
+                                    
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <h6 class="text-success">収益</h6>
+                                            <ul class="list-unstyled small">
+                    `;
+                    
+                    if (division.revenues.length === 0) {
+                        html += '<li class="text-muted">なし</li>';
+                    } else {
+                        division.revenues.forEach(account => {
+                            html += `<li>${account.name}: ¥${account.amount.toLocaleString()}</li>`;
+                        });
+                    }
+                    
+                    html += `
+                                            </ul>
+                                            <strong>収益計: ¥${division.totalRevenues.toLocaleString()}</strong>
+                                        </div>
+                                        <div class="col-6">
+                                            <h6 class="text-danger">費用</h6>
+                                            <ul class="list-unstyled small">
+                    `;
+                    
+                    if (division.expenses.length === 0) {
+                        html += '<li class="text-muted">なし</li>';
+                    } else {
+                        division.expenses.forEach(account => {
+                            html += `<li>${account.name}: ¥${account.amount.toLocaleString()}</li>`;
+                        });
+                    }
+                    
+                    html += `
+                                            </ul>
+                                            <strong>費用計: ¥${division.totalExpenses.toLocaleString()}</strong>
+                                        </div>
+                                    </div>
+                                    
+                                    <hr>
+                                    
+                                    <div class="text-center">
+                                        <h6>収支差額</h6>
+                                        <h5 class="${netIncome >= 0 ? 'text-success' : 'text-danger'}">
+                                            ¥${Math.abs(netIncome).toLocaleString()}
+                                            ${netIncome >= 0 ? '（黒字）' : '（赤字）'}
+                                        </h5>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+            
+            html += '</div>';
+            
+            // 区分間振替機能（将来の拡張用）
+            html += `
+                <div class="card mt-3">
+                    <div class="card-header">
+                        <h6 class="mb-0">区分間振替</h6>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted">区分間の資金移動機能は次期実装予定です。</p>
+                        <div class="row">
+                            <div class="col-md-3">
+                                <label class="form-label">振替元</label>
+                                <select class="form-select" disabled>
+                                    <option>管理費会計</option>
+                                    <option>修繕積立金会計</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">振替先</label>
+                                <select class="form-select" disabled>
+                                    <option>管理費会計</option>
+                                    <option>修繕積立金会計</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">金額</label>
+                                <input type="number" class="form-control" disabled>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">&nbsp;</label>
+                                <button class="btn btn-outline-primary w-100" disabled>振替実行</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            container.innerHTML = html;
+        }
+        
+        function handleJsonImport() {
+            document.getElementById('jsonFileInput').click();
+        }
+        
+        function handleJsonFileSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            if (file.type !== 'application/json' && !file.name.endsWith('.json')) {
+                showAlert('JSONファイルを選択してください。', 'danger');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const jsonData = JSON.parse(e.target.result);
+                    const result = engine.importJsonData(jsonData);
+                    
+                    if (result.success) {
+                        updateDisplays();
+                        
+                        let message = `JSONデータを読み込みました！<br>`;
+                        message += `仕訳 ${result.successCount}件 / ${result.totalJournals}件が正常に読み込まれました。`;
+                        
+                        if (result.failureCount > 0) {
+                            message += `<br><span class="text-warning">${result.failureCount}件のエラーがありました。</span>`;
+                            console.log('Import errors:', result.results.filter(r => !r.success));
+                        }
+                        
+                        showAlert(message, 'success');
+                    } else {
+                        showAlert(`JSONデータの読み込みに失敗しました: ${result.error}`, 'danger');
+                    }
+                } catch (error) {
+                    showAlert(`JSONファイルの解析に失敗しました: ${error.message}`, 'danger');
+                }
+                
+                // ファイル入力をリセット
+                event.target.value = '';
+            };
+            
+            reader.readAsText(file);
+        }
+        
+        function showAlert(message, type = 'info') {
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type} alert-dismissible fade show mt-3`;
+            alert.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.querySelector('.container-fluid').insertBefore(alert, document.querySelector('.row'));
+            
+            // 5秒後に自動削除
+            setTimeout(() => {
+                if (alert.parentNode) {
+                    alert.remove();
+                }
+            }, 5000);
+        }
+
+        function loadSampleData() {
+            if (confirm('サンプルデータを読み込みますか？（既存データは消去されます）')) {
+                engine.loadSampleData();
+                updateDisplays();
+                
+                showAlert('サンプルデータを読み込みました！各タブで損益計算書と貸借対照表をご確認ください。', 'success');
+            }
+        }
+        
+        function updateJournalLedger() {
+            const ledger = document.getElementById('journalLedger');
+            
+            if (engine.journals.length === 0) {
+                ledger.innerHTML = '<p class="text-muted">仕訳がありません</p>';
+                return;
+            }
+            
+            let html = '';
+            engine.journals.forEach(journal => {
+                html += `
+                    <div class="journal-entry">
+                        <div class="d-flex justify-content-between">
+                            <strong>${journal.number}</strong>
+                            <span>${journal.date}</span>
+                        </div>
+                        <div class="mb-2">${journal.description}</div>
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>勘定科目</th>
+                                    <th class="text-end">借方</th>
+                                    <th class="text-end">貸方</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                `;
+                
+                journal.details.forEach(detail => {
+                    const account = engine.accounts.get(detail.accountCode);
+                    html += `
+                        <tr>
+                            <td>${account.name}</td>
+                            <td class="text-end debit">${detail.debitAmount > 0 ? '¥' + detail.debitAmount.toLocaleString() : ''}</td>
+                            <td class="text-end credit">${detail.creditAmount > 0 ? '¥' + detail.creditAmount.toLocaleString() : ''}</td>
+                        </tr>
+                    `;
+                });
+                
+                html += `
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            });
+            
+            ledger.innerHTML = html;
+        }
+        
+        function updateTrialBalance() {
+            const trialBalance = engine.getTrialBalance();
+            const container = document.getElementById('trialBalance');
+            
+            if (trialBalance.accounts.length === 0) {
+                container.innerHTML = '<p class="text-muted">残高がありません</p>';
+                return;
+            }
+            
+            // 階層的に試算表を表示
+            const groupedAccounts = groupTrialBalanceByType(trialBalance.accounts);
+            
+            let html = `
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>勘定科目</th>
+                            <th class="text-center">会計区分</th>
+                            <th class="text-end">借方残高</th>
+                            <th class="text-end">貸方残高</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            Object.keys(groupedAccounts).forEach(groupName => {
+                if (groupedAccounts[groupName].length > 0) {
+                    html += `
+                        <tr class="table-secondary">
+                            <td colspan="4"><strong>${groupName}</strong></td>
+                        </tr>
+                    `;
+                    
+                    groupedAccounts[groupName].forEach(account => {
+                        const accountObj = engine.accounts.get(account.code);
+                        const divisionText = accountObj.division || '-';
+                        html += `
+                            <tr>
+                                <td>&nbsp;&nbsp;${account.code} - ${account.name}</td>
+                                <td class="text-center">
+                                    <span class="badge bg-secondary">${divisionText}</span>
+                                </td>
+                                <td class="text-end debit">${account.debitBalance > 0 ? '¥' + account.debitBalance.toLocaleString() : ''}</td>
+                                <td class="text-end credit">${account.creditBalance > 0 ? '¥' + account.creditBalance.toLocaleString() : ''}</td>
+                            </tr>
+                        `;
+                    });
+                }
+            });
+            
+            html += `
+                    </tbody>
+                    <tfoot>
+                        <tr class="total-row">
+                            <td colspan="2"><strong>合計</strong></td>
+                            <td class="text-end debit"><strong>¥${trialBalance.totalDebit.toLocaleString()}</strong></td>
+                            <td class="text-end credit"><strong>¥${trialBalance.totalCredit.toLocaleString()}</strong></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            `;
+            
+            if (!trialBalance.isBalanced) {
+                html += '<div class="alert alert-warning">試算表が貸借不一致です！</div>';
+            }
+            
+            container.innerHTML = html;
+        }
+        
+        function groupTrialBalanceByType(accounts) {
+            const groups = {
+                '資産の部': [],
+                '負債の部': [],
+                '正味財産の部': [],
+                '収益の部': [],
+                '費用の部': []
+            };
+            
+            accounts.forEach(account => {
+                const accountObj = engine.accounts.get(account.code);
+                if (accountObj) {
+                    switch (accountObj.type) {
+                        case 'ASSET':
+                            groups['資産の部'].push(account);
+                            break;
+                        case 'LIABILITY':
+                            groups['負債の部'].push(account);
+                            break;
+                        case 'EQUITY':
+                            groups['正味財産の部'].push(account);
+                            break;
+                        case 'REVENUE':
+                            groups['収益の部'].push(account);
+                            break;
+                        case 'EXPENSE':
+                            groups['費用の部'].push(account);
+                            break;
+                    }
+                }
+            });
+            
+            return groups;
+        }
+        
+        function updateIncomeStatement() {
+            const incomeStatement = engine.getIncomeStatement();
+            const container = document.getElementById('incomeStatement');
+            
+            let html = `
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="text-primary mb-3">収益の部</h6>
+                        <table class="table table-sm">
+                            <tbody>
+            `;
+            
+            if (incomeStatement.revenues.length === 0) {
+                html += '<tr><td colspan="2" class="text-muted">収益データなし</td></tr>';
+            } else {
+                incomeStatement.revenues.forEach(account => {
+                    html += `
+                        <tr>
+                            <td>${account.name}</td>
+                            <td class="text-end">¥${account.amount.toLocaleString()}</td>
+                        </tr>
+                    `;
+                });
+            }
+            
+            html += `
+                            <tr class="total-row">
+                                <td><strong>収益合計</strong></td>
+                                <td class="text-end"><strong>¥${incomeStatement.totalRevenue.toLocaleString()}</strong></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="col-md-6">
+                    <h6 class="text-danger mb-3">費用の部</h6>
+                    <table class="table table-sm">
+                        <tbody>
+            `;
+            
+            if (incomeStatement.expenses.length === 0) {
+                html += '<tr><td colspan="2" class="text-muted">費用データなし</td></tr>';
+            } else {
+                incomeStatement.expenses.forEach(account => {
+                    html += `
+                        <tr>
+                            <td>${account.name}</td>
+                            <td class="text-end">¥${account.amount.toLocaleString()}</td>
+                        </tr>
+                    `;
+                });
+            }
+            
+            html += `
+                            <tr class="total-row">
+                                <td><strong>費用合計</strong></td>
+                                <td class="text-end"><strong>¥${incomeStatement.totalExpense.toLocaleString()}</strong></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="card ${incomeStatement.netIncome >= 0 ? 'border-success' : 'border-danger'}">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">当期収支差額</h5>
+                            <h3 class="${incomeStatement.netIncome >= 0 ? 'text-success' : 'text-danger'}">
+                                ¥${Math.abs(incomeStatement.netIncome).toLocaleString()}
+                                ${incomeStatement.netIncome >= 0 ? '（黒字）' : '（赤字）'}
+                            </h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            `;
+            
+            container.innerHTML = html;
+        }
+        
+        function updateBalanceSheet() {
+            const balanceSheet = engine.getBalanceSheet();
+            const container = document.getElementById('balanceSheet');
+            
+            let html = `
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="text-primary mb-3">資産の部</h6>
+                        <table class="table table-sm">
+                            <tbody>
+            `;
+            
+            if (balanceSheet.assets.length === 0) {
+                html += '<tr><td colspan="2" class="text-muted">資産データなし</td></tr>';
+            } else {
+                balanceSheet.assets.forEach(account => {
+                    html += `
+                        <tr>
+                            <td>${account.name}</td>
+                            <td class="text-end">¥${account.amount.toLocaleString()}</td>
+                        </tr>
+                    `;
+                });
+            }
+            
+            html += `
+                            <tr class="total-row">
+                                <td><strong>資産合計</strong></td>
+                                <td class="text-end"><strong>¥${balanceSheet.totalAssets.toLocaleString()}</strong></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="col-md-6">
+                    <h6 class="text-warning mb-3">負債の部</h6>
+                    <table class="table table-sm">
+                        <tbody>
+            `;
+            
+            if (balanceSheet.liabilities.length === 0) {
+                html += '<tr><td colspan="2" class="text-muted">負債データなし</td></tr>';
+            } else {
+                balanceSheet.liabilities.forEach(account => {
+                    html += `
+                        <tr>
+                            <td>${account.name}</td>
+                            <td class="text-end">¥${account.amount.toLocaleString()}</td>
+                        </tr>
+                    `;
+                });
+            }
+            
+            html += `
+                            <tr class="total-row">
+                                <td><strong>負債合計</strong></td>
+                                <td class="text-end"><strong>¥${balanceSheet.totalLiabilities.toLocaleString()}</strong></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    
+                    <h6 class="text-success mb-3 mt-4">正味財産の部</h6>
+                    <table class="table table-sm">
+                        <tbody>
+            `;
+            
+            if (balanceSheet.equity.length === 0) {
+                html += '<tr><td colspan="2" class="text-muted">正味財産データなし</td></tr>';
+            } else {
+                balanceSheet.equity.forEach(account => {
+                    html += `
+                        <tr>
+                            <td>${account.name}</td>
+                            <td class="text-end">¥${account.amount.toLocaleString()}</td>
+                        </tr>
+                    `;
+                });
+            }
+            
+            html += `
+                            <tr class="total-row">
+                                <td><strong>正味財産合計</strong></td>
+                                <td class="text-end"><strong>¥${balanceSheet.totalEquity.toLocaleString()}</strong></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="card ${balanceSheet.isBalanced ? 'border-success' : 'border-danger'}">
+                        <div class="card-body">
+                            <div class="row text-center">
+                                <div class="col-md-4">
+                                    <h6>資産合計</h6>
+                                    <h5 class="text-primary">¥${balanceSheet.totalAssets.toLocaleString()}</h5>
+                                </div>
+                                <div class="col-md-4">
+                                    <h6>負債・正味財産合計</h6>
+                                    <h5 class="text-success">¥${(balanceSheet.totalLiabilities + balanceSheet.totalEquity).toLocaleString()}</h5>
+                                </div>
+                                <div class="col-md-4">
+                                    <h6>貸借対照</h6>
+                                    <h5 class="${balanceSheet.isBalanced ? 'text-success' : 'text-danger'}">
+                                        ${balanceSheet.isBalanced ? '✓ 一致' : '✗ 不一致'}
+                                    </h5>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            `;
+            
+            container.innerHTML = html;
+        }
+        
+        function updateAuxiliaryLedger() {
+            const container = document.getElementById('auxiliaryLedger');
+            const auxiliarySummary = engine.getAuxiliaryLedgerSummary();
+            const unitReceivables = engine.getUnitReceivablesSummary();
+            
+            let html = '';
+            
+            // 部屋別未収金一覧
+            if (unitReceivables.length > 0) {
+                html += `
+                    <div class="card mb-3">
+                        <div class="card-header bg-warning text-dark">
+                            <h6 class="mb-0">部屋別未収金一覧</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-sm table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>部屋番号</th>
+                                            <th>所有者</th>
+                                            <th class="text-center">階</th>
+                                            <th class="text-end">未収管理費</th>
+                                            <th class="text-end">未収修繕積立金</th>
+                                            <th class="text-end">合計</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                `;
+                
+                let totalManagementFee = 0;
+                let totalRepairReserve = 0;
+                let totalAmount = 0;
+                
+                unitReceivables.forEach(unit => {
+                    html += `
+                        <tr>
+                            <td>${unit.unitNumber}</td>
+                            <td>${unit.ownerName}</td>
+                            <td class="text-center">${unit.floor}F</td>
+                            <td class="text-end">¥${Math.abs(unit.managementFeeBalance).toLocaleString()}</td>
+                            <td class="text-end">¥${Math.abs(unit.repairReserveBalance).toLocaleString()}</td>
+                            <td class="text-end"><strong>¥${Math.abs(unit.totalBalance).toLocaleString()}</strong></td>
+                        </tr>
+                    `;
+                    totalManagementFee += Math.abs(unit.managementFeeBalance);
+                    totalRepairReserve += Math.abs(unit.repairReserveBalance);
+                    totalAmount += Math.abs(unit.totalBalance);
+                });
+                
+                html += `
+                                        <tr class="table-secondary">
+                                            <td colspan="3"><strong>合計</strong></td>
+                                            <td class="text-end"><strong>¥${totalManagementFee.toLocaleString()}</strong></td>
+                                            <td class="text-end"><strong>¥${totalRepairReserve.toLocaleString()}</strong></td>
+                                            <td class="text-end"><strong>¥${totalAmount.toLocaleString()}</strong></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // 補助元帳一覧
+            if (auxiliarySummary.length > 0) {
+                html += `
+                    <div class="card">
+                        <div class="card-header bg-info text-white">
+                            <h6 class="mb-0">補助元帳一覧</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-sm table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>主勘定科目</th>
+                                            <th>補助科目</th>
+                                            <th class="text-end">残高</th>
+                                            <th class="text-center">取引数</th>
+                                            <th>属性</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                `;
+                
+                auxiliarySummary.forEach(aux => {
+                    const attributes = [];
+                    if (aux.attributes.unitNumber) attributes.push(`部屋: ${aux.attributes.unitNumber}`);
+                    if (aux.attributes.ownerName) attributes.push(`所有者: ${aux.attributes.ownerName}`);
+                    if (aux.attributes.floor) attributes.push(`${aux.attributes.floor}F`);
+                    
+                    html += `
+                        <tr>
+                            <td>${aux.masterAccountName}</td>
+                            <td>${aux.auxiliaryName}</td>
+                            <td class="text-end ${aux.isDebitBalance ? 'text-primary' : 'text-danger'}">
+                                ¥${aux.displayBalance.toLocaleString()}
+                            </td>
+                            <td class="text-center">${aux.transactionCount}</td>
+                            <td><small class="text-muted">${attributes.join(', ')}</small></td>
+                        </tr>
+                    `;
+                });
+                
+                html += `
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            if (auxiliarySummary.length === 0 && unitReceivables.length === 0) {
+                html = '<p class="text-muted">補助元帳データがありません</p>';
+            }
+            
+            container.innerHTML = html;
+        }
+        
+        function createMonthlyBilling() {
+            const today = new Date();
+            const billingDate = today.toISOString().split('T')[0];
+            
+            if (confirm(`${today.getFullYear()}年${today.getMonth() + 1}月分の月次請求を作成しますか？`)) {
+                console.log('Creating monthly billing...');
+                const result = engine.createMonthlyBilling(billingDate);
+                console.log('Monthly billing result:', result);
+                
+                if (result.success) {
+                    updateDisplays();
+                    
+                    // デバッグ情報をコンソールに出力
+                    console.log('Auxiliary ledger summary after billing:', engine.getAuxiliaryLedgerSummary());
+                    console.log('Unit receivables summary after billing:', engine.getUnitReceivablesSummary());
+                    
+                    const alert = document.createElement('div');
+                    alert.className = 'alert alert-success alert-dismissible fade show mt-3';
+                    alert.innerHTML = `
+                        <strong>月次請求を作成しました！</strong> 
+                        補助元帳タブで部屋別未収金をご確認ください。
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    `;
+                    document.querySelector('.container-fluid').insertBefore(alert, document.querySelector('.row'));
+                    
+                    setTimeout(() => {
+                        if (alert.parentNode) {
+                            alert.remove();
+                        }
+                    }, 5000);
+                } else {
+                    alert('月次請求の作成に失敗しました: ' + result.errors.join(', '));
+                }
+            }
+        }
+        
+        function debugAuxiliary() {
+            console.group('Auxiliary Ledger Debug Information');
+            
+            // アカウントの補助元帳情報
+            console.log('=== Accounts with Auxiliary Ledgers ===');
+            engine.accounts.forEach((account, code) => {
+                if (account.hasAuxiliary && account.auxiliaryLedgers.size > 0) {
+                    console.log(`Account ${code} (${account.name}):`);
+                    account.auxiliaryLedgers.forEach((aux, auxCode) => {
+                        console.log(`  - ${auxCode}: ${aux.name}, Balance: ${aux.balance}, Transactions: ${aux.transactions.length}`);
+                    });
+                }
+            });
+            
+            // 組合員情報
+            console.log('=== Unit Owners ===');
+            engine.unitOwners.forEach((owner, unitNumber) => {
+                console.log(`${unitNumber}: ${owner.ownerName}, ManagementFee: ${owner.managementFee}, RepairReserve: ${owner.repairReserve}`);
+            });
+            
+            // 補助元帳サマリー
+            console.log('=== Auxiliary Ledger Summary ===');
+            console.log(engine.getAuxiliaryLedgerSummary());
+            
+            // 部屋別未収金サマリー
+            console.log('=== Unit Receivables Summary ===');
+            console.log(engine.getUnitReceivablesSummary());
+            
+            console.groupEnd();
+            
+            alert('デバッグ情報をコンソールに出力しました。ブラウザの開発者ツールでコンソールをご確認ください。');
+        }
+        
+        function showUnitOwnerEditor() {
+            // モーダルダイアログを作成
+            const modal = document.createElement('div');
+            modal.className = 'modal fade';
+            modal.id = 'unitOwnerModal';
+            modal.innerHTML = `
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">組合員マスタ管理</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <button class="btn btn-primary" id="addUnitOwner">新規組合員追加</button>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>部屋番号</th>
+                                            <th>所有者名</th>
+                                            <th>階数</th>
+                                            <th>面積(m²)</th>
+                                            <th>管理費</th>
+                                            <th>修繕積立金</th>
+                                            <th>操作</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="unitOwnerTableBody">
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">閉じる</button>
+                            <button type="button" class="btn btn-primary" id="saveUnitOwners">変更を保存</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            // テーブルにデータを表示
+            updateUnitOwnerTable();
+            
+            // イベントリスナーを安全に追加
+            const addButton = modal.querySelector('#addUnitOwner');
+            const saveButton = modal.querySelector('#saveUnitOwners');
+            
+            addButton.addEventListener('click', addUnitOwnerRow);
+            saveButton.addEventListener('click', saveUnitOwnersChanges);
+            
+            // Bootstrapモーダルを表示
+            const bsModal = new bootstrap.Modal(modal);
+            bsModal.show();
+            
+            // モーダルが閉じられたらDOMから削除
+            modal.addEventListener('hidden.bs.modal', () => {
+                modal.remove();
+            });
+        }
+        
+        function updateUnitOwnerTable() {
+            const tbody = document.getElementById('unitOwnerTableBody');
+            tbody.innerHTML = '';
+            
+            engine.unitOwners.forEach((owner, unitNumber) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><input type="text" class="form-control form-control-sm" value="${unitNumber}" data-field="unitNumber" data-unit="${unitNumber}" ${unitNumber !== 'NEW' ? 'readonly' : ''}></td>
+                    <td><input type="text" class="form-control form-control-sm" value="${owner.ownerName}" data-field="ownerName" data-unit="${unitNumber}"></td>
+                    <td><input type="number" class="form-control form-control-sm" value="${owner.floor}" data-field="floor" data-unit="${unitNumber}"></td>
+                    <td><input type="number" step="0.1" class="form-control form-control-sm" value="${owner.area}" data-field="area" data-unit="${unitNumber}"></td>
+                    <td><input type="number" class="form-control form-control-sm" value="${owner.managementFee}" data-field="managementFee" data-unit="${unitNumber}"></td>
+                    <td><input type="number" class="form-control form-control-sm" value="${owner.repairReserve}" data-field="repairReserve" data-unit="${unitNumber}"></td>
+                    <td>
+                        <button class="btn btn-sm btn-danger" onclick="removeUnitOwner('${unitNumber}')"削除</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+        
+        function addUnitOwnerRow() {
+            const newUnitNumber = `NEW_${Date.now()}`;
+            engine.unitOwners.set(newUnitNumber, {
+                unitNumber: '',
+                ownerName: '',
+                floor: 1,
+                area: 70.0,
+                managementFee: 25000,
+                repairReserve: 15000,
+                contact: '',
+                bankAccount: '',
+                isActive: true
+            });
+            updateUnitOwnerTable();
+        }
+        
+        function removeUnitOwner(unitNumber) {
+            if (confirm(`${unitNumber}を削除しますか？`)) {
+                engine.unitOwners.delete(unitNumber);
+                updateUnitOwnerTable();
+            }
+        }
+        
+        function saveUnitOwnersChanges() {
+            const inputs = document.querySelectorAll('#unitOwnerTableBody input');
+            const newUnitOwners = new Map();
+            const updates = new Map();
+            
+            // 入力値を収集
+            inputs.forEach(input => {
+                const unitNumber = input.dataset.unit;
+                const field = input.dataset.field;
+                const value = field === 'unitNumber' || field === 'ownerName' ? input.value : 
+                             field === 'area' ? parseFloat(input.value) || 0 :
+                             parseInt(input.value) || 0;
+                
+                if (!updates.has(unitNumber)) {
+                    updates.set(unitNumber, {});
+                }
+                updates.get(unitNumber)[field] = value;
+            });
+            
+            // データを更新
+            updates.forEach((data, oldUnitNumber) => {
+                const newUnitNumber = data.unitNumber || oldUnitNumber;
+                
+                if (oldUnitNumber.startsWith('NEW_') && !data.unitNumber) {
+                    alert('新規部屋の部屋番号を入力してください。');
+                    return;
+                }
+                
+                const owner = {
+                    unitNumber: newUnitNumber,
+                    ownerName: data.ownerName || '',
+                    floor: data.floor || 1,
+                    area: data.area || 70.0,
+                    managementFee: data.managementFee || 25000,
+                    repairReserve: data.repairReserve || 15000,
+                    contact: engine.unitOwners.get(oldUnitNumber)?.contact || '',
+                    bankAccount: engine.unitOwners.get(oldUnitNumber)?.bankAccount || '',
+                    isActive: engine.unitOwners.get(oldUnitNumber)?.isActive || true
+                };
+                
+                newUnitOwners.set(newUnitNumber, owner);
+                
+                // 古いキーを削除（キーが変わった場合）
+                if (oldUnitNumber !== newUnitNumber && engine.unitOwners.has(oldUnitNumber)) {
+                    engine.unitOwners.delete(oldUnitNumber);
+                }
+            });
+            
+            // エンジンのデータを更新
+            engine.unitOwners = newUnitOwners;
+            
+            // 補助科目を再作成
+            engine.rebuildAuxiliaryAccounts();
+            
+            // モーダルを閉じる
+            const modal = bootstrap.Modal.getInstance(document.getElementById('unitOwnerModal'));
+            modal.hide();
+            
+            // 表示を更新
+            updateDisplays();
+            
+            alert('組合員マスタを更新しました。');
+        }
+        
+        function clearJournals() {
+            if (confirm('すべての仕訳をクリアしますか？')) {
+                engine.clearAll();
+                updateDisplays();
+            }
+        }
+        
+        // 初期化
+        document.addEventListener('DOMContentLoaded', initializeUI);
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
