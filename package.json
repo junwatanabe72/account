@@ -1,0 +1,27 @@
+{
+  "name": "zaimu-react",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "homepage": "https://junwatanabe72.github.io/account",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d dist"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.5",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.1",
+    "gh-pages": "^6.3.0",
+    "typescript": "^5.5.4",
+    "vite": "^5.4.2"
+  }
+}
