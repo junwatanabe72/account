@@ -1,5 +1,6 @@
 import React from 'react'
 import { AccountingEngine } from '../domain/accountingEngine'
+import { TrialBalanceEntry } from '../types'
 // import { utils as XLSXUtils, writeFile } from 'xlsx' // disabled due to build issue
 import { useToast } from './Toast'
 
@@ -43,7 +44,7 @@ export const ExportPanel: React.FC<{ engine: AccountingEngine, onImported: () =>
   const exportCSV = () => {
     const tb = engine.getTrialBalance()
     const lines = ['code,name,debit,credit']
-    tb.accounts.forEach(a => {
+    tb.accounts.forEach((a: TrialBalanceEntry) => {
       lines.push([a.code, a.name, a.debitBalance, a.creditBalance].join(','))
     })
     download('trial-balance.csv', lines.join('\n'), 'text/csv')

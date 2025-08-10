@@ -3,7 +3,7 @@ import { AccountingEngine, AccountDef } from '../domain/accountingEngine'
 
 export const ChartOfAccountsPanel: React.FC<{ engine: AccountingEngine, onChanged: () => void }> = ({ engine, onChanged }) => {
   const [defs, setDefs] = React.useState<AccountDef[]>(engine.getChartOfAccounts())
-  const [newDef, setNewDef] = React.useState<AccountDef>({ code: '', name: '', type: 'ASSET', normalBalance: 'DEBIT', level: 4, parentCode: null, division: null, isActive: true })
+  const [newDef, setNewDef] = React.useState<AccountDef>({ code: '', name: '', type: 'ASSET', normalBalance: 'DEBIT', level: 4, parentCode: undefined, division: undefined, isActive: true })
 
   const reload = () => setDefs(engine.getChartOfAccounts())
 
@@ -22,7 +22,7 @@ export const ChartOfAccountsPanel: React.FC<{ engine: AccountingEngine, onChange
     const res = engine.addOrUpdateAccount(newDef)
     if (!(res as any).success) { alert((res as any).errors.join(', ')); return }
     setDefs(engine.getChartOfAccounts())
-    setNewDef({ code: '', name: '', type: 'ASSET', normalBalance: 'DEBIT', level: 4, parentCode: null, division: null, isActive: true })
+    setNewDef({ code: '', name: '', type: 'ASSET', normalBalance: 'DEBIT', level: 4, parentCode: undefined, division: undefined, isActive: true })
     onChanged()
   }
   const toggleActive = (code: string) => {
@@ -69,11 +69,11 @@ export const ChartOfAccountsPanel: React.FC<{ engine: AccountingEngine, onChange
             </div>
             <div className="col-md-2">
               <label className="form-label">親コード</label>
-              <input className="form-control" value={newDef.parentCode ?? ''} onChange={e => setNewDef({ ...newDef, parentCode: e.target.value || null })} />
+              <input className="form-control" value={newDef.parentCode ?? ''} onChange={e => setNewDef({ ...newDef, parentCode: e.target.value || undefined })} />
             </div>
             <div className="col-md-2">
               <label className="form-label">区分</label>
-              <select className="form-select" value={newDef.division ?? ''} onChange={e => setNewDef({ ...newDef, division: e.target.value || null })}>
+              <select className="form-select" value={newDef.division ?? ''} onChange={e => setNewDef({ ...newDef, division: e.target.value || undefined })}>
                 <option value="">(なし)</option>
                 <option value="KANRI">KANRI</option>
                 <option value="SHUZEN">SHUZEN</option>

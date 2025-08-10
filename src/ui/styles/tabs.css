@@ -1,0 +1,116 @@
+/* タブナビゲーションの視覚的改善 */
+
+/* タブコンテナ */
+.nav-tabs {
+  border-bottom: 2px solid #dee2e6;
+  margin-bottom: 1.5rem;
+  position: relative;
+}
+
+/* タブアイテム */
+.nav-tabs .nav-item {
+  margin-bottom: -2px;
+}
+
+/* タブリンク基本スタイル */
+.nav-tabs .nav-link {
+  position: relative;
+  padding: 0.75rem 1.25rem;
+  color: #6c757d;
+  background-color: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  transition: all 0.3s ease;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+/* ホバー時のスタイル */
+.nav-tabs .nav-link:hover:not(.active) {
+  color: #495057;
+  background-color: #f8f9fa;
+  border-bottom-color: #dee2e6;
+}
+
+/* アクティブタブのスタイル */
+.nav-tabs .nav-link.active {
+  color: #007bff;
+  background-color: #fff;
+  border-bottom: 3px solid #007bff;
+  font-weight: 600;
+  position: relative;
+}
+
+/* アクティブタブの下線アニメーション */
+.nav-tabs .nav-link.active::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background-color: #007bff;
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/* フォーカス時のスタイル（アクセシビリティ） */
+.nav-tabs .nav-link:focus {
+  outline: 2px solid #007bff;
+  outline-offset: 2px;
+}
+
+/* ダークモード対応 */
+@media (prefers-color-scheme: dark) {
+  .nav-tabs {
+    border-bottom-color: #495057;
+  }
+
+  .nav-tabs .nav-link {
+    color: #adb5bd;
+  }
+
+  .nav-tabs .nav-link:hover:not(.active) {
+    color: #f8f9fa;
+    background-color: #343a40;
+  }
+
+  .nav-tabs .nav-link.active {
+    color: #0d6efd;
+    background-color: #212529;
+  }
+}
+
+/* モバイル時のタブスタイル */
+@media (max-width: 767px) {
+  .nav-tabs {
+    border-bottom: none;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .nav-tabs .nav-link {
+    border: 1px solid #dee2e6;
+    border-bottom: 1px solid #dee2e6;
+    margin-bottom: -1px;
+    border-radius: 0;
+  }
+
+  .nav-tabs .nav-link.active {
+    background-color: #007bff;
+    color: white;
+    border-color: #007bff;
+  }
+
+  .nav-tabs .nav-link.active::after {
+    display: none;
+  }
+}

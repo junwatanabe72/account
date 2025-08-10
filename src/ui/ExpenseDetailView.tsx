@@ -163,13 +163,13 @@ export const ExpenseDetailView: React.FC<ExpenseDetailViewProps> = ({ engine }) 
         const auxiliaryMonthlyData = getAuxiliaryMonthlyData(data.details)
         const totalByMonth = new Map<string, number>()
         
-        data.summary.forEach((account: any) => {
-          account.monthlyDetails.forEach((amount: number, month: string) => {
-            totalByMonth.set(month, (totalByMonth.get(month) || 0) + amount)
-          })
+        // 月別の集計を詳細データから作成
+        data.details.forEach((detail: any) => {
+          const month = detail.date.substring(0, 7)
+          totalByMonth.set(month, (totalByMonth.get(month) || 0) + detail.amount)
         })
         
-        const grandTotal = data.summary.reduce((sum: number, account: any) => sum + account.total, 0)
+        const grandTotal = data.summary.reduce((sum: number, account: any) => sum + account.amount, 0)
         
         return (
           <div key={divCode} style={{ marginBottom: 48, border: '2px solid #dc3545', borderRadius: 8, padding: 16 }}>
@@ -191,45 +191,55 @@ export const ExpenseDetailView: React.FC<ExpenseDetailViewProps> = ({ engine }) 
                     </tr>
                   </thead>
                   <tbody>
-                    {data.summary.map((account: any) => (
-                      <React.Fragment key={account.accountCode}>
-                        <tr>
-                          <td style={{ border: '1px solid #ddd', padding: 8, fontWeight: 'bold' }}>
-                            {account.accountCode} {account.accountName}
-                          </td>
-                          {monthColumns.map(month => (
-                            <td key={month} style={{ border: '1px solid #ddd', padding: 8, textAlign: 'right' }}>
-                              {account.monthlyDetails.get(month) ? formatYen(account.monthlyDetails.get(month)!) : '-'}
+                    {data.summary.map((account: any) => {
+                      // 各勘定科目の月別集計を計算
+                      const accountMonthlyData = new Map<string, number>()
+                      data.details
+                        .filter((detail: any) => detail.accountCode === account.accountCode && !detail.auxiliaryCode)
+                        .forEach((detail: any) => {
+                          const month = detail.date.substring(0, 7)
+                          accountMonthlyData.set(month, (accountMonthlyData.get(month) || 0) + detail.amount)
+                        })
+                      
+                      return (
+                        <React.Fragment key={account.accountCode}>
+                          <tr>
+                            <td style={{ border: '1px solid #ddd', padding: 8, fontWeight: 'bold' }}>
+                              {account.accountCode} {account.accountName}
                             </td>
-                          ))}
-                          <td style={{ border: '1px solid #ddd', padding: 8, textAlign: 'right', fontWeight: 'bold', backgroundColor: '#f8f9fa' }}>
-                            {formatYen(account.total)}
-                          </td>
-                        </tr>
-                        {account.auxiliaryDetails && account.auxiliaryDetails.size > 0 && (
-                          Array.from(account.auxiliaryDetails.entries()).map((entry) => {
-                            const [code, aux] = entry as [string, any]
-                            const auxKey = `${account.accountCode}-${code}`
-                            const auxMonthly = auxiliaryMonthlyData.get(auxKey)
-                            return (
-                              <tr key={auxKey} style={{ backgroundColor: '#f8f9fa' }}>
-                                <td style={{ border: '1px solid #ddd', padding: '4px 8px 4px 24px', fontSize: 12 }}>
-                                  └ {aux.name}
-                                </td>
-                                {monthColumns.map(month => (
-                                  <td key={month} style={{ border: '1px solid #ddd', padding: 4, textAlign: 'right', fontSize: 12 }}>
-                                    {auxMonthly?.get(month) ? formatYen(auxMonthly.get(month)!) : '-'}
+                            {monthColumns.map(month => (
+                              <td key={month} style={{ border: '1px solid #ddd', padding: 8, textAlign: 'right' }}>
+                                {accountMonthlyData.get(month) ? formatYen(accountMonthlyData.get(month)!) : '-'}
+                              </td>
+                            ))}
+                            <td style={{ border: '1px solid #ddd', padding: 8, textAlign: 'right', fontWeight: 'bold', backgroundColor: '#f8f9fa' }}>
+                              {formatYen(account.amount)}
+                            </td>
+                          </tr>
+                          {account.auxiliaryDetails && account.auxiliaryDetails.length > 0 && (
+                            account.auxiliaryDetails.map((aux: any) => {
+                              const auxKey = `${account.accountCode}-${aux.auxiliaryCode}`
+                              const auxMonthly = auxiliaryMonthlyData.get(auxKey)
+                              return (
+                                <tr key={auxKey} style={{ backgroundColor: '#f8f9fa' }}>
+                                  <td style={{ border: '1px solid #ddd', padding: '4px 8px 4px 24px', fontSize: 12 }}>
+                                    └ {aux.auxiliaryName}
                                   </td>
-                                ))}
-                                <td style={{ border: '1px solid #ddd', padding: 4, textAlign: 'right', fontSize: 12 }}>
-                                  {formatYen(aux.amount)}
-                                </td>
-                              </tr>
-                            )
-                          })
-                        )}
-                      </React.Fragment>
-                    ))}
+                                  {monthColumns.map(month => (
+                                    <td key={month} style={{ border: '1px solid #ddd', padding: 4, textAlign: 'right', fontSize: 12 }}>
+                                      {auxMonthly?.get(month) ? formatYen(auxMonthly.get(month)!) : '-'}
+                                    </td>
+                                  ))}
+                                  <td style={{ border: '1px solid #ddd', padding: 4, textAlign: 'right', fontSize: 12 }}>
+                                    {formatYen(aux.amount)}
+                                  </td>
+                                </tr>
+                              )
+                            })
+                          )}
+                        </React.Fragment>
+                      )
+                    })}
                     <tr style={{ backgroundColor: '#e9ecef', fontWeight: 'bold' }}>
                       <td style={{ border: '1px solid #ddd', padding: 8 }}>支出合計</td>
                       {monthColumns.map(month => (

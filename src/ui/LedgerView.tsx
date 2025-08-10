@@ -2,14 +2,25 @@ import React from 'react'
 import { AccountingEngine } from '../domain/accountingEngine'
 import { JournalEditModal } from './JournalEditModal'
 import { JournalFilterBar, JournalFilters } from './JournalFilterBar'
-// import { utils as XLSXUtils, writeFile } from 'xlsx' // disabled due to build issue
 import { useToast } from './Toast'
+import { ConfirmDialog } from './ConfirmDialog'
 
 export const LedgerView: React.FC<{ engine: AccountingEngine }> = ({ engine }) => {
   const [, setTick] = React.useState(0)
   const refresh = () => setTick(x => x + 1)
   const [editingId, setEditingId] = React.useState<string | null>(null)
   const [filters, setFilters] = React.useState<JournalFilters>({ status: 'ALL' })
+  const [confirmDialog, setConfirmDialog] = React.useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: () => {},
+  })
 
   const toast = useToast()
 
@@ -99,12 +110,42 @@ export const LedgerView: React.FC<{ engine: AccountingEngine }> = ({ engine }) =
               <button className="btn btn-sm btn-outline-secondary" onClick={() => setEditingId(j.id)}>編集</button></>}
               {j.status === 'SUBMITTED' && <button className="btn btn-sm btn-outline-success" onClick={() => { const r = engine.approveJournal(j.id); if (!(r as any).success) toast.show((r as any).errors.join(', '),'danger'); else { toast.show('承認しました','success'); refresh() } }}>承認</button>}
               {j.status === 'APPROVED' && <button className="btn btn-sm btn-primary" onClick={() => { const r = engine.postJournalById(j.id); if (!(r as any).success) toast.show((r as any).errors.join(', '),'danger'); else { toast.show('記帳しました','success'); refresh() } }}>記帳</button>}
-              {j.status !== 'POSTED' && <button className="btn btn-sm btn-outline-danger" onClick={() => { const r = engine.deleteJournal(j.id); if (!(r as any).success) toast.show((r as any).errors.join(', '),'danger'); else { toast.show('削除しました','success'); refresh() } }}>削除</button>}
+              {j.status !== 'POSTED' && <button 
+                className="btn btn-sm btn-outline-danger" 
+                onClick={() => {
+                  setConfirmDialog({
+                    isOpen: true,
+                    title: '仕訳の削除',
+                    message: `仕訳番号 ${j.number} を削除しますか？この操作は取り消せません。`,
+                    onConfirm: () => {
+                      const r = engine.deleteJournal(j.id);
+                      if (!(r as any).success) {
+                        toast.show((r as any).errors.join(', '), 'danger');
+                      } else {
+                        toast.show('削除しました', 'success');
+                        refresh();
+                      }
+                      setConfirmDialog({ ...confirmDialog, isOpen: false });
+                    },
+                  });
+                }}
+              >
+                削除
+              </button>}
             </div>
           </div>
         ))}
       </div>
       {editingId && <JournalEditModal engine={engine} journalId={editingId} onClose={() => setEditingId(null)} onSaved={refresh} />}
+      
+      <ConfirmDialog
+        isOpen={confirmDialog.isOpen}
+        title={confirmDialog.title}
+        message={confirmDialog.message}
+        onConfirm={confirmDialog.onConfirm}
+        onCancel={() => setConfirmDialog({ ...confirmDialog, isOpen: false })}
+        isDangerous={true}
+      />
     </div>
   )
 }

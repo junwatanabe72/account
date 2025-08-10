@@ -1,5 +1,6 @@
 import React from 'react'
 import { AccountingEngine } from '../domain/accountingEngine'
+import { TrialBalanceEntry } from '../types'
 
 export const TrialBalanceView: React.FC<{ engine: AccountingEngine }> = ({ engine }) => {
   const tb = engine.getTrialBalance()
@@ -13,7 +14,7 @@ export const TrialBalanceView: React.FC<{ engine: AccountingEngine }> = ({ engin
     '収益の部': [],
     '費用の部': [],
   }
-  tb.accounts.forEach(a => {
+  tb.accounts.forEach((a: TrialBalanceEntry) => {
     const acc = engine.accounts.get(a.code)
     if (acc) {
       switch (acc.type) {
@@ -45,7 +46,7 @@ export const TrialBalanceView: React.FC<{ engine: AccountingEngine }> = ({ engin
                 <tr style={{ background: '#f2f2f2' }}>
                   <td colSpan={4}><strong>{name}</strong></td>
                 </tr>
-                {list.map(a => {
+                {list.map((a: TrialBalanceEntry) => {
                   const acc = engine.accounts.get(a.code)
                   const divisionText = acc?.division ?? '-'
                   return (

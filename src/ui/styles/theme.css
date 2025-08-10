@@ -1,0 +1,268 @@
+/* アクセシビリティを考慮したカラースキーム */
+
+:root {
+  /* プライマリカラー */
+  --primary: #0056b3;
+  --primary-light: #4d94ff;
+  --primary-dark: #003d82;
+  
+  /* セカンダリカラー */
+  --secondary: #6c757d;
+  --secondary-light: #868e96;
+  --secondary-dark: #495057;
+  
+  /* 成功・エラー・警告 */
+  --success: #28a745;
+  --success-light: #48b461;
+  --success-dark: #1e7e34;
+  
+  --danger: #dc3545;
+  --danger-light: #e4606d;
+  --danger-dark: #bd2130;
+  
+  --warning: #ffc107;
+  --warning-light: #ffcd39;
+  --warning-dark: #e0a800;
+  
+  --info: #17a2b8;
+  --info-light: #3ab0c3;
+  --info-dark: #117a8b;
+  
+  /* 背景色 */
+  --bg-light: #f8f9fa;
+  --bg-white: #ffffff;
+  --bg-gray: #e9ecef;
+  
+  /* テキストカラー */
+  --text-primary: #212529;
+  --text-secondary: #495057;
+  --text-muted: #6c757d;
+  --text-light: #f8f9fa;
+  
+  /* ボーダーカラー */
+  --border-color: #dee2e6;
+  --border-light: #e9ecef;
+  
+  /* シャドウ */
+  --shadow-sm: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+  --shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+  --shadow-lg: 0 1rem 3rem rgba(0, 0, 0, 0.175);
+}
+
+/* ベースのスタイル調整 */
+body {
+  color: var(--text-primary);
+  background-color: var(--bg-light);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+/* カードのスタイル改善 */
+.card {
+  background-color: var(--bg-white);
+  border-color: var(--border-color);
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow 0.3s ease;
+}
+
+.card:hover {
+  box-shadow: var(--shadow);
+}
+
+.card-header {
+  background-color: var(--bg-light);
+  border-bottom-color: var(--border-color);
+  font-weight: 600;
+}
+
+/* ボタンのスタイル改善 */
+.btn {
+  font-weight: 500;
+  transition: all 0.2s ease;
+  border-radius: 0.375rem;
+}
+
+.btn-primary {
+  background-color: var(--primary);
+  border-color: var(--primary);
+}
+
+.btn-primary:hover {
+  background-color: var(--primary-dark);
+  border-color: var(--primary-dark);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-success {
+  background-color: var(--success);
+  border-color: var(--success);
+}
+
+.btn-success:hover {
+  background-color: var(--success-dark);
+  border-color: var(--success-dark);
+}
+
+.btn-danger {
+  background-color: var(--danger);
+  border-color: var(--danger);
+}
+
+.btn-danger:hover {
+  background-color: var(--danger-dark);
+  border-color: var(--danger-dark);
+}
+
+.btn-outline-primary {
+  color: var(--primary);
+  border-color: var(--primary);
+}
+
+.btn-outline-primary:hover {
+  background-color: var(--primary);
+  border-color: var(--primary);
+}
+
+.btn-outline-danger {
+  color: var(--danger);
+  border-color: var(--danger);
+}
+
+.btn-outline-danger:hover {
+  background-color: var(--danger);
+  border-color: var(--danger);
+}
+
+/* アラートの改善 */
+.alert {
+  border: none;
+  border-radius: 0.5rem;
+  font-weight: 500;
+}
+
+.alert-success {
+  background-color: rgba(40, 167, 69, 0.1);
+  color: var(--success-dark);
+  border-left: 4px solid var(--success);
+}
+
+.alert-danger {
+  background-color: rgba(220, 53, 69, 0.1);
+  color: var(--danger-dark);
+  border-left: 4px solid var(--danger);
+}
+
+.alert-warning {
+  background-color: rgba(255, 193, 7, 0.1);
+  color: var(--warning-dark);
+  border-left: 4px solid var(--warning);
+}
+
+.alert-info {
+  background-color: rgba(23, 162, 184, 0.1);
+  color: var(--info-dark);
+  border-left: 4px solid var(--info);
+}
+
+/* バッジの改善 */
+.badge {
+  font-weight: 600;
+  padding: 0.375rem 0.75rem;
+  border-radius: 0.375rem;
+}
+
+.bg-secondary {
+  background-color: var(--secondary) !important;
+}
+
+/* テーブルの改善 */
+.table {
+  color: var(--text-primary);
+}
+
+.table thead th {
+  background-color: var(--bg-light);
+  color: var(--text-secondary);
+  font-weight: 600;
+  border-bottom: 2px solid var(--border-color);
+}
+
+.table tbody tr:hover {
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+/* フォーム要素の改善 */
+.form-control,
+.form-select {
+  border-color: var(--border-color);
+  color: var(--text-primary);
+  background-color: var(--bg-white);
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 0.2rem rgba(0, 86, 179, 0.25);
+}
+
+/* 金額表示の色 */
+.text-primary {
+  color: var(--primary) !important;
+}
+
+.text-danger {
+  color: var(--danger) !important;
+}
+
+/* ダークモード対応 */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg-light: #1a1a1a;
+    --bg-white: #2d2d2d;
+    --bg-gray: #3d3d3d;
+    
+    --text-primary: #f8f9fa;
+    --text-secondary: #adb5bd;
+    --text-muted: #6c757d;
+    
+    --border-color: #495057;
+    --border-light: #6c757d;
+  }
+  
+  .card {
+    background-color: var(--bg-white);
+    color: var(--text-primary);
+  }
+  
+  .form-control,
+  .form-select {
+    background-color: var(--bg-gray);
+    color: var(--text-primary);
+    border-color: var(--border-color);
+  }
+  
+  .table {
+    color: var(--text-primary);
+  }
+  
+  .alert-info {
+    background-color: rgba(23, 162, 184, 0.2);
+  }
+}
+
+/* 高コントラストモード */
+@media (prefers-contrast: high) {
+  .btn {
+    border-width: 2px;
+  }
+  
+  .form-control,
+  .form-select {
+    border-width: 2px;
+  }
+  
+  .card {
+    border-width: 2px;
+    border-color: var(--text-primary);
+  }
+}

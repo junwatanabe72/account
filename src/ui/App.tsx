@@ -1,12 +1,8 @@
-import React, { useMemo, useState } from 'react'
+import React, { useState } from 'react'
 import { AccountingEngine } from '../domain/accountingEngine'
 import { JournalForm } from './JournalForm'
 import { LedgerView } from './LedgerView'
-import { TrialBalanceView } from './TrialBalanceView'
-import { IncomeStatementView } from './IncomeStatementView'
-import { BalanceSheetView } from './BalanceSheetView'
 import { JsonImport } from './JsonImport'
-import { DivisionAccountingView } from './DivisionAccountingView'
 import { AuxiliaryLedgerView } from './AuxiliaryLedgerView'
 import { IncomeExpenseReport } from './IncomeExpenseReport'
 import { DivisionStatementsPanel } from './DivisionStatementsPanel'
@@ -19,6 +15,7 @@ import { ClosingPanel } from './ClosingPanel'
 import { PrintPanel } from './PrintPanel'
 import { IncomeDetailView } from './IncomeDetailView'
 import { ExpenseDetailView } from './ExpenseDetailView'
+import { ConfirmDialog } from './ConfirmDialog'
 
 export const App: React.FC = () => {
   const [engine] = useState(() => new AccountingEngine())
@@ -26,11 +23,18 @@ export const App: React.FC = () => {
 
   const forceUpdate = () => setTick((x) => x + 1)
 
-  useMemo(() => ({
-    trial: engine.getTrialBalance(),
-    pl: engine.getIncomeStatement(),
-    bs: engine.getBalanceSheet(),
-  }), [engine])
+  const [confirmDialog, setConfirmDialog] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+    isDangerous?: boolean;
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: () => {},
+  })
 
   const [active, setActive] = React.useState<'input'|'statements'|'auxiliary'|'spec'|'export'|'settings'|'incomeDetail'|'expenseDetail'|'report'|'divisionStatements'|'closing'|'chart'>('input')
 
@@ -59,8 +63,42 @@ export const App: React.FC = () => {
           </div>
                   <div className="col-md-6">
           <div className="d-flex flex-wrap gap-2 mb-2">
-            <button className="btn btn-outline-primary btn-sm" onClick={() => { engine.clearAll(); forceUpdate() }}>データクリア</button>
-            <button className="btn btn-success btn-sm" onClick={() => { engine.loadTwoYearSampleData(); forceUpdate() }}>サンプルデータ再読込</button>
+            <button 
+              className="btn btn-outline-primary btn-sm" 
+              onClick={() => {
+                setConfirmDialog({
+                  isOpen: true,
+                  title: 'データクリアの確認',
+                  message: 'すべてのデータが削除されます。この操作は取り消せません。本当に実行しますか？',
+                  onConfirm: () => {
+                    engine.clearAll();
+                    forceUpdate();
+                    setConfirmDialog({ ...confirmDialog, isOpen: false });
+                  },
+                  isDangerous: true,
+                });
+              }}
+            >
+              データクリア
+            </button>
+            <button 
+              className="btn btn-success btn-sm" 
+              onClick={() => {
+                setConfirmDialog({
+                  isOpen: true,
+                  title: 'サンプルデータ再読込の確認',
+                  message: '現在のデータをすべて削除して、サンプルデータを再読込します。この操作は取り消せません。実行しますか？',
+                  onConfirm: () => {
+                    engine.loadTwoYearSampleData();
+                    forceUpdate();
+                    setConfirmDialog({ ...confirmDialog, isOpen: false });
+                  },
+                  isDangerous: true,
+                });
+              }}
+            >
+              サンプルデータ再読込
+            </button>
           </div>
           <JsonImport engine={engine} onImported={forceUpdate} />
           <LedgerView engine={engine} />
@@ -68,11 +106,6 @@ export const App: React.FC = () => {
         </section>
       )}
 
-      {active === 'statements' && (
-        <section className="mt-2">
-          <DivisionStatementsPanel engine={engine} />
-        </section>
-      )}
 
       {active === 'incomeDetail' && (
         <section className="mt-2">
@@ -125,6 +158,15 @@ export const App: React.FC = () => {
       {active === 'chart' && (
         <ChartOfAccountsPanel engine={engine} onChanged={forceUpdate} />
       )}
+
+      <ConfirmDialog
+        isOpen={confirmDialog.isOpen}
+        title={confirmDialog.title}
+        message={confirmDialog.message}
+        onConfirm={confirmDialog.onConfirm}
+        onCancel={() => setConfirmDialog({ ...confirmDialog, isOpen: false })}
+        isDangerous={confirmDialog.isDangerous}
+      />
     </div>
   )
 }

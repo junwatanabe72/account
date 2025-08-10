@@ -34,7 +34,7 @@ const FilteredTrialBalance: React.FC<{ engine: AccountingEngine, division: strin
   const accounts = filteredAccounts.map(a => {
     let balance = 0
     engine.journals.forEach(journal => {
-      if (journal.date >= startDate && journal.date <= endDate) {
+      if (journal.date >= startDate && journal.date <= endDate && journal.status === 'POSTED') {
         journal.details.forEach(detail => {
           if (detail.accountCode === a.code) {
             if (detail.debitAmount) balance += detail.debitAmount
@@ -111,7 +111,7 @@ const FilteredIncomeStatement: React.FC<{ engine: AccountingEngine, division: st
   Array.from(engine.accounts.values()).filter(acc => acc.division === division).forEach(acc => {
     let balance = 0
     engine.journals.forEach(journal => {
-      if (journal.date >= startDate && journal.date <= endDate) {
+      if (journal.date >= startDate && journal.date <= endDate && journal.status === 'POSTED') {
         journal.details.forEach(detail => {
           if (detail.accountCode === acc.code) {
             if (detail.debitAmount) balance += detail.debitAmount
@@ -185,7 +185,7 @@ const FilteredBalanceSheet: React.FC<{ engine: AccountingEngine, division: strin
   Array.from(engine.accounts.values()).filter(acc => acc.division === division).forEach(acc => {
     let balance = 0
     engine.journals.forEach(journal => {
-      if (journal.date >= startDate && journal.date <= endDate) {
+      if (journal.date >= startDate && journal.date <= endDate && journal.status === 'POSTED') {
         journal.details.forEach(detail => {
           if (detail.accountCode === acc.code) {
             if (detail.debitAmount) balance += detail.debitAmount

@@ -10,7 +10,7 @@ export const AuxiliaryLedgerView: React.FC<{ engine: AccountingEngine, onChange:
   const canBill = (() => {
     let ok = false
     engine.unitOwners.forEach((o: any) => {
-      if (o.isActive && ((o.managementFee ?? 0) > 0 || (o.repairReserve ?? 0) > 0)) ok = true
+      if (o.isActive && ((o.monthlyManagementFee ?? 0) > 0 || (o.monthlyReserveFund ?? 0) > 0)) ok = true
     })
     return ok
   })()
@@ -23,7 +23,7 @@ export const AuxiliaryLedgerView: React.FC<{ engine: AccountingEngine, onChange:
     if (confirm(`${today.getFullYear()}年${today.getMonth() + 1}月分の月次請求を作成しますか？`)) {
       // 事前チェック
       let total = 0, active = 0
-      engine.unitOwners.forEach((o: any) => { if (o.isActive) { active++; total += (Number(o.managementFee)||0) + (Number(o.repairReserve)||0) } })
+      engine.unitOwners.forEach((o: any) => { if (o.isActive) { active++; total += (Number(o.monthlyManagementFee)||0) + (Number(o.monthlyReserveFund)||0) } })
       if (active === 0 || total === 0) { alert('月次請求の作成に失敗: 有効な組合員または月額がありません'); return }
       const res = engine.createMonthlyBilling(firstOfMonth)
       if (res.success) { alert('月次請求を作成しました。補助元帳をご確認ください。'); onChange() }
@@ -57,16 +57,19 @@ export const AuxiliaryLedgerView: React.FC<{ engine: AccountingEngine, onChange:
                 </tr>
               </thead>
               <tbody>
-                {unitReceivables.map(u => (
-                  <tr key={u.unitNumber}>
-                    <td>{u.unitNumber}</td>
-                    <td>{u.ownerName}</td>
-                    <td style={{ textAlign: 'center' }}>{u.floor}F</td>
-                    <td style={{ textAlign: 'right' }}>¥{Math.abs(u.managementFeeBalance).toLocaleString()}</td>
-                    <td style={{ textAlign: 'right' }}>¥{Math.abs(u.repairReserveBalance).toLocaleString()}</td>
-                    <td style={{ textAlign: 'right' }}><strong>¥{Math.abs(u.totalBalance).toLocaleString()}</strong></td>
-                  </tr>
-                ))}
+                {unitReceivables.map(u => {
+                  const floor = u.unitNumber.charAt(0)
+                  return (
+                    <tr key={u.unitNumber}>
+                      <td>{u.unitNumber}</td>
+                      <td>{u.ownerName}</td>
+                      <td style={{ textAlign: 'center' }}>{floor}F</td>
+                      <td style={{ textAlign: 'right' }}>¥{Math.abs(u.managementFeeReceivable).toLocaleString()}</td>
+                      <td style={{ textAlign: 'right' }}>¥{Math.abs(u.reserveFundReceivable).toLocaleString()}</td>
+                      <td style={{ textAlign: 'right' }}><strong>¥{Math.abs(u.totalReceivable).toLocaleString()}</strong></td>
+                    </tr>
+                  )
+                })}
               </tbody>
             </table>
           </div>
@@ -88,21 +91,28 @@ export const AuxiliaryLedgerView: React.FC<{ engine: AccountingEngine, onChange:
                 </tr>
               </thead>
               <tbody>
-                {auxiliarySummary.map(a => {
-                  const attrs: string[] = []
-                  if (a.attributes.unitNumber) attrs.push(`部屋: ${a.attributes.unitNumber}`)
-                  if (a.attributes.ownerName) attrs.push(`所有者: ${a.attributes.ownerName}`)
-                  if (a.attributes.floor) attrs.push(`${a.attributes.floor}F`)
-                  return (
-                    <tr key={`${a.masterAccountCode}-${a.auxiliaryCode}`}>
-                      <td>{a.masterAccountName}</td>
-                      <td>{a.auxiliaryName}</td>
-                      <td style={{ textAlign: 'right', color: a.isDebitBalance ? '#0d6efd' : '#dc3545' }}>¥{a.displayBalance.toLocaleString()}</td>
-                      <td style={{ textAlign: 'center' }}>{a.transactionCount}</td>
-                      <td><small style={{ color: '#666' }}>{attrs.join(', ')}</small></td>
-                    </tr>
-                  )
-                })}
+                {auxiliarySummary.flatMap(accountGroup => 
+                  accountGroup.auxiliaries.map(aux => {
+                    // 補助元帳の実際のインスタンスを取得して属性情報を取得
+                    const account = engine.accounts.get(accountGroup.accountCode)
+                    const auxLedger = account?.getAuxiliaryLedger(aux.code)
+                    const attrs: string[] = []
+                    if (auxLedger?.attributes?.owner) {
+                      const owner = auxLedger.attributes.owner
+                      attrs.push(`部屋: ${owner.unitNumber}`)
+                      attrs.push(`所有者: ${owner.ownerName}`)
+                    }
+                    return (
+                      <tr key={`${accountGroup.accountCode}-${aux.code}`}>
+                        <td>{accountGroup.accountName}</td>
+                        <td>{aux.name}</td>
+                        <td style={{ textAlign: 'right', color: aux.isDebit ? '#0d6efd' : '#dc3545' }}>¥{aux.balance.toLocaleString()}</td>
+                        <td style={{ textAlign: 'center' }}>{auxLedger?.transactions.length || 0}</td>
+                        <td><small style={{ color: '#666' }}>{attrs.join(', ')}</small></td>
+                      </tr>
+                    )
+                  })
+                )}
               </tbody>
             </table>
           </div>

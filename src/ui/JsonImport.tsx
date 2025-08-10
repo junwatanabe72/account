@@ -1,5 +1,6 @@
 import React, { useRef } from 'react'
-import { AccountingEngine, ImportJson } from '../domain/accountingEngine'
+import { AccountingEngine } from '../domain/accountingEngine'
+import { ImportJson } from '../types'
 import { useToast } from './Toast'
 
 export const JsonImport: React.FC<{ engine: AccountingEngine, onImported: () => void }> = ({ engine, onImported }) => {
@@ -15,33 +16,15 @@ export const JsonImport: React.FC<{ engine: AccountingEngine, onImported: () => 
       const json = JSON.parse(text) as ImportJson
       // unitOwners/vendorsがあれば反映
       if (json.unitOwners && Array.isArray(json.unitOwners)) {
-        engine.unitOwners = new Map(json.unitOwners.map((o: any) => [o.unitNumber, {
-          unitNumber: o.unitNumber,
-          ownerName: o.ownerName,
-          floor: o.floor ?? 1,
-          area: o.area ?? 0,
-          managementFee: o.managementFee ?? 0,
-          repairReserve: o.repairReserve ?? 0,
-          contact: o.contact ?? '',
-          bankAccount: o.bankAccount ?? '',
-          isActive: o.isActive !== false,
-        }]))
+        engine.unitOwners = json.unitOwners
         engine.rebuildAuxiliaryAccounts()
       }
       if (json.vendors && Array.isArray(json.vendors)) {
-        engine.vendors = new Map(json.vendors.map((v: any) => [v.vendorCode, {
-          vendorCode: v.vendorCode,
-          vendorName: v.vendorName,
-          category: v.category ?? '',
-          contact: v.contact ?? '',
-          bankAccount: v.bankAccount ?? '',
-          taxNumber: v.taxNumber ?? '',
-          isActive: v.isActive !== false,
-        }]))
+        engine.vendors = json.vendors
       }
       const result = engine.importJsonData(json)
       if (!result.success) toast.show(`JSONデータの読み込みに失敗: ${result.error}`,'danger')
-      else toast.show(`JSONデータを読み込みました（成功: ${result.successCount}/${result.totalJournals}）`,'success')
+      else toast.show(`JSONデータを読み込みました`,'success')
       onImported()
     } catch (err: any) {
       toast.show(`JSON解析に失敗: ${err.message ?? String(err)}`,'danger')

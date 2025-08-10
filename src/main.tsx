@@ -2,6 +2,11 @@ import React from 'react'
 import { createRoot } from 'react-dom/client'
 import { App } from './ui/App'
 import { ToastProvider } from './ui/Toast'
+import './ui/styles/theme.css'
+import './ui/styles/responsive.css'
+import './ui/styles/tabs.css'
+import './ui/styles/forms.css'
+import './ui/styles/data-display.css'
 
 const container = document.getElementById('root')!
 createRoot(container).render(

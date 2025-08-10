@@ -30,41 +30,23 @@ export const IncomeExpenseReport: React.FC<{ engine: AccountingEngine }> = ({ en
     const startDate = `${fiscalYear}-04-01`
     const endDate = `${fiscalYear + 1}-03-31`
     
-    const revenues: Array<{ code: string, name: string, amount: number }> = []
-    const expenses: Array<{ code: string, name: string, amount: number }> = []
-    let totalRevenues = 0, totalExpenses = 0
+    // 収入の集計
+    const incomeSummary = engine.getIncomeDetailSummary(startDate, endDate, division)
+    const revenues = incomeSummary.map(item => ({
+      code: item.accountCode,
+      name: item.accountName,
+      amount: item.amount
+    }))
+    const totalRevenues = revenues.reduce((sum, item) => sum + item.amount, 0)
     
-    Array.from(engine.accounts.values()).filter(acc => acc.division === division).forEach(acc => {
-      let balance = 0
-      engine.journals.forEach(journal => {
-        if (journal.date >= startDate && journal.date <= endDate) {
-          journal.details.forEach(detail => {
-            if (detail.accountCode === acc.code) {
-              if (detail.debitAmount) balance += detail.debitAmount
-              if (detail.creditAmount) balance -= detail.creditAmount
-            }
-          })
-        }
-      })
-      
-      // 正常残高に基づいて表示残高を調整
-      let displayBalance = balance
-      if (acc.normalBalance === 'CREDIT') {
-        displayBalance = -balance
-      }
-      
-      if (displayBalance === 0) return
-      const amt = Math.abs(displayBalance)
-      
-      if (acc.type === 'REVENUE' && displayBalance > 0) { 
-        revenues.push({ code: acc.code, name: acc.name, amount: amt })
-        totalRevenues += amt 
-      }
-      if (acc.type === 'EXPENSE' && displayBalance > 0) { 
-        expenses.push({ code: acc.code, name: acc.name, amount: amt })
-        totalExpenses += amt 
-      }
-    })
+    // 支出の集計
+    const expenseSummary = engine.getExpenseDetailSummary(startDate, endDate, division)
+    const expenses = expenseSummary.map(item => ({
+      code: item.accountCode,
+      name: item.accountName,
+      amount: item.amount
+    }))
+    const totalExpenses = expenses.reduce((sum, item) => sum + item.amount, 0)
     
     return { revenues, expenses, totalRevenues, totalExpenses }
   }
