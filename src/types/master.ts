@@ -194,6 +194,32 @@ export interface BankTransaction {
   journalId?: string // 紐付けられた仕訳ID
 }
 
+// 銀行取引データの正規化形式
+export interface StandardizedBankTransaction {
+  transactions: Array<{
+    date: string
+    time?: string
+    description: string
+    amount: number
+    balance?: number
+    category?: string
+    payee?: string
+    referenceNumber?: string
+    notes?: string
+    confidence?: number
+  }>
+  metadata?: {
+    bankName?: string
+    accountNumber?: string
+    period?: {
+      from: string
+      to: string
+    }
+    importedAt: string
+    originalFormat?: string
+  }
+}
+
 // LLM仕訳提案
 export interface JournalSuggestion {
   transactionId: string
@@ -217,3 +243,24 @@ export interface JournalSuggestion {
     confidence: number
   }>
 }
+
+// エラーコード定義
+export const ERROR_CODES = {
+  JOURNAL_NOT_FOUND: '仕訳が見つかりません',
+  JOURNAL_STATUS_INVALID: '仕訳のステータスが不正です',
+  JOURNAL_ALREADY_POSTED: '既に記帳済みの仕訳です',
+  JOURNAL_POSTED_CANNOT_DELETE: '記帳済みの仕訳は削除できません',
+  JOURNAL_INVALID_BALANCE: '借方と貸方の金額が一致しません',
+  JOURNAL_INVALID_DATE: '仕訳日付が無効です',
+  JOURNAL_NO_DETAILS: '仕訳明細がありません',
+  
+  ACCOUNT_NOT_FOUND: '科目が見つかりません',
+  ACCOUNT_INVALID_CODE: '科目コードが無効です',
+  
+  AUXILIARY_NOT_FOUND: '補助科目が見つかりません',
+  
+  PERMISSION_DENIED: '権限がありません',
+  INVALID_INPUT: '入力データが無効です',
+  INVALID_JOURNAL_DETAIL_FORMAT: '仕訳明細の形式が正しくありません',
+  VALIDATION_ERROR: '検証エラー',
+} as const

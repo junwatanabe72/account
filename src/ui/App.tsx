@@ -16,6 +16,7 @@ import { PrintPanel } from './PrintPanel'
 import { IncomeDetailView } from './IncomeDetailView'
 import { ExpenseDetailView } from './ExpenseDetailView'
 import { ConfirmDialog } from './ConfirmDialog'
+import { BankImportWizard } from './BankImportWizard'
 
 export const App: React.FC = () => {
   const [engine] = useState(() => new AccountingEngine())
@@ -36,7 +37,7 @@ export const App: React.FC = () => {
     onConfirm: () => {},
   })
 
-  const [active, setActive] = React.useState<'input'|'statements'|'auxiliary'|'spec'|'export'|'settings'|'incomeDetail'|'expenseDetail'|'report'|'divisionStatements'|'closing'|'chart'>('input')
+  const [active, setActive] = React.useState<'input'|'statements'|'auxiliary'|'spec'|'export'|'settings'|'incomeDetail'|'expenseDetail'|'report'|'divisionStatements'|'closing'|'chart'|'bankImport'>('input')
 
   return (
     <div className="container py-3">
@@ -54,6 +55,7 @@ export const App: React.FC = () => {
         <li className="nav-item"><button className={`nav-link ${active==='settings'?'active':''}`} onClick={() => setActive('settings')}>設定/期首</button></li>
         <li className="nav-item"><button className={`nav-link ${active==='closing'?'active':''}`} onClick={() => setActive('closing')}>期末処理</button></li>
         <li className="nav-item"><button className={`nav-link ${active==='chart'?'active':''}`} onClick={() => setActive('chart')}>科目マスタ</button></li>
+        <li className="nav-item"><button className={`nav-link ${active==='bankImport'?'active':''}`} onClick={() => setActive('bankImport')}>🤖 銀行明細インポート</button></li>
       </ul>
 
       {active === 'input' && (
@@ -157,6 +159,18 @@ export const App: React.FC = () => {
 
       {active === 'chart' && (
         <ChartOfAccountsPanel engine={engine} onChanged={forceUpdate} />
+      )}
+
+      {active === 'bankImport' && (
+        <section className="mt-2">
+          <BankImportWizard 
+            accountingEngine={engine}
+            onComplete={(results) => {
+              forceUpdate()
+              alert(`インポート完了: ${results.importedJournals}件の仕訳を登録しました`)
+            }}
+          />
+        </section>
       )}
 
       <ConfirmDialog

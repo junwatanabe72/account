@@ -1,5 +1,11 @@
 import React, { useState, useMemo } from 'react'
 import { AccountingEngine } from '../domain/accountingEngine'
+import { 
+  AccountingDivision,
+  DEFAULT_ACCOUNTING_DIVISIONS,
+  getGroupedAccountingDivisions,
+  TOP_LEVEL_NAMES
+} from '../types/accountingDivision'
 
 const YearSelect: React.FC<{ value: string, onChange: (v: string) => void }> = ({ value, onChange }) => (
   <div className="d-flex align-items-center gap-2 mb-2">
@@ -17,6 +23,9 @@ interface ExpenseDetailViewProps {
 
 export const ExpenseDetailView: React.FC<ExpenseDetailViewProps> = ({ engine }) => {
   const [year, setYear] = useState('2024')
+  const [selectedDivision, setSelectedDivision] = useState<string>('ALL')
+  const accountingDivisions = DEFAULT_ACCOUNTING_DIVISIONS
+  const divisionGroups = getGroupedAccountingDivisions(accountingDivisions)
   
   const yearDates = useMemo(() => {
     const fiscalYear = parseInt(year)
@@ -35,12 +44,27 @@ export const ExpenseDetailView: React.FC<ExpenseDetailViewProps> = ({ engine }) 
   }, [yearDates])
   
   const divisions = useMemo(() => {
-    const divs = Array.from(engine.divisions.values())
-    return [
-      ...divs.map(d => ({ code: d.code, name: d.name })),
-      { code: 'OTHER', name: 'その他' }
-    ]
-  }, [engine])
+    if (selectedDivision === 'ALL') {
+      const divs = Array.from(engine.divisions.values())
+      return [
+        ...divs.map(d => ({ code: d.code, name: d.name })),
+        { code: 'OTHER', name: 'その他' }
+      ]
+    } else {
+      // 選択された会計区分のみ
+      const selected = accountingDivisions.find(d => {
+        // 旧コードとの互換性を保つ
+        if (selectedDivision === 'KANRI') return d.code === 'GENERAL'
+        return d.code === selectedDivision
+      })
+      
+      if (selected) {
+        const legacyCode = selectedDivision === 'GENERAL' ? 'KANRI' : selectedDivision
+        return [{ code: legacyCode, name: selected.name }]
+      }
+      return []
+    }
+  }, [engine, selectedDivision, accountingDivisions])
   
   const divisionData = useMemo(() => {
     const data = new Map()
@@ -139,6 +163,32 @@ export const ExpenseDetailView: React.FC<ExpenseDetailViewProps> = ({ engine }) 
       
       <div style={{ marginBottom: 16, display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
         <YearSelect value={year} onChange={setYear} />
+        <div className="d-flex align-items-center gap-2">
+          <label className="form-label mb-0">会計区分</label>
+          <select 
+            className="form-select" 
+            style={{ maxWidth: 250 }}
+            value={selectedDivision}
+            onChange={e => setSelectedDivision(e.target.value)}
+          >
+            <option value="ALL">全区分表示</option>
+            {divisionGroups.map(group => (
+              <optgroup key={group.label} label={group.label}>
+                {group.options.map(division => {
+                  // 旧コードとの互換性
+                  const legacyCode = division.code === 'GENERAL' ? 'KANRI' : 
+                                     division.code === 'SPECIAL_OTHER' ? 'SPECIAL' : 
+                                     division.code
+                  return (
+                    <option key={division.code} value={legacyCode}>
+                      {division.name}
+                    </option>
+                  )
+                })}
+              </optgroup>
+            ))}
+          </select>
+        </div>
         <div>
           <label>開始日: </label>
           <input

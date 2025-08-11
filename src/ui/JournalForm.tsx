@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React, { useMemo, useState, useRef, useEffect } from 'react'
 import { AccountingEngine } from '../domain/accountingEngine'
 import { useToast } from './Toast'
 
@@ -15,11 +15,38 @@ export const JournalForm: React.FC<{ engine: AccountingEngine, onChange: () => v
     {}
   ])
   const [error, setError] = useState<string | null>(null)
+  
+  // Refs for keyboard navigation
+  const dateRef = useRef<HTMLInputElement>(null)
+  const descriptionRef = useRef<HTMLInputElement>(null)
+  const referenceRef = useRef<HTMLInputElement>(null)
+  
+  // 金額を3桁カンマ付きでフォーマット
+  const formatAmount = (value: number | undefined): string => {
+    if (!value) return ''
+    return value.toLocaleString()
+  }
+  
+  // フォーマットされた金額を数値に戻す
+  const parseAmount = (value: string): number => {
+    return Number(value.replace(/[,，]/g, ''))
+  }
 
   const addRow = () => setRows((r) => [...r, {}])
   const removeRow = (idx: number) => setRows((r) => r.length > 1 ? r.filter((_, i) => i !== idx) : r)
 
   const toast = useToast()
+  // キーボードショートカット
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if (e.ctrlKey && e.key === 'Enter') {
+        submit()
+      }
+    }
+    window.addEventListener('keydown', handleKeyPress)
+    return () => window.removeEventListener('keydown', handleKeyPress)
+  }, [rows, date, description])
+  
   const submit = () => {
     const details: Array<{ accountCode: string, debitAmount: number, creditAmount: number }> = []
     let rowError = ''
@@ -79,15 +106,37 @@ export const JournalForm: React.FC<{ engine: AccountingEngine, onChange: () => v
 
         <div className="mb-2">
           <label className="form-label">日付</label>
-          <input className="form-control" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+          <input 
+            ref={dateRef}
+            className="form-control" 
+            type="date" 
+            value={date} 
+            onChange={(e) => setDate(e.target.value)}
+            onKeyPress={(e) => e.key === 'Enter' && descriptionRef.current?.focus()}
+          />
         </div>
         <div className="mb-2">
           <label className="form-label">摘要</label>
-          <input className="form-control" type="text" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="例：3月分管理費収入" />
+          <input 
+            ref={descriptionRef}
+            className="form-control" 
+            type="text" 
+            value={description} 
+            onChange={(e) => setDescription(e.target.value)} 
+            placeholder="例：3月分管理費収入"
+            onKeyPress={(e) => e.key === 'Enter' && referenceRef.current?.focus()}
+          />
         </div>
         <div className="mb-3">
-          <label className="form-label">伝票番号</label>
-          <input className="form-control" type="text" value={reference} onChange={(e) => setReference(e.target.value)} placeholder="自動生成" />
+          <label className="form-label">伝票番号 <span className="text-muted small">(Ctrl+Enter で仕訳登録)</span></label>
+          <input 
+            ref={referenceRef}
+            className="form-control" 
+            type="text" 
+            value={reference} 
+            onChange={(e) => setReference(e.target.value)} 
+            placeholder="自動生成"
+          />
         </div>
 
         <h5>仕訳明細</h5>
@@ -106,8 +155,7 @@ export const JournalForm: React.FC<{ engine: AccountingEngine, onChange: () => v
               <select 
                 className="form-select" 
                 value={r.debit ?? ''} 
-                onChange={(e) => setRows((rs) => rs.map((x, i) => i === idx ? { ...x, debit: e.target.value, credit: '' } : x))}
-                disabled={!!r.credit}
+                onChange={(e) => setRows((rs) => rs.map((x, i) => i === idx ? { ...x, debit: e.target.value, credit: '', creditAmount: 0 } : x))}
               >
                 <option value="">借方科目を選択</option>
                 {accounts.filter(a => a.isPostable).map((a) => (
@@ -118,20 +166,20 @@ export const JournalForm: React.FC<{ engine: AccountingEngine, onChange: () => v
             <div className="col-md-3">
               <input 
                 className="form-control" 
-                type="number" 
-                min={0} 
-                value={r.debitAmount ?? ''} 
-                onChange={(e) => setRows((rs) => rs.map((x, i) => i === idx ? { ...x, debitAmount: Number(e.target.value) } : x))} 
-                placeholder="0" 
-                disabled={!!r.credit}
+                type="text" 
+                value={formatAmount(r.debitAmount)} 
+                onChange={(e) => {
+                  const numValue = parseAmount(e.target.value)
+                  setRows((rs) => rs.map((x, i) => i === idx ? { ...x, debitAmount: numValue, credit: '', creditAmount: 0 } : x))
+                }} 
+                placeholder="0"
               />
             </div>
             <div className="col-md-3">
               <select 
                 className="form-select" 
                 value={r.credit ?? ''} 
-                onChange={(e) => setRows((rs) => rs.map((x, i) => i === idx ? { ...x, credit: e.target.value, debit: '' } : x))}
-                disabled={!!r.debit}
+                onChange={(e) => setRows((rs) => rs.map((x, i) => i === idx ? { ...x, credit: e.target.value, debit: '', debitAmount: 0 } : x))}
               >
                 <option value="">貸方科目を選択</option>
                 {accounts.filter(a => a.isPostable).map((a) => (
@@ -142,12 +190,13 @@ export const JournalForm: React.FC<{ engine: AccountingEngine, onChange: () => v
             <div className="col-md-2">
               <input 
                 className="form-control" 
-                type="number" 
-                min={0} 
-                value={r.creditAmount ?? ''} 
-                onChange={(e) => setRows((rs) => rs.map((x, i) => i === idx ? { ...x, creditAmount: Number(e.target.value) } : x))} 
-                placeholder="0" 
-                disabled={!!r.debit}
+                type="text" 
+                value={formatAmount(r.creditAmount)} 
+                onChange={(e) => {
+                  const numValue = parseAmount(e.target.value)
+                  setRows((rs) => rs.map((x, i) => i === idx ? { ...x, creditAmount: numValue, debit: '', debitAmount: 0 } : x))
+                }} 
+                placeholder="0"
               />
             </div>
             <div className="col-md-1 text-end">

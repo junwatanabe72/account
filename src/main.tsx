@@ -1,6 +1,6 @@
 import React from 'react'
 import { createRoot } from 'react-dom/client'
-import { App } from './ui/App'
+import { App } from './ui/AppWithSidebar'
 import { ToastProvider } from './ui/Toast'
 import './ui/styles/theme.css'
 import './ui/styles/responsive.css'

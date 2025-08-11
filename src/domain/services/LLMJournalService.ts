@@ -100,12 +100,12 @@ ${rawData}
     
     const unitOwners = this.auxiliaryService.getUnitOwners()
       .filter(owner => owner.isActive)
-      .map(owner => `${owner.unitNumber}号室 ${owner.name}`)
+      .map(owner => `${owner.unitNumber}号室 ${owner.ownerName}`)
 
     const vendors = this.auxiliaryService.getVendors()
-      .map(vendor => `${vendor.name}（${vendor.category || 'その他'}）`)
+      .map(vendor => `${vendor.vendorName}（${vendor.category || 'その他'}）`)
 
-    const divisions = this.divisionService.divisions
+    const divisions = Array.from(this.divisionService.divisions.values())
       .map(div => `${div.code}:${div.name}`)
 
     const systemPrompt = `
@@ -348,23 +348,76 @@ export class LLMJournalService {
     return this.promptGenerator;
   }
 
-  // 模擬的な正規化レスポンス生成
+  // 模擬的な正規化レスポンス生成（デモ用の詳細データ）
   private generateMockNormalizeResponse(rawData: string): StandardizedBankTransaction {
-    // 簡単な解析ロジック（実際はLLMが処理）
     const lines = rawData.split('\n').filter(line => line.trim());
     const transactions = [];
-
-    for (const line of lines) {
-      // CSVっぽいデータの簡易解析
+    
+    // ヘッダー行をスキップ
+    let hasHeader = false;
+    if (lines[0] && lines[0].includes('日付')) {
+      hasHeader = true;
+    }
+    
+    const startIndex = hasHeader ? 1 : 0;
+    
+    for (let i = startIndex; i < lines.length; i++) {
+      const line = lines[i];
       const parts = line.split(',').map(p => p.trim());
+      
       if (parts.length >= 3) {
         const dateMatch = parts[0].match(/\d{4}[/-]\d{1,2}[/-]\d{1,2}/);
         if (dateMatch) {
+          const date = dateMatch[0].replace(/\//g, '-');
+          const description = parts[1] || '';
+          const withdrawal = parseFloat(parts[2]?.replace(/[^\d.-]/g, '') || '0');
+          const deposit = parseFloat(parts[3]?.replace(/[^\d.-]/g, '') || '0');
+          const amount = deposit > 0 ? deposit : -withdrawal;
+          
+          // カテゴリを推定
+          let category = 'その他';
+          let payee = '';
+          let confidence = 75;
+          
+          if (description.includes('管理費') || description.includes('修繕積立金')) {
+            category = '管理費収入';
+            payee = description.match(/\d+号室/)?.[0] || '';
+            confidence = 95;
+          } else if (description.includes('駐車場')) {
+            category = '駐車場収入';
+            confidence = 90;
+          } else if (description.includes('清掃')) {
+            category = '清掃費';
+            payee = description.replace('清掃業務委託', '').trim();
+            confidence = 95;
+          } else if (description.includes('エレベーター')) {
+            category = '設備保守費';
+            payee = description.replace('エレベーター保守点検', '').trim();
+            confidence = 95;
+          } else if (description.includes('電気') || description.includes('水道')) {
+            category = '水道光熱費';
+            confidence = 95;
+          } else if (description.includes('保険')) {
+            category = '保険料';
+            confidence = 90;
+          } else if (description.includes('修繕') || description.includes('工事')) {
+            category = '修繕費';
+            confidence = 90;
+          } else if (description.includes('管理会社')) {
+            category = '管理委託費';
+            confidence = 95;
+          } else if (description.includes('手数料')) {
+            category = '支払手数料';
+            confidence = 95;
+          }
+          
           transactions.push({
-            date: dateMatch[0].replace(/\//g, '-'),
-            description: parts[1] || '不明な取引',
-            amount: parseFloat(parts[2]?.replace(/[^\d.-]/g, '')) || 0,
-            confidence: 85
+            date,
+            description,
+            amount,
+            category,
+            payee,
+            confidence
           });
         }
       }
@@ -373,62 +426,131 @@ export class LLMJournalService {
     return {
       transactions,
       metadata: {
-        bankName: '推定銀行',
+        bankName: '三菱UFJ銀行',
+        accountNumber: '****1234',
+        period: transactions.length > 0 ? {
+          from: transactions[0].date,
+          to: transactions[transactions.length - 1].date
+        } : undefined,
         importedAt: new Date().toISOString(),
         originalFormat: 'CSV'
       }
     };
   }
 
-  // 模擬的な仕訳レスポンス生成
+  // 模擬的な仕訳レスポンス生成（デモ用の詳細データ）
   private generateMockJournalResponse(
     transaction: StandardizedBankTransaction['transactions'][0]
   ): JournalSuggestion {
-    // 簡単な仕訳ルール（実際はLLMが生成）
-    let debitAccount = '1112'; // 普通預金
-    let creditAccount = '4111'; // 管理費収入
+    let debitAccount = '';
+    let debitAccountName = '';
+    let creditAccount = '';
+    let creditAccountName = '';
     let confidence = 70;
+    let reasoning = '';
+    let division = '1'; // 管理費会計
+    
+    const amount = Math.abs(transaction.amount);
 
     if (transaction.amount > 0) {
       // 入金取引
-      if (transaction.description.includes('管理費')) {
-        creditAccount = '4111'; // 管理費収入
+      debitAccount = '1112'; // 普通預金
+      debitAccountName = '普通預金';
+      
+      if (transaction.description.includes('管理費') && transaction.description.includes('修繕積立金')) {
+        // 管理費と修繕積立金を分ける
+        const unitMatch = transaction.description.match(/(\d+)号室/);
+        if (unitMatch) {
+          // 実際は複合仕訳だが、簡略化のため管理費として処理
+          creditAccount = '4111';
+          creditAccountName = '管理費収入';
+          confidence = 95;
+          reasoning = `${unitMatch[0]}からの管理費・修繕積立金の入金と判断。過去の同様のパターンから自動認識。`;
+        }
+      } else if (transaction.description.includes('駐車場')) {
+        creditAccount = '4121';
+        creditAccountName = '駐車場使用料収入';
         confidence = 90;
-      } else if (transaction.description.includes('修繕')) {
-        creditAccount = '4112'; // 修繕積立金収入
-        confidence = 90;
+        reasoning = '駐車場使用料の一括入金と判断。';
       } else {
-        creditAccount = '4191'; // 雑収入
+        creditAccount = '4191';
+        creditAccountName = '雑収入';
         confidence = 60;
+        reasoning = 'カテゴリが特定できないため雑収入として処理。';
       }
     } else {
       // 支出取引
-      debitAccount = '5121'; // 清掃費（デフォルト）
-      creditAccount = '1112'; // 普通預金
+      creditAccount = '1112';
+      creditAccountName = '普通預金';
       
       if (transaction.description.includes('清掃')) {
-        debitAccount = '5121'; // 清掃費
-        confidence = 90;
+        debitAccount = '5121';
+        debitAccountName = '清掃費';
+        confidence = 95;
+        reasoning = '定期清掃業務の支払いと判断。業者名も特定済み。';
+      } else if (transaction.description.includes('エレベーター')) {
+        debitAccount = '5131';
+        debitAccountName = '設備保守費';
+        confidence = 95;
+        reasoning = 'エレベーター定期保守点検費用と判断。';
       } else if (transaction.description.includes('電気')) {
-        debitAccount = '5141'; // 水道光熱費
+        debitAccount = '5141';
+        debitAccountName = '水道光熱費';
+        confidence = 95;
+        reasoning = '共用部電気料金の支払いと判断。';
+      } else if (transaction.description.includes('水道')) {
+        debitAccount = '5141';
+        debitAccountName = '水道光熱費';
+        confidence = 95;
+        reasoning = '水道料金の支払いと判断。';
+      } else if (transaction.description.includes('保険')) {
+        debitAccount = '5161';
+        debitAccountName = '損害保険料';
         confidence = 90;
+        reasoning = '火災保険等の保険料支払いと判断。';
+      } else if (transaction.description.includes('植栽') || transaction.description.includes('剪定')) {
+        debitAccount = '5122';
+        debitAccountName = '植栽管理費';
+        confidence = 90;
+        reasoning = '植栽の剪定・管理作業費用と判断。';
+      } else if (transaction.description.includes('修繕') || transaction.description.includes('工事')) {
+        debitAccount = '5151';
+        debitAccountName = '修繕費';
+        division = '2'; // 修繕積立金会計
+        confidence = 90;
+        reasoning = '給水ポンプ交換等の修繕工事費用と判断。修繕積立金会計で処理。';
+      } else if (transaction.description.includes('管理会社')) {
+        debitAccount = '5111';
+        debitAccountName = '管理委託費';
+        confidence = 95;
+        reasoning = '管理会社への月次委託費と判断。';
+      } else if (transaction.description.includes('手数料')) {
+        debitAccount = '5181';
+        debitAccountName = '支払手数料';
+        confidence = 95;
+        reasoning = '銀行振込手数料と判断。';
       } else {
-        debitAccount = '5191'; // その他費用
+        debitAccount = '5191';
+        debitAccountName = 'その他費用';
         confidence = 60;
+        reasoning = 'カテゴリが特定できないためその他費用として処理。要確認。';
       }
     }
 
     return {
-      transactionId: `tx_${Date.now()}`,
+      transactionId: `tx_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       confidence,
       suggestedJournal: {
         date: transaction.date,
         description: transaction.description,
         debitAccount,
+        debitAccountName,
         creditAccount,
-        amount: Math.abs(transaction.amount)
+        creditAccountName,
+        amount,
+        division
       },
-      reasoning: '模擬的な仕訳生成（実際はLLMが判断理由を提供）'
+      reasoning
     };
   }
 }

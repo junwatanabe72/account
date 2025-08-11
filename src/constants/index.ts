@@ -107,7 +107,17 @@ export const ERROR_MESSAGES = {
   [ERROR_CODES.INVALID_DATE]: '日付の形式が正しくありません',
   [ERROR_CODES.DUPLICATE_ENTRY]: '重複したデータが存在します',
   [ERROR_CODES.INSUFFICIENT_DATA]: '必要なデータが不足しています',
-  [ERROR_CODES.SYSTEM_ERROR]: 'システムエラーが発生しました'
+  [ERROR_CODES.SYSTEM_ERROR]: 'システムエラーが発生しました',
+  // Journal関連のエラーメッセージ
+  JOURNAL_DATE_REQUIRED: '仕訳日付は必須です',
+  JOURNAL_DESCRIPTION_REQUIRED: '仕訳摘要は必須です',
+  JOURNAL_DETAILS_REQUIRED: '仕訳明細は必須です',
+  JOURNAL_NOT_BALANCED: '貸借が一致していません',
+  JOURNAL_NOT_FOUND: '仕訳が見つかりません',
+  JOURNAL_STATUS_INVALID: '仕訳のステータスが無効です',
+  JOURNAL_ALREADY_POSTED: '仕訳は既に転記済みです',
+  JOURNAL_POSTED_CANNOT_DELETE: '転記済みの仕訳は削除できません',
+  JOURNAL_NOT_EDITABLE: '編集可能な状態ではありません'
 } as const
 
 // 勘定科目タイプ

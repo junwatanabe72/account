@@ -25,6 +25,8 @@ import { ImportExportService } from './services/ImportExportService'
 import { AuxiliaryService } from './services/AuxiliaryService'
 import { SampleDataService } from './services/SampleDataService'
 import { ClosingService } from './services/ClosingService'
+import { TransactionService } from './services/TransactionService'
+import { JournalGenerationEngine } from './services/JournalGenerationEngine'
 
 // Re-export for backward compatibility
 export { HierarchicalAccount, AuxiliaryLedger, Journal, JournalDetail, AccountingDivision }
@@ -38,6 +40,8 @@ export class AccountingEngine {
   private auxiliaryService: AuxiliaryService
   private sampleDataService: SampleDataService
   private closingService: ClosingService
+  private transactionService: TransactionService
+  private journalGenerationEngine: JournalGenerationEngine
   
   constructor() {
     this.accountService = new AccountService()
@@ -61,6 +65,8 @@ export class AccountingEngine {
       this.journalService,
       this.divisionService
     )
+    this.journalGenerationEngine = new JournalGenerationEngine(this.accountService)
+    this.transactionService = new TransactionService(this.accountService, this.journalService)
     
     this.initializeEngine()
   }
@@ -161,6 +167,19 @@ export class AccountingEngine {
       isActive: acc.isActive
     }))
   }
+  
+  // Transaction management (Freee型)
+  get transactionService() { return this.transactionService }
+  get journalGenerationEngine() { return this.journalGenerationEngine }
+  get accountService() { return this.accountService }
+  createTransaction(input: any) { return this.transactionService.createTransaction(input) }
+  getTransactions() { return this.transactionService.getTransactions() }
+  searchTransactions(criteria: any) { return this.transactionService.searchTransactions(criteria) }
+  settleTransaction(id: string, paymentAccountCode: string) { 
+    return this.transactionService.settleTransaction(id, paymentAccountCode) 
+  }
+  getCounterparties() { return this.transactionService.getCounterparties() }
+  getTransactionTemplates() { return this.transactionService.getTemplates() }
 }
 
 // Re-export AccountDef for backward compatibility

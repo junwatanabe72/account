@@ -1,19 +1,43 @@
 import React from 'react'
 import { AccountingEngine } from '../domain/accountingEngine'
+import { 
+  AccountingDivision,
+  DEFAULT_ACCOUNTING_DIVISIONS,
+  getGroupedAccountingDivisions,
+  TOP_LEVEL_NAMES,
+  LEGACY_DIVISION_MAPPING
+} from '../types/accountingDivision'
 
 function yen(n: number) { return '¥' + n.toLocaleString() }
 
-const DivisionSelect: React.FC<{ value: string, onChange: (v: string) => void }> = ({ value, onChange }) => (
-  <div className="d-flex align-items-center gap-2 mb-2">
-    <label className="form-label mb-0">会計区分</label>
-    <select className="form-select" style={{ maxWidth: 220 }} value={value} onChange={e => onChange(e.target.value)}>
-      <option value="KANRI">管理費会計</option>
-      <option value="SHUZEN">修繕積立金会計</option>
-      <option value="PARKING">駐車場会計</option>
-      <option value="SPECIAL">特別会計</option>
-    </select>
-  </div>
-)
+const DivisionSelect: React.FC<{ value: string, onChange: (v: string) => void }> = ({ value, onChange }) => {
+  const divisions = DEFAULT_ACCOUNTING_DIVISIONS
+  const divisionGroups = getGroupedAccountingDivisions(divisions)
+  
+  return (
+    <div className="d-flex align-items-center gap-2 mb-2">
+      <label className="form-label mb-0">会計区分</label>
+      <select className="form-select" style={{ maxWidth: 280 }} value={value} onChange={e => onChange(e.target.value)}>
+        {divisionGroups.map(group => (
+          <optgroup key={group.label} label={group.label}>
+            {group.options.map(division => {
+              // 旧システムのコードとの互換性を保つ
+              const legacyCode = Object.entries(LEGACY_DIVISION_MAPPING).find(
+                ([_, newCode]) => newCode === division.code
+              )?.[0] || division.code
+              
+              return (
+                <option key={division.code} value={legacyCode}>
+                  {division.name}
+                </option>
+              )
+            })}
+          </optgroup>
+        ))}
+      </select>
+    </div>
+  )
+}
 
 const YearSelect: React.FC<{ value: string, onChange: (v: string) => void }> = ({ value, onChange }) => (
   <div className="d-flex align-items-center gap-2 mb-2">
