@@ -1,9 +1,15 @@
+// ========================================
+// 既存実装 - 段階的に新実装に置き換え中
+// 新実装: AccountMasterService.ts を参照
+// ========================================
+
 import { 
   AccountDefinition,
   AccountType,
   NormalBalance
 } from '../../types'
 import { ACCOUNTING_CONSTANTS } from '../../constants'
+import { defaultAccountsData } from '../../data/defaultAccounts'
 
 type AccountDef = {
   code: string
@@ -103,88 +109,33 @@ export class AuxiliaryLedger {
   isDebitBalance() { return this.balance >= 0 }
 }
 
+// 旧実装 - AccountServiceAdapterで新実装との互換性を保持
 export class AccountService {
   accounts = new Map<string, HierarchicalAccount>()
   
+  private mapCategoryToAccountType(category: string): AccountType {
+    switch (category) {
+      case 'ASSET': return 'ASSET'
+      case 'LIABILITY': return 'LIABILITY'
+      case 'EQUITY': return 'EQUITY'
+      case 'REVENUE': return 'REVENUE'
+      case 'EXPENSE': return 'EXPENSE'
+      default: return 'ASSET'
+    }
+  }
+  
   initializeAccounts() {
-    const accountDefs: AccountDef[] = [
-      // 資産
-      { code: '1000', name: '資産', type: 'ASSET', normalBalance: 'DEBIT' },
-      { code: '1100', name: '流動資産', type: 'ASSET', normalBalance: 'DEBIT', parentCode: '1000' },
-      { code: '1110', name: '現金・預金', type: 'ASSET', normalBalance: 'DEBIT', parentCode: '1100' },
-      { code: '1111', name: '普通預金', type: 'ASSET', normalBalance: 'DEBIT', parentCode: '1110', division: 'SHARED' },
-      { code: '1112', name: '定期預金', type: 'ASSET', normalBalance: 'DEBIT', parentCode: '1110', division: 'SHARED' },
-      { code: '1120', name: '未収金', type: 'ASSET', normalBalance: 'DEBIT', parentCode: '1100' },
-      { code: '1121', name: '管理費等未収金', type: 'ASSET', normalBalance: 'DEBIT', parentCode: '1120', division: 'KANRI' },
-      { code: '1122', name: '修繕積立金未収金', type: 'ASSET', normalBalance: 'DEBIT', parentCode: '1120', division: 'SHUZEN' },
-      { code: '1200', name: '固定資産', type: 'ASSET', normalBalance: 'DEBIT', parentCode: '1000' },
-      { code: '1210', name: '有形固定資産', type: 'ASSET', normalBalance: 'DEBIT', parentCode: '1200' },
-      { code: '1211', name: '建物', type: 'ASSET', normalBalance: 'DEBIT', parentCode: '1210', division: 'SHARED' },
-      { code: '1212', name: '建物附属設備', type: 'ASSET', normalBalance: 'DEBIT', parentCode: '1210', division: 'SHARED' },
-      { code: '1213', name: '機械設備', type: 'ASSET', normalBalance: 'DEBIT', parentCode: '1210', division: 'SHARED' },
-      { code: '1214', name: '什器備品', type: 'ASSET', normalBalance: 'DEBIT', parentCode: '1210', division: 'SHARED' },
-      { code: '1219', name: '減価償却累計額', type: 'ASSET', normalBalance: 'CREDIT', parentCode: '1210', division: 'SHARED' },
-      
-      // 負債
-      { code: '2000', name: '負債', type: 'LIABILITY', normalBalance: 'CREDIT' },
-      { code: '2100', name: '流動負債', type: 'LIABILITY', normalBalance: 'CREDIT', parentCode: '2000' },
-      { code: '2110', name: '未払金', type: 'LIABILITY', normalBalance: 'CREDIT', parentCode: '2100' },
-      { code: '2111', name: '未払費用', type: 'LIABILITY', normalBalance: 'CREDIT', parentCode: '2110', division: 'SHARED' },
-      { code: '2120', name: '前受金', type: 'LIABILITY', normalBalance: 'CREDIT', parentCode: '2100' },
-      { code: '2121', name: '管理費等前受金', type: 'LIABILITY', normalBalance: 'CREDIT', parentCode: '2120', division: 'KANRI' },
-      { code: '2122', name: '修繕積立金前受金', type: 'LIABILITY', normalBalance: 'CREDIT', parentCode: '2120', division: 'SHUZEN' },
-      { code: '2130', name: '預り金', type: 'LIABILITY', normalBalance: 'CREDIT', parentCode: '2100' },
-      { code: '2131', name: '駐車場保証金', type: 'LIABILITY', normalBalance: 'CREDIT', parentCode: '2130', division: 'PARKING' },
-      { code: '2200', name: '固定負債', type: 'LIABILITY', normalBalance: 'CREDIT', parentCode: '2000' },
-      { code: '2210', name: '借入金', type: 'LIABILITY', normalBalance: 'CREDIT', parentCode: '2200', division: 'SHUZEN' },
-      
-      // 純資産
-      { code: '3000', name: '純資産', type: 'EQUITY', normalBalance: 'CREDIT' },
-      { code: '3100', name: '剰余金', type: 'EQUITY', normalBalance: 'CREDIT', parentCode: '3000' },
-      { code: '3110', name: '管理費剰余金', type: 'EQUITY', normalBalance: 'CREDIT', parentCode: '3100', division: 'KANRI' },
-      { code: '3120', name: '修繕積立金', type: 'EQUITY', normalBalance: 'CREDIT', parentCode: '3100', division: 'SHUZEN' },
-      { code: '3130', name: '駐車場剰余金', type: 'EQUITY', normalBalance: 'CREDIT', parentCode: '3100', division: 'PARKING' },
-      { code: '3200', name: '繰越剰余金', type: 'EQUITY', normalBalance: 'CREDIT', parentCode: '3000' },
-      { code: '3210', name: '管理費繰越剰余金', type: 'EQUITY', normalBalance: 'CREDIT', parentCode: '3200', division: 'KANRI' },
-      { code: '3220', name: '修繕積立金繰越剰余金', type: 'EQUITY', normalBalance: 'CREDIT', parentCode: '3200', division: 'SHUZEN' },
-      { code: '3230', name: '駐車場繰越剰余金', type: 'EQUITY', normalBalance: 'CREDIT', parentCode: '3200', division: 'PARKING' },
-      
-      // 収益
-      { code: '4000', name: '収益', type: 'REVENUE', normalBalance: 'CREDIT' },
-      { code: '4100', name: '管理費収入', type: 'REVENUE', normalBalance: 'CREDIT', parentCode: '4000' },
-      { code: '4110', name: '管理費', type: 'REVENUE', normalBalance: 'CREDIT', parentCode: '4100', division: 'KANRI' },
-      { code: '4200', name: '修繕積立金収入', type: 'REVENUE', normalBalance: 'CREDIT', parentCode: '4000' },
-      { code: '4210', name: '修繕積立金', type: 'REVENUE', normalBalance: 'CREDIT', parentCode: '4200', division: 'SHUZEN' },
-      { code: '4300', name: '駐車場収入', type: 'REVENUE', normalBalance: 'CREDIT', parentCode: '4000' },
-      { code: '4310', name: '駐車場使用料', type: 'REVENUE', normalBalance: 'CREDIT', parentCode: '4300', division: 'PARKING' },
-      { code: '4400', name: 'その他収入', type: 'REVENUE', normalBalance: 'CREDIT', parentCode: '4000' },
-      { code: '4410', name: '雑収入', type: 'REVENUE', normalBalance: 'CREDIT', parentCode: '4400', division: 'SHARED' },
-      { code: '4420', name: '受取利息', type: 'REVENUE', normalBalance: 'CREDIT', parentCode: '4400', division: 'SHARED' },
-      
-      // 費用
-      { code: '5000', name: '費用', type: 'EXPENSE', normalBalance: 'DEBIT' },
-      { code: '5100', name: '管理業務費', type: 'EXPENSE', normalBalance: 'DEBIT', parentCode: '5000' },
-      { code: '5110', name: '管理員業務費', type: 'EXPENSE', normalBalance: 'DEBIT', parentCode: '5100', division: 'KANRI' },
-      { code: '5120', name: '清掃業務費', type: 'EXPENSE', normalBalance: 'DEBIT', parentCode: '5100', division: 'KANRI' },
-      { code: '5130', name: '設備管理費', type: 'EXPENSE', normalBalance: 'DEBIT', parentCode: '5100', division: 'KANRI' },
-      { code: '5200', name: '水道光熱費', type: 'EXPENSE', normalBalance: 'DEBIT', parentCode: '5000' },
-      { code: '5210', name: '電気料', type: 'EXPENSE', normalBalance: 'DEBIT', parentCode: '5200', division: 'KANRI' },
-      { code: '5220', name: '水道料', type: 'EXPENSE', normalBalance: 'DEBIT', parentCode: '5200', division: 'KANRI' },
-      { code: '5230', name: 'ガス料', type: 'EXPENSE', normalBalance: 'DEBIT', parentCode: '5200', division: 'KANRI' },
-      { code: '5300', name: '修繕費', type: 'EXPENSE', normalBalance: 'DEBIT', parentCode: '5000' },
-      { code: '5310', name: '経常修繕費', type: 'EXPENSE', normalBalance: 'DEBIT', parentCode: '5300', division: 'KANRI' },
-      { code: '5320', name: '計画修繕費', type: 'EXPENSE', normalBalance: 'DEBIT', parentCode: '5300', division: 'SHUZEN' },
-      { code: '5400', name: '損害保険料', type: 'EXPENSE', normalBalance: 'DEBIT', parentCode: '5000' },
-      { code: '5410', name: '火災保険料', type: 'EXPENSE', normalBalance: 'DEBIT', parentCode: '5400', division: 'KANRI' },
-      { code: '5420', name: '施設賠償保険料', type: 'EXPENSE', normalBalance: 'DEBIT', parentCode: '5400', division: 'KANRI' },
-      { code: '5500', name: '支払手数料', type: 'EXPENSE', normalBalance: 'DEBIT', parentCode: '5000' },
-      { code: '5510', name: '振込手数料', type: 'EXPENSE', normalBalance: 'DEBIT', parentCode: '5500', division: 'SHARED' },
-      { code: '5600', name: 'その他費用', type: 'EXPENSE', normalBalance: 'DEBIT', parentCode: '5000' },
-      { code: '5610', name: '通信費', type: 'EXPENSE', normalBalance: 'DEBIT', parentCode: '5600', division: 'KANRI' },
-      { code: '5620', name: '消耗品費', type: 'EXPENSE', normalBalance: 'DEBIT', parentCode: '5600', division: 'KANRI' },
-      { code: '5630', name: '雑費', type: 'EXPENSE', normalBalance: 'DEBIT', parentCode: '5600', division: 'SHARED' },
-      { code: '5700', name: '予備費', type: 'EXPENSE', normalBalance: 'DEBIT', parentCode: '5000', division: 'KANRI' }
-    ]
+    // defaultAccountsDataをAccountDef形式に変換
+    const accountDefs: AccountDef[] = defaultAccountsData.map(account => ({
+      code: account.code,
+      name: account.name,
+      type: this.mapCategoryToAccountType(account.category),
+      normalBalance: account.accountType === 'DEBIT' ? 'DEBIT' as NormalBalance : 'CREDIT' as NormalBalance,
+      division: account.divisionCode,
+      parentCode: account.parentCode,
+      description: account.description,
+      isActive: true
+    }))
     
     this.rebuildAccountsFrom(accountDefs)
   }

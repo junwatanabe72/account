@@ -49,23 +49,21 @@ export const JournalForm: React.FC<{ engine: AccountingEngine, onChange: () => v
   
   const submit = () => {
     const details: Array<{ accountCode: string, debitAmount: number, creditAmount: number }> = []
-    let rowError = ''
     rows.forEach((r, idx) => {
-      // 改善: 0の入力を適切に処理
+      // フリー入力型：借方と貸方を独立して処理
       const debitAmount = r.debitAmount || 0
       const creditAmount = r.creditAmount || 0
-      const hasDebit = !!r.debit && debitAmount > 0
-      const hasCredit = !!r.credit && creditAmount > 0
       
-      // 改善: エラーメッセージをより分かりやすく
-      if (r.debit && r.credit) {
-        rowError = `${idx+1}行目: 1つの行には借方か貸方のどちらか一方のみ入力してください`
+      // 借方の処理
+      if (r.debit && debitAmount > 0) {
+        details.push({ accountCode: r.debit, debitAmount: debitAmount, creditAmount: 0 })
       }
-      if (!hasDebit && !hasCredit) return
-      if (hasDebit) details.push({ accountCode: r.debit!, debitAmount: debitAmount, creditAmount: 0 })
-      if (hasCredit) details.push({ accountCode: r.credit!, debitAmount: 0, creditAmount: creditAmount })
+      
+      // 貸方の処理
+      if (r.credit && creditAmount > 0) {
+        details.push({ accountCode: r.credit, debitAmount: 0, creditAmount: creditAmount })
+      }
     })
-    if (rowError) { setError(rowError); toast.show(rowError,'danger'); return }
     const result = engine.createJournal({ date, description, reference, details })
     if (result.success) {
       setDescription('')
@@ -96,11 +94,13 @@ export const JournalForm: React.FC<{ engine: AccountingEngine, onChange: () => v
       <div className="card-body">
         {/* 入力ガイド */}
         <div className="alert alert-info mb-3">
-          <h6 className="alert-heading">入力方法</h6>
+          <h6 className="alert-heading">入力方法（フリー入力型）</h6>
           <ul className="mb-0 small">
-            <li>1つの行には「借方」または「貸方」のどちらか一方のみ入力してください</li>
+            <li>借方と貸方を自由に組み合わせて入力できます</li>
+            <li>1つの行に借方と貸方の両方を入力することも可能です</li>
             <li>複数の勘定科目を使用する場合は「明細追加」ボタンで行を追加してください</li>
             <li>借方合計と貸方合計は必ず一致させてください</li>
+            <li>Ctrl+Enterで仕訳を登録できます</li>
           </ul>
         </div>
 
@@ -155,7 +155,7 @@ export const JournalForm: React.FC<{ engine: AccountingEngine, onChange: () => v
               <select 
                 className="form-select" 
                 value={r.debit ?? ''} 
-                onChange={(e) => setRows((rs) => rs.map((x, i) => i === idx ? { ...x, debit: e.target.value, credit: '', creditAmount: 0 } : x))}
+                onChange={(e) => setRows((rs) => rs.map((x, i) => i === idx ? { ...x, debit: e.target.value } : x))}
               >
                 <option value="">借方科目を選択</option>
                 {accounts.filter(a => a.isPostable).map((a) => (
@@ -170,7 +170,7 @@ export const JournalForm: React.FC<{ engine: AccountingEngine, onChange: () => v
                 value={formatAmount(r.debitAmount)} 
                 onChange={(e) => {
                   const numValue = parseAmount(e.target.value)
-                  setRows((rs) => rs.map((x, i) => i === idx ? { ...x, debitAmount: numValue, credit: '', creditAmount: 0 } : x))
+                  setRows((rs) => rs.map((x, i) => i === idx ? { ...x, debitAmount: numValue } : x))
                 }} 
                 placeholder="0"
               />
@@ -179,7 +179,7 @@ export const JournalForm: React.FC<{ engine: AccountingEngine, onChange: () => v
               <select 
                 className="form-select" 
                 value={r.credit ?? ''} 
-                onChange={(e) => setRows((rs) => rs.map((x, i) => i === idx ? { ...x, credit: e.target.value, debit: '', debitAmount: 0 } : x))}
+                onChange={(e) => setRows((rs) => rs.map((x, i) => i === idx ? { ...x, credit: e.target.value } : x))}
               >
                 <option value="">貸方科目を選択</option>
                 {accounts.filter(a => a.isPostable).map((a) => (
@@ -194,7 +194,7 @@ export const JournalForm: React.FC<{ engine: AccountingEngine, onChange: () => v
                 value={formatAmount(r.creditAmount)} 
                 onChange={(e) => {
                   const numValue = parseAmount(e.target.value)
-                  setRows((rs) => rs.map((x, i) => i === idx ? { ...x, creditAmount: numValue, debit: '', debitAmount: 0 } : x))
+                  setRows((rs) => rs.map((x, i) => i === idx ? { ...x, creditAmount: numValue } : x))
                 }} 
                 placeholder="0"
               />

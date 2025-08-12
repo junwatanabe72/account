@@ -1,3 +1,8 @@
+// ========================================
+// 既存実装 - 段階的に JournalEntryService に置き換え中
+// 新実装: JournalEntryService.ts を参照
+// ========================================
+
 import {
   JournalStatus,
   JournalData,

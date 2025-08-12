@@ -169,9 +169,9 @@ export class AccountingEngine {
   }
   
   // Transaction management (Freee型)
-  get transactionService() { return this.transactionService }
-  get journalGenerationEngine() { return this.journalGenerationEngine }
-  get accountService() { return this.accountService }
+  getTransactionService() { return this.transactionService }
+  getJournalGenerationEngine() { return this.journalGenerationEngine }
+  getAccountService() { return this.accountService }
   createTransaction(input: any) { return this.transactionService.createTransaction(input) }
   getTransactions() { return this.transactionService.getTransactions() }
   searchTransactions(criteria: any) { return this.transactionService.searchTransactions(criteria) }

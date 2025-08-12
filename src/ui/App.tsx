@@ -17,6 +17,7 @@ import { IncomeDetailView } from './IncomeDetailView'
 import { ExpenseDetailView } from './ExpenseDetailView'
 import { ConfirmDialog } from './ConfirmDialog'
 import { BankImportWizard } from './BankImportWizard'
+import { TransactionInputForm } from './TransactionInputForm'
 
 export const App: React.FC = () => {
   const [engine] = useState(() => new AccountingEngine())
@@ -37,13 +38,14 @@ export const App: React.FC = () => {
     onConfirm: () => {},
   })
 
-  const [active, setActive] = React.useState<'input'|'statements'|'auxiliary'|'spec'|'export'|'settings'|'incomeDetail'|'expenseDetail'|'report'|'divisionStatements'|'closing'|'chart'|'bankImport'>('input')
+  const [active, setActive] = React.useState<'input'|'transaction'|'statements'|'auxiliary'|'spec'|'export'|'settings'|'incomeDetail'|'expenseDetail'|'report'|'divisionStatements'|'closing'|'chart'|'bankImport'>('transaction')
 
   return (
     <div className="container py-3">
       <h1 className="mb-3">マンション管理組合会計エンジン（React）</h1>
 
       <ul className="nav nav-tabs">
+        <li className="nav-item"><button className={`nav-link ${active==='transaction'?'active':''}`} onClick={() => setActive('transaction')}>取引入力(freee式)</button></li>
         <li className="nav-item"><button className={`nav-link ${active==='input'?'active':''}`} onClick={() => setActive('input')}>仕訳/仕訳帳</button></li>
         <li className="nav-item"><button className={`nav-link ${active==='incomeDetail'?'active':''}`} onClick={() => setActive('incomeDetail')}>収入明細表</button></li>
         <li className="nav-item"><button className={`nav-link ${active==='expenseDetail'?'active':''}`} onClick={() => setActive('expenseDetail')}>支出明細表</button></li>
@@ -57,6 +59,12 @@ export const App: React.FC = () => {
         <li className="nav-item"><button className={`nav-link ${active==='chart'?'active':''}`} onClick={() => setActive('chart')}>科目マスタ</button></li>
         <li className="nav-item"><button className={`nav-link ${active==='bankImport'?'active':''}`} onClick={() => setActive('bankImport')}>🤖 銀行明細インポート</button></li>
       </ul>
+
+      {active === 'transaction' && (
+        <section className="mt-2">
+          <TransactionInputForm engine={engine} onChange={forceUpdate} />
+        </section>
+      )}
 
       {active === 'input' && (
         <section className="row g-3 mt-2">
