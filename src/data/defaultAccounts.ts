@@ -25,29 +25,45 @@ export const defaultAccountsData: DefaultAccount[] = [
   { code: '1103', name: '普通預金（修繕）', shortName: '普通預金（修）', category: 'ASSET', subCategory: '流動資産', accountType: 'DEBIT', level: 3, parentCode: '1100', isPostable: true, divisionCode: 'SHUZEN', displayOrder: 1103, description: '修繕積立金口座' },
   { code: '1104', name: '定期預金', shortName: '定期預金', category: 'ASSET', subCategory: '流動資産', accountType: 'DEBIT', level: 3, parentCode: '1100', isPostable: true, divisionCode: 'SHUZEN', displayOrder: 1104 },
   
-  { code: '1200', name: '有価証券', shortName: '有価証券', category: 'ASSET', subCategory: '流動資産', accountType: 'DEBIT', level: 2, parentCode: '1000', isPostable: true, divisionCode: 'SHUZEN', displayOrder: 1200, description: 'すまい・る債,国債,地方債' },
+  { code: '1200', name: '有価証券', shortName: '有価証券', category: 'ASSET', subCategory: '流動資産', accountType: 'DEBIT', level: 2, parentCode: '1000', isPostable: false, divisionCode: 'SHUZEN', displayOrder: 1200 },
+  { code: '1201', name: '国債', shortName: '国債', category: 'ASSET', subCategory: '流動資産', accountType: 'DEBIT', level: 3, parentCode: '1200', isPostable: true, divisionCode: 'SHUZEN', displayOrder: 1201, description: '国債,地方債,すまい・る債' },
   
   { code: '1300', name: '未収入金', shortName: '未収入金', category: 'ASSET', subCategory: '流動資産', accountType: 'DEBIT', level: 2, parentCode: '1000', isPostable: false, divisionCode: 'COMMON', displayOrder: 1300 },
   { code: '1301', name: '管理費未収金', shortName: '管理費未収', category: 'ASSET', subCategory: '流動資産', accountType: 'DEBIT', level: 3, parentCode: '1300', isPostable: true, divisionCode: 'KANRI', displayOrder: 1301 },
   { code: '1302', name: '修繕積立金未収金', shortName: '修繕未収', category: 'ASSET', subCategory: '流動資産', accountType: 'DEBIT', level: 3, parentCode: '1300', isPostable: true, divisionCode: 'SHUZEN', displayOrder: 1302 },
   { code: '1303', name: '使用料未収金', shortName: '使用料未収', category: 'ASSET', subCategory: '流動資産', accountType: 'DEBIT', level: 3, parentCode: '1300', isPostable: true, divisionCode: 'KANRI', displayOrder: 1303 },
   
-  { code: '1400', name: '前払費用', shortName: '前払費用', category: 'ASSET', subCategory: '流動資産', accountType: 'DEBIT', level: 2, parentCode: '1000', isPostable: true, divisionCode: 'COMMON', displayOrder: 1400, description: '未経過保険料,保守契約前払' },
-  { code: '1500', name: '仮払金', shortName: '仮払金', category: 'ASSET', subCategory: '流動資産', accountType: 'DEBIT', level: 2, parentCode: '1000', isPostable: true, divisionCode: 'COMMON', displayOrder: 1500, description: '立替,一時払,精算待ち' },
-  
+  { code: '1400', name: '前払費用', shortName: '前払費用', category: 'ASSET', subCategory: '流動資産', accountType: 'DEBIT', level: 2, parentCode: '1000', isPostable: false, divisionCode: 'COMMON', displayOrder: 1400 },
+  { code: '1401', name: '前払保険料', shortName: '前払保険料', category: 'ASSET', subCategory: '流動資産', accountType: 'DEBIT', level: 3, parentCode: '1400', isPostable: true, divisionCode: 'COMMON', displayOrder: 1401, description: '未経過保険料,保守契約前払' },
+  { code: '1500', name: '仮払金', shortName: '仮払金', category: 'ASSET', subCategory: '流動資産', accountType: 'DEBIT', level: 2, parentCode: '1000', isPostable: false, divisionCode: 'COMMON', displayOrder: 1500 },
+  { code: '1501', name: '仮払金', shortName: '仮払金', category: 'ASSET', subCategory: '流動資産', accountType: 'DEBIT', level: 3, parentCode: '1500', isPostable: true, divisionCode: 'COMMON', displayOrder: 1501, description: '立替,一時払,精算待ち' },
+    // 流動資産 > 前払金
+  { code: '1600', name: '前払金', shortName: '前払金', category: 'ASSET', subCategory: '流動資産', accountType: 'DEBIT', level: 2, parentCode: '1000', isPostable: false, divisionCode: 'COMMON', displayOrder: 1600 },
+  { code: '1601', name: '工事前払金', shortName: '工事前払', category: 'ASSET', subCategory: '流動資産', accountType: 'DEBIT', level: 3, parentCode: '1600', isPostable: true, divisionCode: 'SHUZEN', displayOrder: 1601, description: '工事前払金,契約金' },
+  // 非流動資産
+  { code: '1700', name: '非流動資産', shortName: '非流動資産', category: 'ASSET', subCategory: '非流動資産', accountType: 'DEBIT', level: 1, isPostable: false, divisionCode: 'COMMON', displayOrder: 1700 },
+  { code: '1710', name: '投資その他の資産', shortName: '投資その他', category: 'ASSET', subCategory: '非流動資産', accountType: 'DEBIT', level: 2, parentCode: '1700', isPostable: false, divisionCode: 'COMMON', displayOrder: 1710 },
+  { code: '1711', name: '差入保証金', shortName: '差入保証金', category: 'ASSET', subCategory: '非流動資産', accountType: 'DEBIT', level: 3, parentCode: '1710', isPostable: true, divisionCode: 'COMMON', displayOrder: 1711, description: '駐車場敷金,施設保証金' },
+  { code: '1720', name: '繰延資産', shortName: '繰延資産', category: 'ASSET', subCategory: '非流動資産', accountType: 'DEBIT', level: 2, parentCode: '1700', isPostable: false, divisionCode: 'COMMON', displayOrder: 1720 },
+  { code: '1721', name: '長期前払費用', shortName: '長期前払費用', category: 'ASSET', subCategory: '非流動資産', accountType: 'DEBIT', level: 3, parentCode: '1720', isPostable: true, divisionCode: 'COMMON', displayOrder: 1721, description: '長期保険料,長期保守料' },
   // 負債
   { code: '2000', name: '流動負債', shortName: '流動負債', category: 'LIABILITY', subCategory: '流動負債', accountType: 'CREDIT', level: 1, isPostable: false, divisionCode: 'COMMON', displayOrder: 2000 },
-  { code: '2100', name: '未払金', shortName: '未払金', category: 'LIABILITY', subCategory: '流動負債', accountType: 'CREDIT', level: 2, parentCode: '2000', isPostable: true, divisionCode: 'COMMON', displayOrder: 2100, description: '工事代未払,水道光熱費未払' },
-  { code: '2200', name: '未払費用', shortName: '未払費用', category: 'LIABILITY', subCategory: '流動負債', accountType: 'CREDIT', level: 2, parentCode: '2000', isPostable: true, divisionCode: 'COMMON', displayOrder: 2200, description: '役務提供未払' },
+  { code: '2100', name: '未払金', shortName: '未払金', category: 'LIABILITY', subCategory: '流動負債', accountType: 'CREDIT', level: 2, parentCode: '2000', isPostable: false, divisionCode: 'COMMON', displayOrder: 2100 },
+  { code: '2101', name: '未払金', shortName: '未払金', category: 'LIABILITY', subCategory: '流動負債', accountType: 'CREDIT', level: 3, parentCode: '2100', isPostable: true, divisionCode: 'COMMON', displayOrder: 2101, description: '工事代未払,水道光熱費未払' },
+  { code: '2200', name: '未払費用', shortName: '未払費用', category: 'LIABILITY', subCategory: '流動負債', accountType: 'CREDIT', level: 2, parentCode: '2000', isPostable: false, divisionCode: 'COMMON', displayOrder: 2200 },
+  { code: '2201', name: '未払費用', shortName: '未払費用', category: 'LIABILITY', subCategory: '流動負債', accountType: 'CREDIT', level: 3, parentCode: '2200', isPostable: true, divisionCode: 'COMMON', displayOrder: 2201, description: '役務提供未払' },
   { code: '2300', name: '前受金', shortName: '前受金', category: 'LIABILITY', subCategory: '流動負債', accountType: 'CREDIT', level: 2, parentCode: '2000', isPostable: false, divisionCode: 'COMMON', displayOrder: 2300 },
   { code: '2301', name: '管理費前受金', shortName: '管理費前受', category: 'LIABILITY', subCategory: '流動負債', accountType: 'CREDIT', level: 3, parentCode: '2300', isPostable: true, divisionCode: 'KANRI', displayOrder: 2301 },
   { code: '2302', name: '修繕積立金前受金', shortName: '修繕前受', category: 'LIABILITY', subCategory: '流動負債', accountType: 'CREDIT', level: 3, parentCode: '2300', isPostable: true, divisionCode: 'SHUZEN', displayOrder: 2302 },
   { code: '2303', name: '使用料前受金', shortName: '使用料前受', category: 'LIABILITY', subCategory: '流動負債', accountType: 'CREDIT', level: 3, parentCode: '2300', isPostable: true, divisionCode: 'KANRI', displayOrder: 2303 },
-  { code: '2400', name: '仮受金', shortName: '仮受金', category: 'LIABILITY', subCategory: '流動負債', accountType: 'CREDIT', level: 2, parentCode: '2000', isPostable: true, divisionCode: 'COMMON', displayOrder: 2400, description: '一時受入,原因不明入金' },
-  { code: '2500', name: '預り金', shortName: '預り金', category: 'LIABILITY', subCategory: '流動負債', accountType: 'CREDIT', level: 2, parentCode: '2000', isPostable: true, divisionCode: 'COMMON', displayOrder: 2500, description: '敷金,保証金' },
+  { code: '2400', name: '仮受金', shortName: '仮受金', category: 'LIABILITY', subCategory: '流動負債', accountType: 'CREDIT', level: 2, parentCode: '2000', isPostable: false, divisionCode: 'COMMON', displayOrder: 2400 },
+  { code: '2401', name: '仮受金', shortName: '仮受金', category: 'LIABILITY', subCategory: '流動負債', accountType: 'CREDIT', level: 3, parentCode: '2400', isPostable: true, divisionCode: 'COMMON', displayOrder: 2401, description: '一時受入,原因不明入金' },
+  { code: '2500', name: '預り金', shortName: '預り金', category: 'LIABILITY', subCategory: '流動負債', accountType: 'CREDIT', level: 2, parentCode: '2000', isPostable: false, divisionCode: 'COMMON', displayOrder: 2500 },
+  { code: '2501', name: '預り金', shortName: '預り金', category: 'LIABILITY', subCategory: '流動負債', accountType: 'CREDIT', level: 3, parentCode: '2500', isPostable: true, divisionCode: 'COMMON', displayOrder: 2501, description: '敷金,保証金' },
   
   { code: '3000', name: '固定負債', shortName: '固定負債', category: 'LIABILITY', subCategory: '固定負債', accountType: 'CREDIT', level: 1, isPostable: false, divisionCode: 'COMMON', displayOrder: 3000 },
-  { code: '3100', name: '長期借入金', shortName: '長期借入金', category: 'LIABILITY', subCategory: '固定負債', accountType: 'CREDIT', level: 2, parentCode: '3000', isPostable: true, divisionCode: 'SHUZEN', displayOrder: 3100, description: '修繕資金借入,工事融資' },
+  { code: '3100', name: '長期借入金', shortName: '長期借入金', category: 'LIABILITY', subCategory: '固定負債', accountType: 'CREDIT', level: 2, parentCode: '3000', isPostable: false, divisionCode: 'SHUZEN', displayOrder: 3100 },
+  { code: '3101', name: '長期借入金', shortName: '長期借入金', category: 'LIABILITY', subCategory: '固定負債', accountType: 'CREDIT', level: 3, parentCode: '3100', isPostable: true, divisionCode: 'SHUZEN', displayOrder: 3101, description: '修繕資金借入,工事融資' },
   
   // 純資産
   { code: '4000', name: '純資産', shortName: '純資産', category: 'EQUITY', subCategory: '純資産', accountType: 'CREDIT', level: 1, isPostable: false, divisionCode: 'COMMON', displayOrder: 4000 },
@@ -59,7 +75,11 @@ export const defaultAccountsData: DefaultAccount[] = [
   { code: '5000', name: '収益', shortName: '収益', category: 'REVENUE', subCategory: '収益', accountType: 'CREDIT', level: 1, isPostable: false, divisionCode: 'COMMON', displayOrder: 5000 },
   { code: '5100', name: '管理収益', shortName: '管理収益', category: 'REVENUE', subCategory: '管理収益', accountType: 'CREDIT', level: 2, parentCode: '5000', isPostable: false, divisionCode: 'KANRI', displayOrder: 5100 },
   { code: '5101', name: '管理費収入', shortName: '管理費', category: 'REVENUE', subCategory: '管理収益', accountType: 'CREDIT', level: 3, parentCode: '5100', isPostable: true, divisionCode: 'KANRI', displayOrder: 5101 },
-  { code: '5102', name: '使用料収入', shortName: '使用料', category: 'REVENUE', subCategory: '管理収益', accountType: 'CREDIT', level: 3, parentCode: '5100', isPostable: true, divisionCode: 'KANRI', displayOrder: 5102, description: '駐車場,駐輪場,専用庭' },
+  { code: '5102', name: '駐車場使用料収入', shortName: '駐車場', category: 'REVENUE', subCategory: '管理収益', accountType: 'CREDIT', level: 3, parentCode: '5100', isPostable: true, divisionCode: 'KANRI', displayOrder: 5102, description: '月極駐車場,来客用駐車場' },
+  { code: '5103', name: '駐輪場使用料収入', shortName: '駐輪場', category: 'REVENUE', subCategory: '管理収益', accountType: 'CREDIT', level: 3, parentCode: '5100', isPostable: true, divisionCode: 'KANRI', displayOrder: 5103, description: '自転車置場,バイク置場' },
+  { code: '5104', name: 'ルーフバルコニー使用料収入', shortName: 'ルーフバルコニー', category: 'REVENUE', subCategory: '管理収益', accountType: 'CREDIT', level: 3, parentCode: '5100', isPostable: true, divisionCode: 'KANRI', displayOrder: 5104, description: '屋上バルコニー専用使用料' },
+  { code: '5105', name: 'テラス使用料収入', shortName: 'テラス', category: 'REVENUE', subCategory: '管理収益', accountType: 'CREDIT', level: 3, parentCode: '5100', isPostable: true, divisionCode: 'KANRI', displayOrder: 5105, description: '専用庭,テラス専用使用料' },
+  { code: '5106', name: '集会室使用料収入', shortName: '集会室', category: 'REVENUE', subCategory: '管理収益', accountType: 'CREDIT', level: 3, parentCode: '5100', isPostable: true, divisionCode: 'KANRI', displayOrder: 5106, description: '共用施設使用料' },
   
   { code: '5200', name: '積立金収入', shortName: '積立金収入', category: 'REVENUE', subCategory: '積立金収入', accountType: 'CREDIT', level: 2, parentCode: '5000', isPostable: false, divisionCode: 'SHUZEN', displayOrder: 5200 },
   { code: '5201', name: '修繕積立金収入', shortName: '修繕積立金', category: 'REVENUE', subCategory: '積立金収入', accountType: 'CREDIT', level: 3, parentCode: '5200', isPostable: true, divisionCode: 'SHUZEN', displayOrder: 5201 },
@@ -95,7 +115,10 @@ export const defaultAccountsData: DefaultAccount[] = [
   { code: '6306', name: '印刷費', shortName: '印刷費', category: 'EXPENSE', subCategory: '一般管理費', accountType: 'DEBIT', level: 3, parentCode: '6300', isPostable: true, divisionCode: 'KANRI', displayOrder: 6306 },
   { code: '6307', name: '租税公課', shortName: '租税公課', category: 'EXPENSE', subCategory: '一般管理費', accountType: 'DEBIT', level: 3, parentCode: '6300', isPostable: true, divisionCode: 'KANRI', displayOrder: 6307 },
   { code: '6308', name: '雑費', shortName: '雑費', category: 'EXPENSE', subCategory: '一般管理費', accountType: 'DEBIT', level: 3, parentCode: '6300', isPostable: true, divisionCode: 'KANRI', displayOrder: 6308 },
-  
+    // 一般管理費 配下の追加
+  { code: '6309', name: '旅費交通費', shortName: '旅費交通費', category: 'EXPENSE', subCategory: '一般管理費', accountType: 'DEBIT', level: 3, parentCode: '6300', isPostable: true, divisionCode: 'KANRI', displayOrder: 6309, description: '交通費,旅費,実費精算' },
+  { code: '6311', name: '諸会費', shortName: '諸会費', category: 'EXPENSE', subCategory: '一般管理費', accountType: 'DEBIT', level: 3, parentCode: '6300', isPostable: true, divisionCode: 'KANRI', displayOrder: 6310, description: '自治会費,加入団体会費' },
+
   { code: '6400', name: '長期修繕費', shortName: '長期修繕費', category: 'EXPENSE', subCategory: '長期修繕', accountType: 'DEBIT', level: 2, parentCode: '6000', isPostable: false, divisionCode: 'SHUZEN', displayOrder: 6400 },
   { code: '6401', name: '修繕工事費', shortName: '修繕工事費', category: 'EXPENSE', subCategory: '長期修繕', accountType: 'DEBIT', level: 3, parentCode: '6400', isPostable: true, divisionCode: 'SHUZEN', displayOrder: 6401, description: '大規模修繕工事,計画修繕' },
   { code: '6402', name: '設計監理費', shortName: '設計監理費', category: 'EXPENSE', subCategory: '長期修繕', accountType: 'DEBIT', level: 3, parentCode: '6400', isPostable: true, divisionCode: 'SHUZEN', displayOrder: 6402 },
@@ -103,28 +126,5 @@ export const defaultAccountsData: DefaultAccount[] = [
   { code: '6500', name: '特別損失', shortName: '特別損失', category: 'EXPENSE', subCategory: '特別損失', accountType: 'DEBIT', level: 2, parentCode: '6000', isPostable: false, divisionCode: 'COMMON', displayOrder: 6500 },
   { code: '6501', name: '繰出金', shortName: '繰出金', category: 'EXPENSE', subCategory: '特別損失', accountType: 'DEBIT', level: 3, parentCode: '6500', isPostable: true, divisionCode: 'KANRI', displayOrder: 6501, description: '修繕会計繰出' },
   { code: '6502', name: '雑損失', shortName: '雑損失', category: 'EXPENSE', subCategory: '特別損失', accountType: 'DEBIT', level: 3, parentCode: '6500', isPostable: true, divisionCode: 'COMMON', displayOrder: 6502 },
-  // 追加分（差分）: defaultAccountsData の末尾に追記
-// --- 流動資産 > 前払金（前渡金） ---
-{ code: '1600', name: '前払金', shortName: '前払金', category: 'ASSET', subCategory: '流動資産',
-  accountType: 'DEBIT', level: 2, parentCode: '1000', isPostable: false, divisionCode: 'COMMON', displayOrder: 1600 },
-{ code: '1601', name: '工事前払金', shortName: '工事前払', category: 'ASSET', subCategory: '流動資産',
-  accountType: 'DEBIT', level: 3, parentCode: '1600', isPostable: true, divisionCode: 'SHUZEN', displayOrder: 1601, description: '工事前払金,契約金' },
 
-// --- 非流動資産（長期） ---
-{ code: '1700', name: '非流動資産', shortName: '非流動資産', category: 'ASSET', subCategory: '非流動資産',
-  accountType: 'DEBIT', level: 1, isPostable: false, divisionCode: 'COMMON', displayOrder: 1700 },
-{ code: '1710', name: '投資その他の資産', shortName: '投資その他', category: 'ASSET', subCategory: '非流動資産',
-  accountType: 'DEBIT', level: 2, parentCode: '1700', isPostable: false, divisionCode: 'COMMON', displayOrder: 1710 },
-{ code: '1711', name: '差入保証金', shortName: '差入保証金', category: 'ASSET', subCategory: '非流動資産',
-  accountType: 'DEBIT', level: 3, parentCode: '1710', isPostable: true, divisionCode: 'COMMON', displayOrder: 1711, description: '駐車場敷金,施設保証金' },
-{ code: '1720', name: '繰延資産', shortName: '繰延資産', category: 'ASSET', subCategory: '非流動資産',
-  accountType: 'DEBIT', level: 2, parentCode: '1700', isPostable: false, divisionCode: 'COMMON', displayOrder: 1720 },
-{ code: '1721', name: '長期前払費用', shortName: '長期前払費用', category: 'ASSET', subCategory: '非流動資産',
-  accountType: 'DEBIT', level: 3, parentCode: '1720', isPostable: true, divisionCode: 'COMMON', displayOrder: 1721, description: '長期保険料,長期保守料' },
-
-// --- 一般管理費 配下の追加（費用）---
-{ code: '6309', name: '旅費交通費', shortName: '旅費交通費', category: 'EXPENSE', subCategory: '一般管理費',
-  accountType: 'DEBIT', level: 3, parentCode: '6300', isPostable: true, divisionCode: 'KANRI', displayOrder: 6309, description: '交通費,旅費,実費精算' },
-{ code: '6310', name: '諸会費', shortName: '諸会費', category: 'EXPENSE', subCategory: '一般管理費',
-  accountType: 'DEBIT', level: 3, parentCode: '6300', isPostable: true, divisionCode: 'KANRI', displayOrder: 6310, description: '自治会費,加入団体会費' },
 ]

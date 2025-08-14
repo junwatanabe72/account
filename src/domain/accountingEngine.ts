@@ -38,7 +38,7 @@ export class AccountingEngine {
   private reportService: ReportService
   private importExportService: ImportExportService
   private auxiliaryService: AuxiliaryService
-  private sampleDataService: SampleDataService
+  private _sampleDataService: SampleDataService
   private closingService: ClosingService
   private transactionService: TransactionService
   private journalGenerationEngine: JournalGenerationEngine
@@ -55,7 +55,7 @@ export class AccountingEngine {
       this.divisionService, 
       this.auxiliaryService
     )
-    this.sampleDataService = new SampleDataService(
+    this._sampleDataService = new SampleDataService(
       this.journalService,
       this.accountService,
       this.auxiliaryService
@@ -77,7 +77,7 @@ export class AccountingEngine {
     this.auxiliaryService.initializeUnitOwners()
     this.auxiliaryService.initializeVendors()
     this.auxiliaryService.createUnitOwnerAuxiliaryAccounts(this.accountService)
-    this.sampleDataService.loadTwoYearSampleData()
+    this._sampleDataService.loadOneMonthSampleData()
   }
   
   // Account management
@@ -142,9 +142,11 @@ export class AccountingEngine {
   exportCurrentBalancesAsOpeningDetails() { return this.importExportService.exportCurrentBalancesAsOpeningDetails() }
   
   // Sample data
-  loadTwoYearSampleData() { return this.sampleDataService.loadTwoYearSampleData() }
-  loadSampleData() { return this.sampleDataService.loadSampleData() }
-  clearAll() { return this.sampleDataService.clearAll() }
+  get sampleDataService() { return this._sampleDataService }
+  loadTwoYearSampleData() { return this._sampleDataService.loadTwoYearSampleData() }
+  loadOneMonthSampleData() { return this._sampleDataService.loadOneMonthSampleData() }
+  loadSampleData() { return this._sampleDataService.loadSampleData() }
+  clearAll() { return this._sampleDataService.clearAll() }
   rebuildAuxiliaryAccounts() { return this.accountService.rebuildAuxiliaryAccounts() }
   
   // Closing entries
@@ -164,7 +166,9 @@ export class AccountingEngine {
       division: acc.division,
       parentCode: acc.parentCode,
       description: acc.description,
-      isActive: acc.isActive
+      isActive: acc.isActive,
+      level: (acc as any).level,
+      isPostable: (acc as any).isPostable
     }))
   }
   

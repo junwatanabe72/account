@@ -7,92 +7,117 @@
 ```
 src/
 ├── components/          # 共有コンポーネント
-├── config/             # 設定ファイル
-│   └── featureFlags.ts # 機能フラグ管理
 ├── constants/          # 定数定義
+│   └── index.ts        # 定数エクスポート
+├── constants.ts        # レガシー定数定義
 ├── data/              # データファイル
-│   ├── accountMaster.csv/json  # 勘定科目マスタ
+│   ├── accountMaster.csv       # 勘定科目マスタ（CSV）
+│   ├── accountMaster.json      # 勘定科目マスタ（JSON）
+│   ├── accountMaster_utf8.csv  # 勘定科目マスタ（UTF-8）
 │   └── defaultAccounts.ts      # デフォルト勘定科目設定
 ├── domain/            # ビジネスロジック層
-│   ├── accountingEngine.ts    # 会計エンジン（V1）
-│   ├── AccountingEngineV2.ts  # 会計エンジン（V2）
+│   ├── accountingEngine.ts    # 会計エンジン
 │   └── services/              # ドメインサービス
 ├── services/          # アプリケーションサービス
 │   └── llmClient.ts  # LLM連携クライアント
 ├── types/             # 型定義
+│   ├── index.ts              # 型定義エクスポート
+│   ├── accounting.ts         # 会計関連型
+│   ├── accountingDivision.ts # 部門会計型
+│   ├── journalPattern.ts     # 仕訳パターン型
+│   ├── master.ts            # マスタデータ型
+│   ├── terminology.ts       # 用語定義
+│   ├── transaction.ts       # 取引関連型
+│   └── ui.ts               # UI関連型
+├── types.ts           # レガシー型定義
 ├── ui/               # UIコンポーネント
+│   ├── app/          # アプリケーションルート
+│   │   ├── App.tsx
+│   │   └── AppWithSidebar.tsx
+│   ├── transactions/ # 取引・仕訳入力
+│   ├── ledgers/      # 帳簿表示
+│   ├── statements/   # 財務諸表
+│   ├── masters/      # マスタ管理
+│   ├── data-management/ # データ管理
+│   ├── settings/     # 設定・その他
+│   ├── common/       # 共通コンポーネント
 │   ├── hooks/        # React Hooks
+│   │   └── useAccountingData.ts
 │   └── styles/       # スタイルシート
+│       ├── commonStyles.ts    # 共通スタイル
+│       ├── data-display.css   # データ表示用CSS
+│       ├── forms.css         # フォーム用CSS
+│       ├── responsive.css    # レスポンシブCSS
+│       ├── tabs.css          # タブ用CSS
+│       └── theme.css         # テーマCSS
 ├── utils/            # ユーティリティ関数
-└── main.tsx          # エントリーポイント
+│   ├── errorHandler.ts  # エラーハンドリング
+│   └── fileParser.ts    # ファイルパース処理
+├── main.tsx          # エントリーポイント
+└── vite-env.d.ts     # Vite環境型定義
 ```
 
 ## 主要コンポーネント
 
 ### UIコンポーネント (/ui)
 
-#### アプリケーション
-- `App.tsx` - メインアプリケーション（V1）
-- `AppV2.tsx` - 新実装版アプリケーション（V2）
+#### app/ - アプリケーションルート
+- `App.tsx` - メインアプリケーション
 - `AppWithSidebar.tsx` - サイドバー付きレイアウト
 
-#### 取引・仕訳入力
+#### transactions/ - 取引・仕訳入力
 - `TransactionInputForm.tsx` - freee式取引入力フォーム
 - `TransactionForm.tsx` - 標準取引入力フォーム
 - `JournalForm.tsx` - 仕訳入力フォーム
 - `ImprovedJournalForm.tsx` - 改良版仕訳入力フォーム
 - `BankImportWizard.tsx` - 銀行データインポートウィザード
 - `LLMJournalProcessor.tsx` - AI仕訳処理
+- `JournalEditModal.tsx` - 仕訳編集モーダル
+- `JournalFilterBar.tsx` - 仕訳フィルターバー
+- `JournalConfirmation.tsx` - 仕訳確認画面
 
-#### 帳票表示
+#### ledgers/ - 帳票表示
 - `LedgerView.tsx` - 総勘定元帳ビュー
 - `ImprovedLedgerView.tsx` - 改良版総勘定元帳
 - `AuxiliaryLedgerView.tsx` - 補助元帳ビュー
 - `TrialBalanceView.tsx` - 試算表ビュー
 
-#### 財務諸表
+#### statements/ - 財務諸表
 - `BalanceSheetView.tsx` - 貸借対照表
 - `IncomeStatementView.tsx` - 損益計算書
 - `IncomeExpenseReport.tsx` - 収支報告書
 - `IncomeDetailView.tsx` - 収入明細表
 - `ExpenseDetailView.tsx` - 支出明細表
+- `DivisionStatementsPanel.tsx` - 部門別財務諸表
 
-#### 管理機能
-- `AccountMasterPanel.tsx` - 勘定科目マスタ管理
+#### masters/ - マスタ管理
 - `ChartOfAccountsPanel.tsx` - 勘定科目一覧
 - `DivisionAccountingView.tsx` - 部門別会計ビュー
-- `DivisionStatementsPanel.tsx` - 部門別財務諸表
 - `ClosingPanel.tsx` - 決算処理パネル
 - `UnitOwnersEditor.tsx` - 組合員管理
 
-#### データ管理
+#### data-management/ - データ管理
 - `JsonImport.tsx` - JSONデータインポート
 - `ExportPanel.tsx` - データエクスポート
 - `FileUploader.tsx` - ファイルアップロード
 - `LocalStoragePanel.tsx` - ローカルストレージ管理
 - `SampleDataPanel.tsx` - サンプルデータ管理
 
-#### 設定・その他
+#### settings/ - 設定・その他
 - `SettingsPanel.tsx` - 設定パネル
 - `PrintPanel.tsx` - 印刷パネル
 - `JsonSpecView.tsx` - JSON仕様ビュー
 - `ManualView.tsx` - マニュアル表示
 
-#### 共通UI部品
+#### common/ - 共通UI部品
 - `ConfirmDialog.tsx` - 確認ダイアログ
 - `Toast.tsx` - トースト通知
-- `JournalEditModal.tsx` - 仕訳編集モーダル
-- `JournalFilterBar.tsx` - 仕訳フィルターバー
-- `JournalConfirmation.tsx` - 仕訳確認画面
 
 ### ドメインサービス (/domain/services)
 
 #### コアサービス
-- `AccountService.ts` - 勘定科目管理（V1）
-- `AccountMasterService.ts` - 勘定科目マスタ管理（V2）
-- `AccountServiceAdapter.ts` - 新旧サービスアダプター
-- `JournalService.ts` - 仕訳管理（V1）
-- `JournalEntryService.ts` - 仕訳エントリー管理（V2）
+- `AccountService.ts` - 勘定科目管理
+- `JournalService.ts` - 仕訳管理
 
 #### 取引処理
 - `TransactionService.ts` - 取引管理
@@ -114,8 +139,6 @@ src/
 
 - `index.ts` - 型定義エクスポート
 - `accounting.ts` - 会計関連型定義
-- `accountMaster.ts` - 勘定科目マスタ型
-- `accountMasterTypes.ts` - 勘定科目型詳細
 - `accountingDivision.ts` - 部門会計型
 - `transaction.ts` - 取引関連型
 - `journalPattern.ts` - 仕訳パターン型
@@ -165,12 +188,11 @@ src/
    - バックアップ
    - サンプルデータ
 
-## バージョン管理
+## アーキテクチャ
 
-- **V1**: 既存の安定版実装（accountingEngine.ts）
-- **V2**: 新実装版（AccountingEngineV2.ts）
-  - URLパラメータ `?v2=true` で切り替え可能
-  - 段階的に機能を移行中
+- **ドメイン駆動設計**: ビジネスロジックを `domain/` に集約
+- **サービス層**: アプリケーションロジックを `services/` で管理
+- **型安全性**: TypeScriptによる厳密な型定義
 
 ## 技術スタック
 
@@ -192,6 +214,7 @@ npm run dev
 npm run build
 ```
 
-## 設定
+## 開発環境
 
-`config/featureFlags.ts` で機能フラグを管理し、新機能の有効/無効を切り替えることができます。
+- Node.js 18以上
+- npm 9以上

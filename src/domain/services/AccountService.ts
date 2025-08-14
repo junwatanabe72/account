@@ -20,6 +20,8 @@ type AccountDef = {
   parentCode?: string
   description?: string
   isActive?: boolean
+  level?: number
+  isPostable?: boolean
 }
 
 export class HierarchicalAccount {
@@ -30,6 +32,7 @@ export class HierarchicalAccount {
   children: HierarchicalAccount[] = []
   parentCode?: string
   isPostable = true
+  level: number | undefined
   
   constructor(
     public code: string, 
@@ -134,7 +137,9 @@ export class AccountService {
       division: account.divisionCode,
       parentCode: account.parentCode,
       description: account.description,
-      isActive: true
+      isActive: true,
+      level: account.level,
+      isPostable: account.isPostable
     }))
     
     this.rebuildAccountsFrom(accountDefs)
@@ -147,6 +152,8 @@ export class AccountService {
     for (const def of defs) {
       const acc = new HierarchicalAccount(def.code, def.name, def.type, def.normalBalance, def.division, def.description, def.isActive !== false)
       acc.parentCode = def.parentCode
+      if (def.level !== undefined) acc.level = def.level
+      if (def.isPostable !== undefined) acc.isPostable = def.isPostable
       this.accounts.set(def.code, acc)
       if (def.parentCode) {
         if (!parentMap.has(def.parentCode)) parentMap.set(def.parentCode, [])
@@ -173,8 +180,12 @@ export class AccountService {
       acc.division = def.division
       acc.description = def.description
       if (def.isActive !== undefined) acc.isActive = def.isActive
+      if (def.level !== undefined) acc.level = def.level
+      if (def.isPostable !== undefined) acc.isPostable = def.isPostable
     } else {
       this.accounts.set(def.code, acc)
+      if (def.level !== undefined) acc.level = def.level
+      if (def.isPostable !== undefined) acc.isPostable = def.isPostable
     }
     
     if (def.parentCode) {

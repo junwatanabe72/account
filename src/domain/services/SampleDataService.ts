@@ -17,6 +17,35 @@ export class SampleDataService {
     return Math.floor(Math.random() * (max - min + 1)) + min
   }
   
+  loadOneMonthSampleData() {
+    this.accountService.clearAccounts()
+    this.journalService.clearJournals()
+    this.auxiliaryService.clearAuxiliaries()
+    
+    this.accountService.initializeAccounts()
+    this.auxiliaryService.initializeUnitOwners()
+    this.auxiliaryService.initializeVendors()
+    this.auxiliaryService.createUnitOwnerAuxiliaryAccounts(this.accountService)
+    
+    const currentYear = new Date().getFullYear()
+    const currentMonth = new Date().getMonth() + 1
+    
+    // 期首残高
+    this.journalService.createJournal({
+      date: `${currentYear}-${String(currentMonth).padStart(2, '0')}-01`,
+      description: '期首残高',
+      details: [
+        { accountCode: '1102', debitAmount: 5000000 },  // 普通預金（管理）
+        { accountCode: '1103', debitAmount: 10000000 }, // 普通預金（修繕）
+        { accountCode: '4101', creditAmount: 7000000 }, // 管理費繰越金
+        { accountCode: '4102', creditAmount: 8000000 }  // 修繕積立金繰越金
+      ]
+    })
+    
+    // 1ヶ月分のデータ生成
+    this.generateMonthlyData(currentYear, currentMonth, currentMonth)
+  }
+  
   loadTwoYearSampleData() {
     this.accountService.clearAccounts()
     this.journalService.clearJournals()
@@ -38,10 +67,10 @@ export class SampleDataService {
       date: previousYearStart,
       description: '期首残高',
       details: [
-        { accountCode: '1111', debitAmount: 5000000 },
-        { accountCode: '1112', debitAmount: 10000000 },
-        { accountCode: '3210', creditAmount: 7000000 },
-        { accountCode: '3220', creditAmount: 8000000 }
+        { accountCode: '1102', debitAmount: 5000000 },  // 普通預金（管理）
+        { accountCode: '1103', debitAmount: 10000000 }, // 普通預金（修繕）
+        { accountCode: '4101', creditAmount: 7000000 }, // 管理費繰越金
+        { accountCode: '4102', creditAmount: 8000000 }  // 修繕積立金繰越金
       ]
     })
     
@@ -96,14 +125,14 @@ export class SampleDataService {
           const rr = owner.monthlyReserveFund
           
           if (mf > 0) {
-            collectionDetails.push({ accountCode: '1111', debitAmount: mf })
-            collectionDetails.push({ accountCode: '1121', creditAmount: mf, auxiliaryCode: owner.unitNumber })
+            collectionDetails.push({ accountCode: '1102', debitAmount: mf })  // 普通預金（管理）
+            collectionDetails.push({ accountCode: '5101', creditAmount: mf, auxiliaryCode: owner.unitNumber })  // 管理費収入
             totalCollection += mf
           }
           
           if (rr > 0) {
-            collectionDetails.push({ accountCode: '1111', debitAmount: rr })
-            collectionDetails.push({ accountCode: '1122', creditAmount: rr, auxiliaryCode: owner.unitNumber })
+            collectionDetails.push({ accountCode: '1103', debitAmount: rr })  // 普通預金（修繕）
+            collectionDetails.push({ accountCode: '5201', creditAmount: rr, auxiliaryCode: owner.unitNumber })  // 修繕積立金収入
             totalCollection += rr
           }
         }
@@ -130,8 +159,8 @@ export class SampleDataService {
       date: `${datePrefix}-25`,
       description: `管理員業務費（${month}月分）`,
       details: [
-        { accountCode: '5110', debitAmount: this.getRandomAmount(150000, 180000) },
-        { accountCode: '2111', creditAmount: this.getRandomAmount(150000, 180000) }
+        { accountCode: '6101', debitAmount: this.getRandomAmount(150000, 180000) },  // 管理委託費
+        { accountCode: '2101', creditAmount: this.getRandomAmount(150000, 180000) }   // 未払金
       ]
     })
     
@@ -140,8 +169,8 @@ export class SampleDataService {
       date: `${datePrefix}-25`,
       description: `清掃業務費（${month}月分）`,
       details: [
-        { accountCode: '5120', debitAmount: this.getRandomAmount(80000, 100000) },
-        { accountCode: '2111', creditAmount: this.getRandomAmount(80000, 100000) }
+        { accountCode: '6101', debitAmount: this.getRandomAmount(80000, 100000) },  // 管理委託費（清掃）
+        { accountCode: '2101', creditAmount: this.getRandomAmount(80000, 100000) }   // 未払金
       ]
     })
     
@@ -157,8 +186,8 @@ export class SampleDataService {
       date: `${datePrefix}-20`,
       description: `電気料（${month}月分）`,
       details: [
-        { accountCode: '5210', debitAmount: Math.floor(electricityAmount) },
-        { accountCode: '2111', creditAmount: Math.floor(electricityAmount) }
+        { accountCode: '6102', debitAmount: Math.floor(electricityAmount) },  // 水道光熱費（電気）
+        { accountCode: '2101', creditAmount: Math.floor(electricityAmount) }   // 未払金
       ]
     })
     
@@ -167,8 +196,8 @@ export class SampleDataService {
       date: `${datePrefix}-20`,
       description: `水道料（${month}月分）`,
       details: [
-        { accountCode: '5220', debitAmount: this.getRandomAmount(20000, 30000) },
-        { accountCode: '2111', creditAmount: this.getRandomAmount(20000, 30000) }
+        { accountCode: '6102', debitAmount: this.getRandomAmount(20000, 30000) },  // 水道光熱費（水道）
+        { accountCode: '2101', creditAmount: this.getRandomAmount(20000, 30000) }   // 未払金
       ]
     })
     
@@ -180,8 +209,8 @@ export class SampleDataService {
         date: `${datePrefix}-15`,
         description: `経常修繕工事（${repairDesc}）`,
         details: [
-          { accountCode: '5310', debitAmount: repairAmount },
-          { accountCode: '2111', creditAmount: repairAmount }
+          { accountCode: '6201', debitAmount: repairAmount },  // 修繕費
+          { accountCode: '2101', creditAmount: repairAmount }   // 未払金
         ]
       })
     }
@@ -192,8 +221,8 @@ export class SampleDataService {
         date: `${datePrefix}-01`,
         description: '火災保険料（年間）',
         details: [
-          { accountCode: '5410', debitAmount: 480000 },
-          { accountCode: '1111', creditAmount: 480000 }
+          { accountCode: '6104', debitAmount: 480000 },  // 保険料
+          { accountCode: '1102', creditAmount: 480000 }   // 普通預金（管理）
         ]
       })
     }
@@ -203,8 +232,8 @@ export class SampleDataService {
         date: `${datePrefix}-15`,
         description: '理事会運営費',
         details: [
-          { accountCode: '5620', debitAmount: 50000 },
-          { accountCode: '1111', creditAmount: 50000 }
+          { accountCode: '6303', debitAmount: 50000 },  // 会議費
+          { accountCode: '1102', creditAmount: 50000 }   // 普通預金（管理）
         ]
       })
     }
@@ -214,8 +243,8 @@ export class SampleDataService {
         date: `${datePrefix}-30`,
         description: '外壁補修工事（計画修繕）',
         details: [
-          { accountCode: '5320', debitAmount: 3000000 },
-          { accountCode: '1111', creditAmount: 3000000 }
+          { accountCode: '6401', debitAmount: 3000000 },  // 修繕工事費
+          { accountCode: '1103', creditAmount: 3000000 }   // 普通預金（修繕）
         ]
       })
     }
@@ -227,8 +256,8 @@ export class SampleDataService {
       date: paymentDate,
       description: `未払金支払（${month}月分）`,
       details: [
-        { accountCode: '2111', debitAmount: paymentAmount },
-        { accountCode: '1111', creditAmount: paymentAmount }
+        { accountCode: '2101', debitAmount: paymentAmount },  // 未払金
+        { accountCode: '1102', creditAmount: paymentAmount }   // 普通預金（管理）
       ]
     })
   }
@@ -261,9 +290,9 @@ export class SampleDataService {
       for (const acc of kanriRevenue) {
         details.push({ accountCode: acc.code, debitAmount: acc.getDisplayBalance() })
       }
-      details.push({ accountCode: '3110', creditAmount: kanriRevenue.reduce((sum, acc) => sum + acc.getDisplayBalance(), 0) })
+      details.push({ accountCode: '4101', creditAmount: kanriRevenue.reduce((sum, acc) => sum + acc.getDisplayBalance(), 0) })  // 管理費繰越金
       
-      details.push({ accountCode: '3110', debitAmount: kanriExpense.reduce((sum, acc) => sum + acc.getDisplayBalance(), 0) })
+      details.push({ accountCode: '4101', debitAmount: kanriExpense.reduce((sum, acc) => sum + acc.getDisplayBalance(), 0) })  // 管理費繰越金
       for (const acc of kanriExpense) {
         details.push({ accountCode: acc.code, creditAmount: acc.getDisplayBalance() })
       }
@@ -285,9 +314,9 @@ export class SampleDataService {
       for (const acc of shuzenRevenue) {
         details.push({ accountCode: acc.code, debitAmount: acc.getDisplayBalance() })
       }
-      details.push({ accountCode: '3120', creditAmount: shuzenRevenue.reduce((sum, acc) => sum + acc.getDisplayBalance(), 0) })
+      details.push({ accountCode: '4102', creditAmount: shuzenRevenue.reduce((sum, acc) => sum + acc.getDisplayBalance(), 0) })  // 修繕積立金繰越金
       
-      details.push({ accountCode: '3120', debitAmount: shuzenExpense.reduce((sum, acc) => sum + acc.getDisplayBalance(), 0) })
+      details.push({ accountCode: '4102', debitAmount: shuzenExpense.reduce((sum, acc) => sum + acc.getDisplayBalance(), 0) })  // 修繕積立金繰越金
       for (const acc of shuzenExpense) {
         details.push({ accountCode: acc.code, creditAmount: acc.getDisplayBalance() })
       }

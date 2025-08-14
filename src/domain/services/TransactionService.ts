@@ -13,19 +13,28 @@ import { CreateJournalResult } from '../../types/accounting'
 import { JournalService } from './JournalService'
 import { AccountService } from './AccountService'
 import { JournalGenerationEngine } from './JournalGenerationEngine'
+import { BankAccountService } from './BankAccountService'
 
 export class TransactionService {
   private transactions: Transaction[] = []
   private counterparties: Counterparty[] = []
   private templates: TransactionTemplate[] = []
   private journalGenerationEngine: JournalGenerationEngine
+  private bankAccountService: BankAccountService | null = null
   
   constructor(
     private accountService: AccountService,
-    private journalService: JournalService
+    private journalService: JournalService,
+    bankAccountService?: BankAccountService
   ) {
     this.journalGenerationEngine = new JournalGenerationEngine(accountService)
+    this.bankAccountService = bankAccountService || null
     this.initializeDefaultData()
+  }
+  
+  // BankAccountServiceを設定
+  setBankAccountService(bankAccountService: BankAccountService): void {
+    this.bankAccountService = bankAccountService
   }
   
   // デフォルトデータの初期化
@@ -107,6 +116,23 @@ export class TransactionService {
       return { success: false, errors: validation.errors }
     }
     
+    // 決済口座のバリデーション
+    if (input.paymentAccountCode && this.bankAccountService) {
+      const paymentAccount = this.bankAccountService.getAccount(input.paymentAccountCode)
+      if (!paymentAccount) {
+        return { 
+          success: false, 
+          errors: [`決済口座 ${input.paymentAccountCode} が見つかりません`] 
+        }
+      }
+      if (!paymentAccount.isActive) {
+        return { 
+          success: false, 
+          errors: [`決済口座 ${paymentAccount.name} は無効化されています`] 
+        }
+      }
+    }
+    
     // 取引データを作成
     const transaction: Transaction = {
       id: `t_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
@@ -133,6 +159,26 @@ export class TransactionService {
       
       // 取引を保存
       this.transactions.push(transaction)
+      
+      // BankAccountServiceに取引参照を登録
+      if (this.bankAccountService) {
+        if (input.paymentAccountCode) {
+          this.bankAccountService.registerTransactionReference(
+            transaction.id, 
+            input.paymentAccountCode,
+            false
+          )
+        }
+        
+        // 振替取引の場合
+        if (input.type === 'transfer' && input.accountCode) {
+          this.bankAccountService.registerTransactionReference(
+            transaction.id,
+            input.accountCode,
+            true
+          )
+        }
+      }
       
       return { 
         success: true, 
