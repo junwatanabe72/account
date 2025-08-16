@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { FileUploader } from '../data-management/FileUploader'
-import { LLMJournalProcessor } from './LLMJournalProcessor'
+// import { LLMJournalProcessor } from './LLMJournalProcessor'
 import { JournalConfirmation } from './JournalConfirmation'
 import { ParsedFileData } from '../../utils/fileParser'
 import { StandardizedBankTransaction, JournalSuggestion } from '../../types/master'
@@ -274,7 +274,7 @@ export const BankImportWizard: React.FC<BankImportWizardProps> = ({
           </div>
         )}
 
-        {currentStep === 'processing' && parsedData && (
+        {/* {currentStep === 'processing' && parsedData && (
           <div className="step-content">
             <div className="step-description">
               <h2>🤖 LLMによる自動処理中</h2>
@@ -287,9 +287,9 @@ export const BankImportWizard: React.FC<BankImportWizardProps> = ({
               onError={handleError}
             />
           </div>
-        )}
+        )} */}
 
-        {currentStep === 'confirmation' && processedResults && (
+        {/* {currentStep === 'confirmation' && processedResults && (
           <div className="step-content">
             <JournalConfirmation
               results={processedResults}
@@ -298,7 +298,7 @@ export const BankImportWizard: React.FC<BankImportWizardProps> = ({
               accountingEngine={accountingEngine}
             />
           </div>
-        )}
+        )} */}
 
         {currentStep === 'complete' && finalResults && (
           <div className="step-content">
