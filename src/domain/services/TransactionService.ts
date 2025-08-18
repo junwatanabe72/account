@@ -14,6 +14,8 @@ import { JournalService } from './JournalService'
 import { AccountService } from './AccountService'
 import { JournalGenerationEngine } from './JournalGenerationEngine'
 import { BankAccountService } from './BankAccountService'
+import { IAccountService } from '../interfaces/IAccountService'
+import { IJournalService } from '../interfaces/IJournalService'
 
 export class TransactionService {
   private transactions: Transaction[] = []
@@ -23,8 +25,8 @@ export class TransactionService {
   private bankAccountService: BankAccountService | null = null
   
   constructor(
-    private accountService: AccountService,
-    private journalService: JournalService,
+    private accountService: AccountService | IAccountService,
+    private journalService: JournalService | IJournalService,
     bankAccountService?: BankAccountService
   ) {
     this.journalGenerationEngine = new JournalGenerationEngine(accountService)
