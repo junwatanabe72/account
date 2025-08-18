@@ -10,6 +10,7 @@ import {
 } from '../../types'
 import { ACCOUNTING_CONSTANTS } from '../../constants'
 import { defaultAccountsData } from '../../data/defaultAccounts'
+import { IAccountService } from '../interfaces/IAccountService'
 
 type AccountDef = {
   code: string
@@ -113,8 +114,14 @@ export class AuxiliaryLedger {
 }
 
 // 旧実装 - AccountServiceAdapterで新実装との互換性を保持
-export class AccountService {
-  accounts = new Map<string, HierarchicalAccount>()
+// インタフェースを実装して依存性を抽象化
+export class AccountService implements IAccountService {
+  private accountsMap = new Map<string, HierarchicalAccount>()
+  
+  // インタフェースの要求に応じて配列としてアクセス可能にする
+  get accounts(): HierarchicalAccount[] {
+    return Array.from(this.accountsMap.values())
+  }
   
   private mapCategoryToAccountType(category: string): AccountType {
     switch (category) {
@@ -146,7 +153,7 @@ export class AccountService {
   }
   
   rebuildAccountsFrom(defs: AccountDef[]) {
-    this.accounts.clear()
+    this.accountsMap.clear()
     const parentMap = new Map<string, HierarchicalAccount[]>()
     
     for (const def of defs) {
@@ -154,23 +161,23 @@ export class AccountService {
       acc.parentCode = def.parentCode
       if (def.level !== undefined) acc.level = def.level
       if (def.isPostable !== undefined) acc.isPostable = def.isPostable
-      this.accounts.set(def.code, acc)
+      this.accountsMap.set(def.code, acc)
       if (def.parentCode) {
         if (!parentMap.has(def.parentCode)) parentMap.set(def.parentCode, [])
         parentMap.get(def.parentCode)!.push(acc)
       }
     }
     
-    for (const acc of this.accounts.values()) {
+    for (const acc of this.accountsMap.values()) {
       if (acc.parentCode) {
-        const parent = this.accounts.get(acc.parentCode)
+        const parent = this.accountsMap.get(acc.parentCode)
         if (parent) parent.addChild(acc)
       }
     }
   }
   
   addOrUpdateAccount(def: AccountDef) {
-    const exists = this.accounts.get(def.code)
+    const exists = this.accountsMap.get(def.code)
     const acc = exists || new HierarchicalAccount(def.code, def.name, def.type, def.normalBalance, def.division, def.description, def.isActive !== false)
     
     if (exists) {
@@ -183,13 +190,13 @@ export class AccountService {
       if (def.level !== undefined) acc.level = def.level
       if (def.isPostable !== undefined) acc.isPostable = def.isPostable
     } else {
-      this.accounts.set(def.code, acc)
+      this.accountsMap.set(def.code, acc)
       if (def.level !== undefined) acc.level = def.level
       if (def.isPostable !== undefined) acc.isPostable = def.isPostable
     }
     
     if (def.parentCode) {
-      const parent = this.accounts.get(def.parentCode)
+      const parent = this.accountsMap.get(def.parentCode)
       if (parent && !exists) parent.addChild(acc)
     }
     
@@ -197,25 +204,25 @@ export class AccountService {
   }
   
   setAccountActive(code: string, active: boolean) {
-    const acc = this.accounts.get(code)
+    const acc = this.accountsMap.get(code)
     if (acc) acc.isActive = active
   }
   
   getAccounts() { 
-    return Array.from(this.accounts.values()).sort((a, b) => a.code.localeCompare(b.code)) 
+    return Array.from(this.accountsMap.values()).sort((a, b) => a.code.localeCompare(b.code)) 
   }
   
   getAccount(code: string) {
-    return this.accounts.get(code)
+    return this.accountsMap.get(code)
   }
   
   clearAccounts() {
-    this.accounts.clear()
+    this.accountsMap.clear()
   }
   
   rebuildAuxiliaryAccounts() {
-    const a1121 = this.accounts.get('1121')
-    const a1122 = this.accounts.get('1122')
+    const a1121 = this.accountsMap.get('1121')
+    const a1122 = this.accountsMap.get('1122')
     if (a1121) { a1121.auxiliaryLedgers.clear(); a1121.hasAuxiliary = false }
     if (a1122) { a1122.auxiliaryLedgers.clear(); a1122.hasAuxiliary = false }
   }
