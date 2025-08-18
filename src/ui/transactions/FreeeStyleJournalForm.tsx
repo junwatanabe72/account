@@ -234,6 +234,34 @@ const FreeeStyleJournalForm: React.FC<FreeeStyleJournalFormProps> = ({
     return true;
   };
 
+  // 未収金科目の取得
+  const getReceivableAccountCode = (incomeAccountCode: string): string => {
+    // 収入科目コードに基づいて未収金科目を決定
+    if (incomeAccountCode.startsWith("51")) {
+      return "1301"; // 管理費未収金
+    } else if (incomeAccountCode.startsWith("52")) {
+      return "1302"; // 修繕積立金未収金
+    } else if (incomeAccountCode.startsWith("53")) {
+      return "1303"; // 使用料未収金
+    } else {
+      return "1301"; // デフォルトは管理費未収金
+    }
+  };
+
+  // 未収金科目名の取得
+  const getReceivableAccountName = (accountCode: string): string => {
+    switch (accountCode) {
+      case "1301":
+        return "管理費未収金";
+      case "1302":
+        return "修繕積立金未収金";
+      case "1303":
+        return "使用料未収金";
+      default:
+        return "未収金";
+    }
+  };
+
   // 仕訳プレビューの生成
   const generateJournalPreview = () => {
     if (transactionType === "transfer") {
@@ -292,42 +320,85 @@ const FreeeStyleJournalForm: React.FC<FreeeStyleJournalFormProps> = ({
       const paymentCode = getPaymentAccountCode();
 
       if (transactionType === "income") {
-        preview.details = [
-          {
-            accountCode: paymentCode,
-            accountName: paymentAccountOptions.find(
-              (opt) => opt.code === paymentCode
-            )?.label,
-            debitAmount: numAmount,
-            creditAmount: 0,
-          },
-          {
-            accountCode: selectedAccount.code,
-            accountName: selectedAccount.label,
-            debitAmount: 0,
-            creditAmount: numAmount,
-            serviceMonth: `${serviceMonth}-01`,
-            payerId,
-          },
-        ];
+        if (paymentStatus === "pending") {
+          // 未決済の場合：未収金を計上
+          const receivableCode = getReceivableAccountCode(selectedAccount.code);
+          const receivableName = getReceivableAccountName(receivableCode);
+          preview.details = [
+            {
+              accountCode: receivableCode,
+              accountName: receivableName,
+              debitAmount: numAmount,
+              creditAmount: 0,
+            },
+            {
+              accountCode: selectedAccount.code,
+              accountName: selectedAccount.label,
+              debitAmount: 0,
+              creditAmount: numAmount,
+              serviceMonth: `${serviceMonth}-01`,
+              payerId,
+            },
+          ];
+        } else {
+          // 決済済みの場合：通常の仕訳
+          preview.details = [
+            {
+              accountCode: paymentCode,
+              accountName: paymentAccountOptions.find(
+                (opt) => opt.code === paymentCode
+              )?.label,
+              debitAmount: numAmount,
+              creditAmount: 0,
+            },
+            {
+              accountCode: selectedAccount.code,
+              accountName: selectedAccount.label,
+              debitAmount: 0,
+              creditAmount: numAmount,
+              serviceMonth: `${serviceMonth}-01`,
+              payerId,
+            },
+          ];
+        }
       } else if (transactionType === "expense") {
-        preview.details = [
-          {
-            accountCode: selectedAccount.code,
-            accountName: selectedAccount.label,
-            debitAmount: numAmount,
-            creditAmount: 0,
-            serviceMonth: `${serviceMonth}-01`,
-          },
-          {
-            accountCode: paymentCode,
-            accountName: paymentAccountOptions.find(
-              (opt) => opt.code === paymentCode
-            )?.label,
-            debitAmount: 0,
-            creditAmount: numAmount,
-          },
-        ];
+        if (paymentStatus === "pending") {
+          // 未決済の場合：未払金を計上
+          preview.details = [
+            {
+              accountCode: selectedAccount.code,
+              accountName: selectedAccount.label,
+              debitAmount: numAmount,
+              creditAmount: 0,
+              serviceMonth: `${serviceMonth}-01`,
+            },
+            {
+              accountCode: "2101",
+              accountName: "未払金",
+              debitAmount: 0,
+              creditAmount: numAmount,
+            },
+          ];
+        } else {
+          // 決済済みの場合：通常の仕訳
+          preview.details = [
+            {
+              accountCode: selectedAccount.code,
+              accountName: selectedAccount.label,
+              debitAmount: numAmount,
+              creditAmount: 0,
+              serviceMonth: `${serviceMonth}-01`,
+            },
+            {
+              accountCode: paymentCode,
+              accountName: paymentAccountOptions.find(
+                (opt) => opt.code === paymentCode
+              )?.label,
+              debitAmount: 0,
+              creditAmount: numAmount,
+            },
+          ];
+        }
       }
 
       return preview;
@@ -820,7 +891,12 @@ const FreeeStyleJournalForm: React.FC<FreeeStyleJournalFormProps> = ({
           amount) ||
           (transactionType !== "transfer" && selectedAccount && amount)) && (
           <div className="journal-preview">
-            <h4>📋 仕訳プレビュー</h4>
+            <h4>
+              📋 仕訳プレビュー
+              {paymentStatus === "pending" && transactionType !== "transfer" && (
+                <span className="preview-badge pending">未決済</span>
+              )}
+            </h4>
             <table className="preview-table">
               <thead>
                 <tr>
@@ -857,6 +933,15 @@ const FreeeStyleJournalForm: React.FC<FreeeStyleJournalFormProps> = ({
                 ))}
               </tbody>
             </table>
+            {paymentStatus === "pending" && transactionType !== "transfer" && (
+              <div className="preview-note">
+                <small>
+                  {transactionType === "income" 
+                    ? "※ 未決済のため、未収金を計上します" 
+                    : "※ 未決済のため、未払金を計上します"}
+                </small>
+              </div>
+            )}
           </div>
         )}
 
