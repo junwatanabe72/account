@@ -1,20 +1,32 @@
+/**
+ * @file AccountingEngine.ts
+ * @description 会計エンジンのメインファサード
+ * 
+ * 責務:
+ * - すべての会計サービスへの統一的なアクセスポイント提供
+ * - ServiceFactoryを使用した依存性の管理
+ * - 外部（UI層）への公開APIの定義
+ * - サービス間の協調動作の制御
+ * 
+ * このクラスは以下のサービスを統合管理:
+ * - AccountService: 勘定科目管理
+ * - JournalService: 仕訳管理
+ * - DivisionService: 部門管理
+ * - ReportService: レポート生成
+ * - ImportExportService: データI/O
+ * - AuxiliaryService: 補助元帳管理
+ * - ClosingService: 決算処理
+ * - TransactionService: 取引管理
+ * 
+ * アーキテクチャ上の位置: Domain層の最上位ファサード
+ */
+
 import { 
   NormalBalance, 
   AccountType, 
-  JournalStatus,
-  DivisionCode,
-  AccountDefinition,
-  JournalData,
-  CreateJournalOptions,
-  CreateJournalResult,
   ImportJson,
-  ExportJson,
-  TrialBalance,
-  IncomeStatement,
-  BalanceSheet,
   UnitOwner,
   Vendor,
-  BalanceSheetDebugInfo
 } from '../types'
 
 // 型のエクスポートとinstanceofチェック用にインポート

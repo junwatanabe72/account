@@ -1,3 +1,21 @@
+/**
+ * @file ServiceFactory.ts
+ * @description サービスファクトリー・依存性注入コンテナ
+ * 
+ * 責務:
+ * - すべてのドメインサービスのインスタンス生成
+ * - サービス間の依存関係の解決
+ * - シングルトンパターンの実装
+ * - ServiceContainerの提供
+ * 
+ * 設計パターン:
+ * - Factory Method パターン
+ * - Dependency Injection パターン
+ * - Singleton パターン
+ * 
+ * アーキテクチャ上の位置: Domain層のDIコンテナ
+ */
+
 import { AccountService } from './AccountService'
 import { JournalService } from './JournalService'
 import { DivisionService } from './DivisionService'

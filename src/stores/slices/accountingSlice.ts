@@ -1,3 +1,21 @@
+/**
+ * @file accountingSlice.ts
+ * @description 会計エンジンの状態管理スライス
+ * 
+ * 責務:
+ * - AccountingEngineインスタンスのライフサイクル管理
+ * - 会計エンジンの初期化状態の管理
+ * - UI層からドメイン層へのアクセスポイント提供
+ * - エンジンの更新と再初期化の制御
+ * 
+ * 管理する状態:
+ * - engine: AccountingEngineインスタンス
+ * - isInitialized: 初期化状態フラグ
+ * - lastUpdate: 最終更新日時
+ * 
+ * アーキテクチャ上の位置: Store層（UIとDomainの仲介）
+ */
+
 import { StateCreator } from 'zustand'
 import { AccountingEngine } from '../../domain/accountingEngine'
 import { AccountingState, AccountingActions, StoreState } from '../types'
