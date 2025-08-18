@@ -17,6 +17,9 @@ import {
 } from '../../constants'
 import { AccountService, HierarchicalAccount } from './AccountService'
 import { DivisionService } from './DivisionService'
+import { IJournalService } from '../interfaces/IJournalService'
+import { IAccountService } from '../interfaces/IAccountService'
+import { IDivisionService } from '../interfaces/IDivisionService'
 
 export class JournalDetail {
   constructor(
@@ -60,12 +63,12 @@ export class Journal {
   }
 }
 
-export class JournalService {
+export class JournalService implements IJournalService {
   journals: Journal[] = []
   
   constructor(
-    private accountService: AccountService,
-    private divisionService: DivisionService
+    private accountService: AccountService | IAccountService,
+    private divisionService: DivisionService | IDivisionService
   ) {}
   
   createJournal(journalData: { 
@@ -247,6 +250,10 @@ export class JournalService {
   
   getJournals() {
     return this.journals
+  }
+  
+  getJournal(id: string): Journal | undefined {
+    return this.journals.find(j => j.id === id)
   }
   
   clearJournals() {
