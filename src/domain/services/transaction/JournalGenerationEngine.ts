@@ -24,8 +24,9 @@ export class JournalGenerationEngine {
           paymentStatus: 'unpaid'
         },
         journalPattern: {
-          debitAccountCode: '1131',  // 未収入金
-          useTransactionAccount: 'credit'
+          // 未収金科目は動的に決定（後述のgenerateJournalDetailsで処理）
+          useTransactionAccount: 'credit',
+          requiresReceivable: true
         },
         priority: 100,
         isActive: true
@@ -57,7 +58,7 @@ export class JournalGenerationEngine {
         },
         journalPattern: {
           useTransactionAccount: 'debit',
-          creditAccountCode: '2121'  // 未払金
+          creditAccountCode: '2101'  // 未払金
         },
         priority: 100,
         isActive: true
@@ -172,6 +173,9 @@ export class JournalGenerationEngine {
       debitAccountCode = transaction.paymentAccountCode
     } else if (pattern.useDefaultAccount?.position === 'debit') {
       debitAccountCode = pattern.useDefaultAccount.accountCode
+    } else if ((pattern as any).requiresReceivable) {
+      // 未収金科目を自動選択（収入科目に基づいて判定）
+      debitAccountCode = this.getReceivableAccount(transaction)
     }
     
     // 貸方勘定科目を決定
@@ -210,6 +214,29 @@ export class JournalGenerationEngine {
     })
     
     return details
+  }
+  
+  // 取引に応じた未収金科目を取得
+  private getReceivableAccount(transaction: Transaction): string {
+    const account = this.accountService.getAccount(transaction.accountCode)
+    if (!account) {
+      return '1301' // デフォルトは管理費未収金
+    }
+    
+    // 収入科目のコードに基づいて未収金科目を決定
+    if (account.code.startsWith('51')) {
+      // 管理費関連の収入
+      return '1301' // 管理費未収金
+    } else if (account.code.startsWith('52')) {
+      // 修繕積立金関連の収入
+      return '1302' // 修繕積立金未収金
+    } else if (account.code.startsWith('53')) {
+      // 使用料関連の収入
+      return '1303' // 使用料未収金
+    } else {
+      // その他の収入は管理費未収金を使用
+      return '1301'
+    }
   }
   
   // 仕訳の摘要を生成
@@ -281,7 +308,8 @@ export class JournalGenerationEngine {
     const details: JournalDetail[] = []
     
     if (transaction.type === 'income') {
-      // 収入の決済: 借方=決済口座、貸方=未収入金
+      // 収入の決済: 借方=決済口座、貸方=未収金
+      const receivableAccount = this.getReceivableAccount(transaction)
       details.push({
         accountCode: paymentAccountCode,
         debitAmount: transaction.amount,
@@ -289,7 +317,7 @@ export class JournalGenerationEngine {
         description: `決済: ${transaction.note || ''}`
       })
       details.push({
-        accountCode: '1131',  // 未収入金
+        accountCode: receivableAccount,  // 適切な未収金科目
         debitAmount: 0,
         creditAmount: transaction.amount,
         description: `決済: ${transaction.note || ''}`
@@ -297,7 +325,7 @@ export class JournalGenerationEngine {
     } else if (transaction.type === 'expense') {
       // 支出の決済: 借方=未払金、貸方=決済口座
       details.push({
-        accountCode: '2121',  // 未払金
+        accountCode: '2101',  // 未払金
         debitAmount: transaction.amount,
         creditAmount: 0,
         description: `決済: ${transaction.note || ''}`
