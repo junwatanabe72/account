@@ -79,7 +79,6 @@ export const App: React.FC = () => {
       icon: "📝",
       children: [
         { id: "freeeInput", label: "かんたん入力", icon: "🌟" },
-        { id: "input", label: "仕訳入力・仕訳帳", icon: "✏️" },
         { id: "bankImport", label: "銀行明細インポート", icon: "🤖" },
         { id: "auxiliary", label: "補助元帳", icon: "📚" },
       ],
