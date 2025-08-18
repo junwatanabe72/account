@@ -1,10 +1,10 @@
 import {
   UnitOwner,
   Vendor
-} from '../../types'
-import { AccountService } from './AccountService'
-import { JournalService } from './JournalService'
-import { SAMPLE_DATA_CONSTANTS } from '../../constants'
+} from '../../../types'
+import { AccountService } from '../core/AccountService'
+import { JournalService } from '../core/JournalService'
+import { SAMPLE_DATA_CONSTANTS } from '../../../constants'
 
 export class AuxiliaryService {
   unitOwners: UnitOwner[] = []

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { JournalService } from '../../domain/services/JournalService'
+import { JournalService } from '../../domain/services/core/JournalService'
 import { MockAccountService, MockDivisionService } from '../../domain/__mocks__'
 
 describe('JournalService Unit Tests', () => {

@@ -1,5 +1,5 @@
-import { BankAccount } from '../../data/bankAccounts'
-import { Transaction } from '../../types/transaction'
+import { BankAccount } from '../../../data/bankAccounts'
+import { Transaction } from '../../../types/transaction'
 
 export interface BankAccountChangeEvent {
   type: 'add' | 'update' | 'disable' | 'enable' | 'delete'

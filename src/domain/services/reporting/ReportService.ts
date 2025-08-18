@@ -24,17 +24,17 @@ import {
   IncomeStatement,
   BalanceSheet,
   BalanceSheetDebugInfo
-} from '../../types'
+} from '../../../types'
 import { 
   ACCOUNTING_CONSTANTS,
   DIVISION_CODES
-} from '../../constants'
-import { AccountService } from './AccountService'
-import { JournalService } from './JournalService'
-import { DivisionService } from './DivisionService'
-import { IAccountService } from '../interfaces/IAccountService'
-import { IJournalService } from '../interfaces/IJournalService'
-import { IDivisionService } from '../interfaces/IDivisionService'
+} from '../../../constants'
+import { AccountService } from '../core/AccountService'
+import { JournalService } from '../core/JournalService'
+import { DivisionService } from '../core/DivisionService'
+import { IAccountService } from '../../interfaces/IAccountService'
+import { IJournalService } from '../../interfaces/IJournalService'
+import { IDivisionService } from '../../interfaces/IDivisionService'
 
 export class ReportService {
   constructor(

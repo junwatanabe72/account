@@ -1,5 +1,5 @@
 import { IAccountService } from '../interfaces/IAccountService'
-import { HierarchicalAccount } from '../services/AccountService'
+import { HierarchicalAccount } from '../services/core/AccountService'
 
 export class MockAccountService implements IAccountService {
   private mockAccounts = new Map<string, HierarchicalAccount>()

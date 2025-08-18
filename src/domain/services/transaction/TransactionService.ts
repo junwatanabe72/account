@@ -8,14 +8,14 @@ import {
   TransactionValidationResult,
   Counterparty,
   TransactionTemplate
-} from '../../types/transaction'
-import { CreateJournalResult } from '../../types/accounting'
-import { JournalService } from './JournalService'
-import { AccountService } from './AccountService'
+} from '../../../types/transaction'
+import { CreateJournalResult } from '../../../types/accounting'
+import { JournalService } from '../core/JournalService'
+import { AccountService } from '../core/AccountService'
 import { JournalGenerationEngine } from './JournalGenerationEngine'
-import { BankAccountService } from './BankAccountService'
-import { IAccountService } from '../interfaces/IAccountService'
-import { IJournalService } from '../interfaces/IJournalService'
+import { BankAccountService } from '../ledger/BankAccountService'
+import { IAccountService } from '../../interfaces/IAccountService'
+import { IJournalService } from '../../interfaces/IJournalService'
 
 export class TransactionService {
   private transactions: Transaction[] = []
