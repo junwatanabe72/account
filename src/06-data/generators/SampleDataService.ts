@@ -1,0 +1,342 @@
+import { 
+  SAMPLE_DATA_CONSTANTS,
+  DIVISION_CODES
+} from '../../01-types/constants'
+import { JournalService } from '../../03-services/journal/JournalService'
+import { AccountService } from '../../03-services/account/AccountService'
+import { AuxiliaryService } from '../../03-services/auxiliary/AuxiliaryService'
+
+export class SampleDataService {
+  constructor(
+    private journalService: JournalService,
+    private accountService: AccountService,
+    private auxiliaryService: AuxiliaryService
+  ) {}
+  
+  private getRandomAmount(min: number, max: number): number {
+    return Math.floor(Math.random() * (max - min + 1)) + min
+  }
+  
+  loadOneMonthSampleData() {
+    this.accountService.clearAccounts()
+    this.journalService.clearJournals()
+    this.auxiliaryService.clearAuxiliaries()
+    
+    this.accountService.initializeAccounts()
+    this.auxiliaryService.initializeUnitOwners()
+    this.auxiliaryService.initializeVendors()
+    this.auxiliaryService.createUnitOwnerAuxiliaryAccounts(this.accountService)
+    
+    const currentYear = new Date().getFullYear()
+    const currentMonth = new Date().getMonth() + 1
+    
+    // 期首残高
+    this.journalService.createJournal({
+      date: `${currentYear}-${String(currentMonth).padStart(2, '0')}-01`,
+      description: '期首残高',
+      details: [
+        { accountCode: '1102', debitAmount: 5000000 },  // 普通預金（管理）
+        { accountCode: '1103', debitAmount: 10000000 }, // 普通預金（修繕）
+        { accountCode: '4101', creditAmount: 7000000 }, // 管理費繰越金
+        { accountCode: '4102', creditAmount: 8000000 }  // 修繕積立金繰越金
+      ]
+    })
+    
+    // 1ヶ月分のデータ生成
+    this.generateMonthlyData(currentYear, currentMonth, currentMonth)
+  }
+  
+  loadTwoYearSampleData() {
+    this.accountService.clearAccounts()
+    this.journalService.clearJournals()
+    this.auxiliaryService.clearAuxiliaries()
+    
+    this.accountService.initializeAccounts()
+    this.auxiliaryService.initializeUnitOwners()
+    this.auxiliaryService.initializeVendors()
+    this.auxiliaryService.createUnitOwnerAuxiliaryAccounts(this.accountService)
+    
+    const currentYear = new Date().getFullYear()
+    const previousYear = currentYear - 1
+    const previousYearStart = `${previousYear}-04-01`
+    const previousYearEnd = `${currentYear}-03-31`
+    const currentYearStart = `${currentYear}-04-01`
+    
+    // 前期期首残高
+    this.journalService.createJournal({
+      date: previousYearStart,
+      description: '期首残高',
+      details: [
+        { accountCode: '1102', debitAmount: 5000000 },  // 普通預金（管理）
+        { accountCode: '1103', debitAmount: 10000000 }, // 普通預金（修繕）
+        { accountCode: '4101', creditAmount: 7000000 }, // 管理費繰越金
+        { accountCode: '4102', creditAmount: 8000000 }  // 修繕積立金繰越金
+      ]
+    })
+    
+    // 前年度の月次データ
+    this.generateMonthlyData(previousYear, 4, 12)
+    this.generateMonthlyData(currentYear, 1, 3)
+    
+    // 前期決算処理
+    this.generateClosingEntries(`${currentYear}-03-31`, previousYear)
+    
+    // 当期期首残高
+    const openingBalances = this.accountService.getAccounts()
+      .filter(acc => acc.balance !== 0)
+      .map(acc => ({
+        accountCode: acc.code,
+        debitAmount: acc.isDebitBalance() ? acc.getDisplayBalance() : 0,
+        creditAmount: !acc.isDebitBalance() ? acc.getDisplayBalance() : 0
+      }))
+    
+    this.journalService.createJournal({
+      date: currentYearStart,
+      description: '期首残高',
+      details: openingBalances
+    })
+    
+    // 当年度の月次データ（現在月まで）
+    const currentMonth = new Date().getMonth() + 1
+    const endMonth = currentMonth < 4 ? currentMonth + 12 : currentMonth
+    
+    for (let m = 4; m <= endMonth; m++) {
+      const actualMonth = m > 12 ? m - 12 : m
+      const year = m > 12 ? currentYear + 1 : currentYear
+      this.generateMonthlyData(year, actualMonth, actualMonth)
+    }
+  }
+  
+  private generateMonthlyData(year: number, startMonth: number, endMonth: number) {
+    for (let month = startMonth; month <= endMonth; month++) {
+      const date = `${year}-${String(month).padStart(2, '0')}-10`
+      
+      // 月次請求
+      this.auxiliaryService.createMonthlyBilling(date, this.journalService, this.accountService)
+      
+      // 管理費収入（口座振替）
+      const collectionDate = `${year}-${String(month).padStart(2, '0')}-27`
+      const collectionDetails = []
+      let totalCollection = 0
+      
+      for (const owner of this.auxiliaryService.getUnitOwners()) {
+        if (owner.isActive && Math.random() > 0.05) { // 95%の収納率
+          const mf = owner.monthlyManagementFee
+          const rr = owner.monthlyReserveFund
+          
+          if (mf > 0) {
+            collectionDetails.push({ accountCode: '1102', debitAmount: mf })  // 普通預金（管理）
+            collectionDetails.push({ accountCode: '5101', creditAmount: mf, auxiliaryCode: owner.unitNumber })  // 管理費収入
+            totalCollection += mf
+          }
+          
+          if (rr > 0) {
+            collectionDetails.push({ accountCode: '1103', debitAmount: rr })  // 普通預金（修繕）
+            collectionDetails.push({ accountCode: '5201', creditAmount: rr, auxiliaryCode: owner.unitNumber })  // 修繕積立金収入
+            totalCollection += rr
+          }
+        }
+      }
+      
+      if (collectionDetails.length > 0) {
+        this.journalService.createJournal({
+          date: collectionDate,
+          description: `管理費等口座振替（${month}月分）`,
+          details: collectionDetails
+        })
+      }
+      
+      // 月次経費
+      this.generateMonthlyExpenses(year, month)
+    }
+  }
+  
+  private generateMonthlyExpenses(year: number, month: number) {
+    const datePrefix = `${year}-${String(month).padStart(2, '0')}`
+    
+    // 管理員業務費
+    this.journalService.createJournal({
+      date: `${datePrefix}-25`,
+      description: `管理員業務費（${month}月分）`,
+      details: [
+        { accountCode: '6101', debitAmount: this.getRandomAmount(150000, 180000) },  // 管理委託費
+        { accountCode: '2101', creditAmount: this.getRandomAmount(150000, 180000) }   // 未払金
+      ]
+    })
+    
+    // 清掃業務費
+    this.journalService.createJournal({
+      date: `${datePrefix}-25`,
+      description: `清掃業務費（${month}月分）`,
+      details: [
+        { accountCode: '6101', debitAmount: this.getRandomAmount(80000, 100000) },  // 管理委託費（清掃）
+        { accountCode: '2101', creditAmount: this.getRandomAmount(80000, 100000) }   // 未払金
+      ]
+    })
+    
+    // 電気料（共用部）
+    const electricityBase = this.getRandomAmount(30000, 50000)
+    const electricityAmount = month >= 6 && month <= 9 ? 
+      electricityBase * 1.3 : // 夏季
+      month >= 11 || month <= 2 ? 
+        electricityBase * 1.2 : // 冬季
+        electricityBase
+    
+    this.journalService.createJournal({
+      date: `${datePrefix}-20`,
+      description: `電気料（${month}月分）`,
+      details: [
+        { accountCode: '6102', debitAmount: Math.floor(electricityAmount) },  // 水道光熱費（電気）
+        { accountCode: '2101', creditAmount: Math.floor(electricityAmount) }   // 未払金
+      ]
+    })
+    
+    // 水道料（共用部）
+    this.journalService.createJournal({
+      date: `${datePrefix}-20`,
+      description: `水道料（${month}月分）`,
+      details: [
+        { accountCode: '6102', debitAmount: this.getRandomAmount(20000, 30000) },  // 水道光熱費（水道）
+        { accountCode: '2101', creditAmount: this.getRandomAmount(20000, 30000) }   // 未払金
+      ]
+    })
+    
+    // 経常修繕費
+    if (Math.random() > 0.7) {
+      const repairAmount = this.getRandomAmount(50000, 200000)
+      const repairDesc = this.getRandomRepairDescription()
+      this.journalService.createJournal({
+        date: `${datePrefix}-15`,
+        description: `経常修繕工事（${repairDesc}）`,
+        details: [
+          { accountCode: '6201', debitAmount: repairAmount },  // 修繕費
+          { accountCode: '2101', creditAmount: repairAmount }   // 未払金
+        ]
+      })
+    }
+    
+    // 年間費用
+    if (month === 4) { // 4月：保険料年間分
+      this.journalService.createJournal({
+        date: `${datePrefix}-01`,
+        description: '火災保険料（年間）',
+        details: [
+          { accountCode: '6104', debitAmount: 480000 },  // 保険料
+          { accountCode: '1102', creditAmount: 480000 }   // 普通預金（管理）
+        ]
+      })
+    }
+    
+    if (month === 6) { // 6月：組合運営費
+      this.journalService.createJournal({
+        date: `${datePrefix}-15`,
+        description: '理事会運営費',
+        details: [
+          { accountCode: '6303', debitAmount: 50000 },  // 会議費
+          { accountCode: '1102', creditAmount: 50000 }   // 普通預金（管理）
+        ]
+      })
+    }
+    
+    if (month === 9) { // 9月：大規模修繕工事費
+      this.journalService.createJournal({
+        date: `${datePrefix}-30`,
+        description: '外壁補修工事（計画修繕）',
+        details: [
+          { accountCode: '6401', debitAmount: 3000000 },  // 修繕工事費
+          { accountCode: '1103', creditAmount: 3000000 }   // 普通預金（修繕）
+        ]
+      })
+    }
+    
+    // 支払処理
+    const paymentDate = `${datePrefix}-${String(month === 12 ? 28 : 30)}`
+    const paymentAmount = this.getRandomAmount(300000, 500000)
+    this.journalService.createJournal({
+      date: paymentDate,
+      description: `未払金支払（${month}月分）`,
+      details: [
+        { accountCode: '2101', debitAmount: paymentAmount },  // 未払金
+        { accountCode: '1102', creditAmount: paymentAmount }   // 普通預金（管理）
+      ]
+    })
+  }
+  
+  private getRandomRepairDescription(): string {
+    const repairs = [
+      'エレベーター点検補修',
+      '給水ポンプ交換',
+      '共用廊下照明器具交換',
+      'エントランスドア修繕',
+      '駐車場区画線補修',
+      '排水管清掃',
+      '消防設備点検補修'
+    ]
+    return repairs[Math.floor(Math.random() * repairs.length)] || 'その他修繕工事'
+  }
+  
+  private generateClosingEntries(closingDate: string, fiscalYear: number) {
+    // 収益・費用の振替
+    const revenueAccounts = this.accountService.getAccounts().filter(acc => acc.type === 'REVENUE' && acc.balance !== 0)
+    const expenseAccounts = this.accountService.getAccounts().filter(acc => acc.type === 'EXPENSE' && acc.balance !== 0)
+    
+    // 管理費会計の決算
+    const kanriRevenue = revenueAccounts.filter(acc => acc.division === DIVISION_CODES.KANRI)
+    const kanriExpense = expenseAccounts.filter(acc => acc.division === DIVISION_CODES.KANRI)
+    
+    if (kanriRevenue.length > 0 || kanriExpense.length > 0) {
+      const details = []
+      
+      for (const acc of kanriRevenue) {
+        details.push({ accountCode: acc.code, debitAmount: acc.getDisplayBalance() })
+      }
+      details.push({ accountCode: '4101', creditAmount: kanriRevenue.reduce((sum, acc) => sum + acc.getDisplayBalance(), 0) })  // 管理費繰越金
+      
+      details.push({ accountCode: '4101', debitAmount: kanriExpense.reduce((sum, acc) => sum + acc.getDisplayBalance(), 0) })  // 管理費繰越金
+      for (const acc of kanriExpense) {
+        details.push({ accountCode: acc.code, creditAmount: acc.getDisplayBalance() })
+      }
+      
+      this.journalService.createJournal({
+        date: closingDate,
+        description: `決算振替仕訳（管理費会計）${fiscalYear}年度`,
+        details
+      })
+    }
+    
+    // 修繕積立金会計の決算
+    const shuzenRevenue = revenueAccounts.filter(acc => acc.division === DIVISION_CODES.SHUZEN)
+    const shuzenExpense = expenseAccounts.filter(acc => acc.division === DIVISION_CODES.SHUZEN)
+    
+    if (shuzenRevenue.length > 0 || shuzenExpense.length > 0) {
+      const details = []
+      
+      for (const acc of shuzenRevenue) {
+        details.push({ accountCode: acc.code, debitAmount: acc.getDisplayBalance() })
+      }
+      details.push({ accountCode: '4102', creditAmount: shuzenRevenue.reduce((sum, acc) => sum + acc.getDisplayBalance(), 0) })  // 修繕積立金繰越金
+      
+      details.push({ accountCode: '4102', debitAmount: shuzenExpense.reduce((sum, acc) => sum + acc.getDisplayBalance(), 0) })  // 修繕積立金繰越金
+      for (const acc of shuzenExpense) {
+        details.push({ accountCode: acc.code, creditAmount: acc.getDisplayBalance() })
+      }
+      
+      this.journalService.createJournal({
+        date: closingDate,
+        description: `決算振替仕訳（修繕積立金会計）${fiscalYear}年度`,
+        details
+      })
+    }
+  }
+  
+  loadSampleData() {
+    this.loadTwoYearSampleData()
+  }
+  
+  clearAll() {
+    this.accountService.clearAccounts()
+    this.journalService.clearJournals()
+    this.auxiliaryService.clearAuxiliaries()
+    this.accountService.initializeAccounts()
+  }
+}

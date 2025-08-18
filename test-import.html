@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Import Test</title>
+</head>
+<body>
+    <h1>Testing JournalService Imports</h1>
+    <div id="status"></div>
+    <div id="error"></div>
+    
+    <script type="module">
+        const statusDiv = document.getElementById('status');
+        const errorDiv = document.getElementById('error');
+        
+        try {
+            // Test importing from JournalService
+            const module = await import('/account/src/03-services/journal/JournalService.ts');
+            
+            statusDiv.innerHTML = '<h2>Success!</h2>';
+            statusDiv.innerHTML += '<p>Exported names: ' + Object.keys(module).join(', ') + '</p>';
+            
+            // Check if Journal is exported
+            if (module.Journal) {
+                statusDiv.innerHTML += '<p>✅ Journal is exported</p>';
+            } else {
+                statusDiv.innerHTML += '<p>❌ Journal is NOT exported</p>';
+            }
+            
+            // Check if JournalDetail is exported
+            if (module.JournalDetail) {
+                statusDiv.innerHTML += '<p>✅ JournalDetail is exported</p>';
+            } else {
+                statusDiv.innerHTML += '<p>❌ JournalDetail is NOT exported</p>';
+            }
+            
+            // Check if JournalService is exported
+            if (module.JournalService) {
+                statusDiv.innerHTML += '<p>✅ JournalService is exported</p>';
+            } else {
+                statusDiv.innerHTML += '<p>❌ JournalService is NOT exported</p>';
+            }
+            
+        } catch (error) {
+            errorDiv.innerHTML = '<h2>Error!</h2>';
+            errorDiv.innerHTML += '<pre>' + error.toString() + '</pre>';
+            console.error(error);
+        }
+    </script>
+</body>
+</html>

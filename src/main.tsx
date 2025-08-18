@@ -1,18 +1,12 @@
 import React from 'react'
-import { App } from './ui/app/AppWithSidebar'
-import { createRoot } from 'react-dom/client'
-import { ToastProvider } from './ui/common/Toast'
-import './ui/styles/theme.css'
-import './ui/styles/responsive.css'
-import './ui/styles/tabs.css'
-import './ui/styles/forms.css'
-import './ui/styles/data-display.css'
+import ReactDOM from 'react-dom/client'
+import TestAppWithEngine from './TestAppWithEngine'
 
-const container = document.getElementById('root')!
-createRoot(container).render(
+// Test with simplified AccountingEngine
+console.log('Loading Test App with Simple AccountingEngine...')
+
+ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <ToastProvider>
-      <App />
-    </ToastProvider>
-  </React.StrictMode>
+    <TestAppWithEngine />
+  </React.StrictMode>,
 )

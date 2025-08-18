@@ -5,13 +5,24 @@
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "module": "ESNext",
     "skipLibCheck": true,
-    "moduleResolution": "bundler",
+    "moduleResolution": "node",
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
     "strict": true,
-    "noUncheckedIndexedAccess": true
+    "noUncheckedIndexedAccess": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"],
+      "@/01-types/*": ["./src/01-types/*"],
+      "@/02-core/*": ["./src/02-core/*"],
+      "@/03-services/*": ["./src/03-services/*"],
+      "@/04-stores/*": ["./src/04-stores/*"],
+      "@/05-ui/*": ["./src/05-ui/*"],
+      "@/06-data/*": ["./src/06-data/*"],
+      "@/07-utils/*": ["./src/07-utils/*"]
+    }
   },
   "include": ["src"]
 }
