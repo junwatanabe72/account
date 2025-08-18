@@ -1,3 +1,24 @@
+/**
+ * @file JournalService.ts
+ * @description 仕訳管理サービス
+ * 
+ * 責務:
+ * - 仕訳の作成、更新、削除
+ * - 仕訳の検証（借方・貸方のバランスチェック）
+ * - 仕訳の承認フロー管理（ドラフト→承認→転記）
+ * - 勘定科目への転記処理
+ * - 部門別会計の仕訳処理
+ * 
+ * ビジネスルール:
+ * - 借方と貸方の合計額は必ず一致
+ * - 転記済み仕訳は変更不可
+ * - 仕訳日付は会計期間内
+ * - 各仕訳明細は必ず勘定科目コードを持つ
+ * - 部門別会計では部門コードが必須
+ * 
+ * アーキテクチャ上の位置: Domain層のコアサービス
+ */
+
 // ========================================
 // 既存実装 - 段階的に JournalEntryService に置き換え中
 // 新実装: JournalEntryService.ts を参照
@@ -17,6 +38,9 @@ import {
 } from '../../constants'
 import { AccountService, HierarchicalAccount } from './AccountService'
 import { DivisionService } from './DivisionService'
+import { IJournalService } from '../interfaces/IJournalService'
+import { IAccountService } from '../interfaces/IAccountService'
+import { IDivisionService } from '../interfaces/IDivisionService'
 
 export class JournalDetail {
   constructor(
@@ -60,12 +84,12 @@ export class Journal {
   }
 }
 
-export class JournalService {
+export class JournalService implements IJournalService {
   journals: Journal[] = []
   
   constructor(
-    private accountService: AccountService,
-    private divisionService: DivisionService
+    private accountService: AccountService | IAccountService,
+    private divisionService: DivisionService | IDivisionService
   ) {}
   
   createJournal(journalData: { 
@@ -247,6 +271,10 @@ export class JournalService {
   
   getJournals() {
     return this.journals
+  }
+  
+  getJournal(id: string): Journal | undefined {
+    return this.journals.find(j => j.id === id)
   }
   
   clearJournals() {

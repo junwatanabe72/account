@@ -8,12 +8,15 @@ import { AccountService } from './AccountService'
 import { JournalService } from './JournalService'
 import { DivisionService } from './DivisionService'
 import { AuxiliaryService } from './AuxiliaryService'
+import { IAccountService } from '../interfaces/IAccountService'
+import { IJournalService } from '../interfaces/IJournalService'
+import { IDivisionService } from '../interfaces/IDivisionService'
 
 export class ImportExportService {
   constructor(
-    private accountService: AccountService,
-    private journalService: JournalService,
-    private divisionService: DivisionService,
+    private accountService: AccountService | IAccountService,
+    private journalService: JournalService | IJournalService,
+    private divisionService: DivisionService | IDivisionService,
     private auxiliaryService: AuxiliaryService
   ) {}
   

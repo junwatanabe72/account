@@ -5,11 +5,13 @@ import {
 import { JournalService } from './JournalService'
 import { AccountService } from './AccountService'
 import { AuxiliaryService } from './AuxiliaryService'
+import { IJournalService } from '../interfaces/IJournalService'
+import { IAccountService } from '../interfaces/IAccountService'
 
 export class SampleDataService {
   constructor(
-    private journalService: JournalService,
-    private accountService: AccountService,
+    private journalService: JournalService | IJournalService,
+    private accountService: AccountService | IAccountService,
     private auxiliaryService: AuxiliaryService
   ) {}
   

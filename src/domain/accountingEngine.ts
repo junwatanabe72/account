@@ -1,160 +1,182 @@
+/**
+ * @file AccountingEngine.ts
+ * @description 会計エンジンのメインファサード
+ * 
+ * 責務:
+ * - すべての会計サービスへの統一的なアクセスポイント提供
+ * - ServiceFactoryを使用した依存性の管理
+ * - 外部（UI層）への公開APIの定義
+ * - サービス間の協調動作の制御
+ * 
+ * このクラスは以下のサービスを統合管理:
+ * - AccountService: 勘定科目管理
+ * - JournalService: 仕訳管理
+ * - DivisionService: 部門管理
+ * - ReportService: レポート生成
+ * - ImportExportService: データI/O
+ * - AuxiliaryService: 補助元帳管理
+ * - ClosingService: 決算処理
+ * - TransactionService: 取引管理
+ * 
+ * アーキテクチャ上の位置: Domain層の最上位ファサード
+ */
+
 import { 
   NormalBalance, 
   AccountType, 
-  JournalStatus,
-  DivisionCode,
-  AccountDefinition,
-  JournalData,
-  CreateJournalOptions,
-  CreateJournalResult,
   ImportJson,
-  ExportJson,
-  TrialBalance,
-  IncomeStatement,
-  BalanceSheet,
   UnitOwner,
   Vendor,
-  BalanceSheetDebugInfo
 } from '../types'
 
+// 型のエクスポートとinstanceofチェック用にインポート
 import { AccountService, HierarchicalAccount, AuxiliaryLedger } from './services/AccountService'
 import { JournalService, Journal, JournalDetail } from './services/JournalService'
-import { DivisionService, AccountingDivision } from './services/DivisionService'
-import { ReportService } from './services/ReportService'
-import { ImportExportService } from './services/ImportExportService'
-import { AuxiliaryService } from './services/AuxiliaryService'
-import { SampleDataService } from './services/SampleDataService'
-import { ClosingService } from './services/ClosingService'
-import { TransactionService } from './services/TransactionService'
-import { JournalGenerationEngine } from './services/JournalGenerationEngine'
+import { AccountingDivision } from './services/DivisionService'
+import { ServiceFactory, ServiceContainer } from './services/ServiceFactory'
 
 // Re-export for backward compatibility
 export { HierarchicalAccount, AuxiliaryLedger, Journal, JournalDetail, AccountingDivision }
 
 export class AccountingEngine {
-  private accountService: AccountService
-  private journalService: JournalService
-  private divisionService: DivisionService
-  private reportService: ReportService
-  private importExportService: ImportExportService
-  private auxiliaryService: AuxiliaryService
-  private _sampleDataService: SampleDataService
-  private closingService: ClosingService
-  private transactionService: TransactionService
-  private journalGenerationEngine: JournalGenerationEngine
+  private services: ServiceContainer
   
-  constructor() {
-    this.accountService = new AccountService()
-    this.divisionService = new DivisionService()
-    this.auxiliaryService = new AuxiliaryService()
-    this.journalService = new JournalService(this.accountService, this.divisionService)
-    this.reportService = new ReportService(this.accountService, this.journalService, this.divisionService)
-    this.importExportService = new ImportExportService(
-      this.accountService, 
-      this.journalService, 
-      this.divisionService, 
-      this.auxiliaryService
-    )
-    this._sampleDataService = new SampleDataService(
-      this.journalService,
-      this.accountService,
-      this.auxiliaryService
-    )
-    this.closingService = new ClosingService(
-      this.accountService,
-      this.journalService,
-      this.divisionService
-    )
-    this.journalGenerationEngine = new JournalGenerationEngine(this.accountService)
-    this.transactionService = new TransactionService(this.accountService, this.journalService)
+  constructor(serviceFactory?: ServiceFactory) {
+    // ServiceFactoryを使用してサービスを作成
+    const factory = serviceFactory || ServiceFactory.getInstance()
+    this.services = factory.createServices()
     
     this.initializeEngine()
   }
   
   private initializeEngine() {
-    this.accountService.initializeAccounts()
-    this.divisionService.initializeDivisions()
-    this.auxiliaryService.initializeUnitOwners()
-    this.auxiliaryService.initializeVendors()
-    this.auxiliaryService.createUnitOwnerAuxiliaryAccounts(this.accountService)
-    this._sampleDataService.loadOneMonthSampleData()
+    this.services.accountService.initializeAccounts()
+    this.services.divisionService.initializeDivisions()
+    this.services.auxiliaryService.initializeUnitOwners()
+    this.services.auxiliaryService.initializeVendors()
+    this.services.auxiliaryService.createUnitOwnerAuxiliaryAccounts(this.services.accountService)
+    this.services.sampleDataService.loadOneMonthSampleData()
   }
   
   // Account management
-  get accounts() { return this.accountService.accounts }
-  get divisions() { return this.divisionService.divisions }
-  initializeAccounts() { return this.accountService.initializeAccounts() }
-  rebuildAccountsFrom(defs: any[]) { return this.accountService.rebuildAccountsFrom(defs) }
-  addOrUpdateAccount(def: any) { return this.accountService.addOrUpdateAccount(def) }
-  setAccountActive(code: string, active: boolean) { return this.accountService.setAccountActive(code, active) }
-  getAccounts() { return this.accountService.getAccounts() }
+  get accounts() { return this.services.accountService.accounts }
+  get divisions() { return this.services.divisionService.divisions }
+  initializeAccounts() { return this.services.accountService.initializeAccounts() }
+  rebuildAccountsFrom(defs: any[]) { 
+    // AccountServiceの具象型にキャストが必要な場合
+    if (this.services.accountService instanceof AccountService) {
+      return this.services.accountService.rebuildAccountsFrom(defs)
+    }
+    throw new Error('rebuildAccountsFrom requires AccountService implementation')
+  }
+  addOrUpdateAccount(def: any) { 
+    if (this.services.accountService instanceof AccountService) {
+      return this.services.accountService.addOrUpdateAccount(def)
+    }
+    throw new Error('addOrUpdateAccount requires AccountService implementation')
+  }
+  setAccountActive(code: string, active: boolean) { 
+    if (this.services.accountService instanceof AccountService) {
+      return this.services.accountService.setAccountActive(code, active)
+    }
+    throw new Error('setAccountActive requires AccountService implementation')
+  }
+  getAccounts() { return this.services.accountService.getAccounts() }
   
   // Journal management
-  get journals() { return this.journalService.getJournals() }
-  createJournal(journalData: any, options?: any) { return this.journalService.createJournal(journalData, options) }
-  submitJournal(id: string) { return this.journalService.submitJournal(id) }
-  approveJournal(id: string) { return this.journalService.approveJournal(id) }
-  postJournalById(id: string) { return this.journalService.postJournalById(id) }
-  deleteJournal(id: string) { return this.journalService.deleteJournal(id) }
-  updateJournal(id: string, data: any) { return this.journalService.updateJournal(id, data) }
+  get journals() { return this.services.journalService.getJournals() }
+  createJournal(journalData: any, options?: any) { return this.services.journalService.createJournal(journalData, options) }
+  submitJournal(id: string) { return this.services.journalService.submitJournal(id) }
+  approveJournal(id: string) { return this.services.journalService.approveJournal(id) }
+  postJournalById(id: string) { return this.services.journalService.postJournalById(id) }
+  deleteJournal(id: string) { return this.services.journalService.deleteJournal(id) }
+  updateJournal(id: string, data: any) { return this.services.journalService.updateJournal(id, data) }
   
   // Division management
-  initializeDivisions() { return this.divisionService.initializeDivisions() }
+  initializeDivisions() { return this.services.divisionService.initializeDivisions() }
   
   // Auxiliary management
-  get unitOwners() { return this.auxiliaryService.getUnitOwners() }
-  set unitOwners(owners: UnitOwner[]) { this.auxiliaryService.setUnitOwners(owners) }
-  get vendors() { return this.auxiliaryService.getVendors() }
-  set vendors(vendors: Vendor[]) { this.auxiliaryService.setVendors(vendors) }
-  initializeUnitOwners() { return this.auxiliaryService.initializeUnitOwners() }
-  initializeVendors() { return this.auxiliaryService.initializeVendors() }
-  createUnitOwnerAuxiliaryAccounts() { return this.auxiliaryService.createUnitOwnerAuxiliaryAccounts(this.accountService) }
-  getAuxiliaryLedgerSummary() { return this.auxiliaryService.getAuxiliaryLedgerSummary(this.accountService) }
-  getUnitReceivablesSummary() { return this.auxiliaryService.getUnitReceivablesSummary(this.accountService) }
+  get unitOwners() { return this.services.auxiliaryService.getUnitOwners() }
+  set unitOwners(owners: UnitOwner[]) { this.services.auxiliaryService.setUnitOwners(owners) }
+  get vendors() { return this.services.auxiliaryService.getVendors() }
+  set vendors(vendors: Vendor[]) { this.services.auxiliaryService.setVendors(vendors) }
+  initializeUnitOwners() { return this.services.auxiliaryService.initializeUnitOwners() }
+  initializeVendors() { return this.services.auxiliaryService.initializeVendors() }
+  createUnitOwnerAuxiliaryAccounts() { return this.services.auxiliaryService.createUnitOwnerAuxiliaryAccounts(this.services.accountService) }
+  getAuxiliaryLedgerSummary() { 
+    if (this.services.accountService instanceof AccountService) {
+      return this.services.auxiliaryService.getAuxiliaryLedgerSummary(this.services.accountService)
+    }
+    throw new Error('getAuxiliaryLedgerSummary requires AccountService implementation')
+  }
+  getUnitReceivablesSummary() { 
+    if (this.services.accountService instanceof AccountService) {
+      return this.services.auxiliaryService.getUnitReceivablesSummary(this.services.accountService)
+    }
+    throw new Error('getUnitReceivablesSummary requires AccountService implementation')
+  }
   createMonthlyBilling(billingDate: string) { 
-    return this.auxiliaryService.createMonthlyBilling(billingDate, this.journalService, this.accountService) 
+    if (this.services.journalService instanceof JournalService && this.services.accountService instanceof AccountService) {
+      return this.services.auxiliaryService.createMonthlyBilling(billingDate, this.services.journalService, this.services.accountService)
+    }
+    throw new Error('createMonthlyBilling requires concrete service implementations')
   }
   
   // Report generation
-  getTrialBalance() { return this.reportService.getTrialBalance() }
-  getIncomeStatement() { return this.reportService.getIncomeStatement() }
-  getBalanceSheet() { return this.reportService.getBalanceSheet() }
-  getBalanceSheetDebugInfo() { return this.reportService.getBalanceSheetDebugInfo() }
-  getDivisionTrialBalance() { return this.reportService.getDivisionTrialBalance() }
+  getTrialBalance() { return this.services.reportService.getTrialBalance() }
+  getIncomeStatement() { return this.services.reportService.getIncomeStatement() }
+  getBalanceSheet() { return this.services.reportService.getBalanceSheet() }
+  getBalanceSheetDebugInfo() { return this.services.reportService.getBalanceSheetDebugInfo() }
+  getDivisionTrialBalance() { return this.services.reportService.getDivisionTrialBalance() }
   getIncomeDetails(startDate: string, endDate: string, divisionCode?: string) { 
-    return this.reportService.getIncomeDetails(startDate, endDate, divisionCode) 
+    return this.services.reportService.getIncomeDetails(startDate, endDate, divisionCode) 
   }
   getIncomeDetailSummary(startDate: string, endDate: string, divisionCode?: string) { 
-    return this.reportService.getIncomeDetailSummary(startDate, endDate, divisionCode) 
+    return this.services.reportService.getIncomeDetailSummary(startDate, endDate, divisionCode) 
   }
   getExpenseDetails(startDate: string, endDate: string, divisionCode?: string) { 
-    return this.reportService.getExpenseDetails(startDate, endDate, divisionCode) 
+    return this.services.reportService.getExpenseDetails(startDate, endDate, divisionCode) 
   }
   getExpenseDetailSummary(startDate: string, endDate: string, divisionCode?: string) { 
-    return this.reportService.getExpenseDetailSummary(startDate, endDate, divisionCode) 
+    return this.services.reportService.getExpenseDetailSummary(startDate, endDate, divisionCode) 
   }
   
   // Import/Export
-  serialize() { return this.importExportService.serialize() }
-  restore(data: any) { return this.importExportService.restore(data) }
-  importJsonData(json: ImportJson) { return this.importExportService.importJsonData(json) }
-  createOpeningBalance(date: string, entries: any[]) { return this.importExportService.createOpeningBalance(date, entries) }
-  exportCurrentBalancesAsOpeningDetails() { return this.importExportService.exportCurrentBalancesAsOpeningDetails() }
+  serialize() { return this.services.importExportService.serialize() }
+  restore(data: any) { return this.services.importExportService.restore(data) }
+  importJsonData(json: ImportJson) { return this.services.importExportService.importJsonData(json) }
+  createOpeningBalance(date: string, entries: any[]) { return this.services.importExportService.createOpeningBalance(date, entries) }
+  exportCurrentBalancesAsOpeningDetails() { return this.services.importExportService.exportCurrentBalancesAsOpeningDetails() }
   
   // Sample data
-  get sampleDataService() { return this._sampleDataService }
-  loadTwoYearSampleData() { return this._sampleDataService.loadTwoYearSampleData() }
-  loadOneMonthSampleData() { return this._sampleDataService.loadOneMonthSampleData() }
-  loadSampleData() { return this._sampleDataService.loadSampleData() }
-  clearAll() { return this._sampleDataService.clearAll() }
-  rebuildAuxiliaryAccounts() { return this.accountService.rebuildAuxiliaryAccounts() }
+  get sampleDataService() { return this.services.sampleDataService }
+  loadTwoYearSampleData() { return this.services.sampleDataService.loadTwoYearSampleData() }
+  loadOneMonthSampleData() { return this.services.sampleDataService.loadOneMonthSampleData() }
+  loadSampleData() { return this.services.sampleDataService.loadSampleData() }
+  clearAll() { return this.services.sampleDataService.clearAll() }
+  rebuildAuxiliaryAccounts() { 
+    if (this.services.accountService instanceof AccountService) {
+      return this.services.accountService.rebuildAuxiliaryAccounts()
+    }
+    throw new Error('rebuildAuxiliaryAccounts requires AccountService implementation')
+  }
   
   // Closing entries
-  createClosingEntries(closingDate: string) { return this.closingService.createClosingEntries(closingDate) }
+  createClosingEntries(closingDate: string) { return this.services.closingService.createClosingEntries(closingDate) }
   
   // Legacy methods for backward compatibility
-  postJournal(journal: Journal) { return this.journalService.postJournal(journal) }
-  validateDivisionAccounting(journal: Journal) { return this.journalService.validateDivisionAccounting(journal) }
+  postJournal(journal: Journal) { 
+    if (this.services.journalService instanceof JournalService) {
+      return this.services.journalService.postJournal(journal)
+    }
+    throw new Error('postJournal requires JournalService implementation')
+  }
+  validateDivisionAccounting(journal: Journal) { 
+    if (this.services.journalService instanceof JournalService) {
+      return this.services.journalService.validateDivisionAccounting(journal)
+    }
+    throw new Error('validateDivisionAccounting requires JournalService implementation')
+  }
   
   // Chart of accounts
   getChartOfAccounts() {
@@ -173,17 +195,17 @@ export class AccountingEngine {
   }
   
   // Transaction management (Freee型)
-  getTransactionService() { return this.transactionService }
-  getJournalGenerationEngine() { return this.journalGenerationEngine }
-  getAccountService() { return this.accountService }
-  createTransaction(input: any) { return this.transactionService.createTransaction(input) }
-  getTransactions() { return this.transactionService.getTransactions() }
-  searchTransactions(criteria: any) { return this.transactionService.searchTransactions(criteria) }
+  getTransactionService() { return this.services.transactionService }
+  getJournalGenerationEngine() { return this.services.journalGenerationEngine }
+  getAccountService() { return this.services.accountService }
+  createTransaction(input: any) { return this.services.transactionService.createTransaction(input) }
+  getTransactions() { return this.services.transactionService.getTransactions() }
+  searchTransactions(criteria: any) { return this.services.transactionService.searchTransactions(criteria) }
   settleTransaction(id: string, paymentAccountCode: string) { 
-    return this.transactionService.settleTransaction(id, paymentAccountCode) 
+    return this.services.transactionService.settleTransaction(id, paymentAccountCode) 
   }
-  getCounterparties() { return this.transactionService.getCounterparties() }
-  getTransactionTemplates() { return this.transactionService.getTemplates() }
+  getCounterparties() { return this.services.transactionService.getCounterparties() }
+  getTransactionTemplates() { return this.services.transactionService.getTemplates() }
 }
 
 // Re-export AccountDef for backward compatibility

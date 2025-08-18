@@ -1,3 +1,24 @@
+/**
+ * @file ReportService.ts
+ * @description 財務レポート生成サービス
+ * 
+ * 責務:
+ * - 試算表の生成
+ * - 損益計算書の生成
+ * - 貸借対照表の生成
+ * - 部門別試算表の生成
+ * - 収益・費用の詳細レポート生成
+ * 
+ * ビジネスルール:
+ * - 試算表は借方・貸方が必ず一致
+ * - 損益計算書は収益-費用=当期純利益
+ * - 貸借対照表は資産=負債+純資産
+ * - 未転記の仕訳は含まない
+ * - 会計期間を考慮した集計
+ * 
+ * アーキテクチャ上の位置: Domain層のレポーティングサービス
+ */
+
 import {
   TrialBalance,
   IncomeStatement,
@@ -11,12 +32,15 @@ import {
 import { AccountService } from './AccountService'
 import { JournalService } from './JournalService'
 import { DivisionService } from './DivisionService'
+import { IAccountService } from '../interfaces/IAccountService'
+import { IJournalService } from '../interfaces/IJournalService'
+import { IDivisionService } from '../interfaces/IDivisionService'
 
 export class ReportService {
   constructor(
-    private accountService: AccountService,
-    private journalService: JournalService,
-    private divisionService: DivisionService
+    private accountService: AccountService | IAccountService,
+    private journalService: JournalService | IJournalService,
+    private divisionService: DivisionService | IDivisionService
   ) {}
   
   getTrialBalance(): TrialBalance {

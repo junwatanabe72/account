@@ -1,3 +1,23 @@
+/**
+ * @file journalSlice.ts
+ * @description 仕訳のUI状態管理スライス
+ * 
+ * 責務:
+ * - 表示中の仕訳一覧の管理
+ * - 選択中の仕訳の管理
+ * - 仕訳のフィルタリング状態の管理
+ * - 仕訳の編集状態の管理
+ * - ページネーションの管理
+ * 
+ * 管理する状態:
+ * - journals: 表示中の仕訳一覧
+ * - selectedJournal: 選択中の仕訳
+ * - filter: フィルタ条件
+ * - isLoading: ローディング状態
+ * 
+ * アーキテクチャ上の位置: Store層（仕訳UIの状態管理）
+ */
+
 import { StateCreator } from 'zustand'
 import { Journal } from '../../types/accounting'
 import { JournalState, JournalActions, StoreState } from '../types'

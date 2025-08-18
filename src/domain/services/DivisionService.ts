@@ -7,6 +7,7 @@ import {
   DIVISION_NAMES,
   ACCOUNTING_CONSTANTS
 } from '../../constants'
+import { IDivisionService } from '../interfaces/IDivisionService'
 
 export class AccountingDivision {
   transferLimits: Record<string, number> = {}
@@ -53,26 +54,31 @@ export class AccountingDivision {
   }
 }
 
-export class DivisionService {
-  divisions = new Map<string, AccountingDivision>()
+export class DivisionService implements IDivisionService {
+  private divisionsMap = new Map<string, AccountingDivision>()
+  
+  // インタフェースの要求に応じて配列としてもアクセス可能
+  get divisions(): AccountingDivision[] {
+    return Array.from(this.divisionsMap.values())
+  }
   
   initializeDivisions() {
-    this.divisions.set(DIVISION_CODES.KANRI, new AccountingDivision(
+    this.divisionsMap.set(DIVISION_CODES.KANRI, new AccountingDivision(
       DIVISION_CODES.KANRI, 
       DIVISION_NAMES[DIVISION_CODES.KANRI], 
       '管理費会計に関する区分'
     ))
-    this.divisions.set(DIVISION_CODES.SHUZEN, new AccountingDivision(
+    this.divisionsMap.set(DIVISION_CODES.SHUZEN, new AccountingDivision(
       DIVISION_CODES.SHUZEN, 
       DIVISION_NAMES[DIVISION_CODES.SHUZEN], 
       '修繕積立金会計に関する区分'
     ))
-    this.divisions.set(DIVISION_CODES.PARKING, new AccountingDivision(
+    this.divisionsMap.set(DIVISION_CODES.PARKING, new AccountingDivision(
       DIVISION_CODES.PARKING, 
       DIVISION_NAMES[DIVISION_CODES.PARKING], 
       '駐車場会計に関する区分'
     ))
-    this.divisions.set(DIVISION_CODES.SHARED, new AccountingDivision(
+    this.divisionsMap.set(DIVISION_CODES.SHARED, new AccountingDivision(
       DIVISION_CODES.SHARED, 
       DIVISION_NAMES[DIVISION_CODES.SHARED], 
       '区分共通の会計', 
@@ -80,15 +86,15 @@ export class DivisionService {
     ))
   }
   
-  getDivision(code: string) {
-    return this.divisions.get(code)
+  getDivision(code: string | DivisionCode): AccountingDivision | undefined {
+    return this.divisionsMap.get(code)
   }
   
   getDivisions() {
-    return Array.from(this.divisions.values())
+    return Array.from(this.divisionsMap.values())
   }
   
   clearDivisions() {
-    this.divisions.clear()
+    this.divisionsMap.clear()
   }
 }

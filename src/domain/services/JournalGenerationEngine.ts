@@ -3,11 +3,12 @@
 import { Transaction, TransactionType, PaymentStatus, JournalGenerationRule, JournalPattern } from '../../types/transaction'
 import { JournalData, JournalDetail } from '../../types/accounting'
 import { AccountService } from './AccountService'
+import { IAccountService } from '../interfaces/IAccountService'
 
 export class JournalGenerationEngine {
   private rules: JournalGenerationRule[] = []
   
-  constructor(private accountService: AccountService) {
+  constructor(private accountService: AccountService | IAccountService) {
     this.initializeDefaultRules()
   }
   
