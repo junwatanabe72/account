@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react'
 import { defaultBankAccounts, BankAccount } from '../../data/bankAccounts'
-import { BankAccountService, BankAccountChangeEvent, AccountSyncResult } from '../domain/services/ledger/BankAccountService'
+import { BankAccountService, BankAccountChangeEvent, AccountSyncResult } from '../../domain/services/ledger/BankAccountService'
 import { ToastNotification } from '../common/ToastNotification'
 import './BankAccountPanel.css'
 
