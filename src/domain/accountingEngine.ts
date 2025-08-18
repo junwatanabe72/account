@@ -27,14 +27,19 @@ import { SampleDataService } from './services/SampleDataService'
 import { ClosingService } from './services/ClosingService'
 import { TransactionService } from './services/TransactionService'
 import { JournalGenerationEngine } from './services/JournalGenerationEngine'
+import { ServiceFactory, ServiceContainer } from './services/ServiceFactory'
+import { IAccountService } from './interfaces/IAccountService'
+import { IJournalService } from './interfaces/IJournalService'
+import { IDivisionService } from './interfaces/IDivisionService'
 
 // Re-export for backward compatibility
 export { HierarchicalAccount, AuxiliaryLedger, Journal, JournalDetail, AccountingDivision }
 
 export class AccountingEngine {
-  private accountService: AccountService
-  private journalService: JournalService
-  private divisionService: DivisionService
+  private services: ServiceContainer
+  private accountService: IAccountService
+  private journalService: IJournalService
+  private divisionService: IDivisionService
   private reportService: ReportService
   private importExportService: ImportExportService
   private auxiliaryService: AuxiliaryService
@@ -43,30 +48,22 @@ export class AccountingEngine {
   private transactionService: TransactionService
   private journalGenerationEngine: JournalGenerationEngine
   
-  constructor() {
-    this.accountService = new AccountService()
-    this.divisionService = new DivisionService()
-    this.auxiliaryService = new AuxiliaryService()
-    this.journalService = new JournalService(this.accountService, this.divisionService)
-    this.reportService = new ReportService(this.accountService, this.journalService, this.divisionService)
-    this.importExportService = new ImportExportService(
-      this.accountService, 
-      this.journalService, 
-      this.divisionService, 
-      this.auxiliaryService
-    )
-    this._sampleDataService = new SampleDataService(
-      this.journalService,
-      this.accountService,
-      this.auxiliaryService
-    )
-    this.closingService = new ClosingService(
-      this.accountService,
-      this.journalService,
-      this.divisionService
-    )
-    this.journalGenerationEngine = new JournalGenerationEngine(this.accountService)
-    this.transactionService = new TransactionService(this.accountService, this.journalService)
+  constructor(serviceFactory?: ServiceFactory) {
+    // ServiceFactoryを使用してサービスを作成
+    const factory = serviceFactory || ServiceFactory.getInstance()
+    this.services = factory.createServices()
+    
+    // 各サービスへの参照を保持（後方互換性のため）
+    this.accountService = this.services.accountService
+    this.journalService = this.services.journalService
+    this.divisionService = this.services.divisionService
+    this.reportService = this.services.reportService
+    this.importExportService = this.services.importExportService
+    this.auxiliaryService = this.services.auxiliaryService
+    this._sampleDataService = this.services.sampleDataService
+    this.closingService = this.services.closingService
+    this.transactionService = this.services.transactionService
+    this.journalGenerationEngine = this.services.journalGenerationEngine
     
     this.initializeEngine()
   }
@@ -84,9 +81,25 @@ export class AccountingEngine {
   get accounts() { return this.accountService.accounts }
   get divisions() { return this.divisionService.divisions }
   initializeAccounts() { return this.accountService.initializeAccounts() }
-  rebuildAccountsFrom(defs: any[]) { return this.accountService.rebuildAccountsFrom(defs) }
-  addOrUpdateAccount(def: any) { return this.accountService.addOrUpdateAccount(def) }
-  setAccountActive(code: string, active: boolean) { return this.accountService.setAccountActive(code, active) }
+  rebuildAccountsFrom(defs: any[]) { 
+    // AccountServiceの具象型にキャストが必要な場合
+    if (this.accountService instanceof AccountService) {
+      return this.accountService.rebuildAccountsFrom(defs)
+    }
+    throw new Error('rebuildAccountsFrom requires AccountService implementation')
+  }
+  addOrUpdateAccount(def: any) { 
+    if (this.accountService instanceof AccountService) {
+      return this.accountService.addOrUpdateAccount(def)
+    }
+    throw new Error('addOrUpdateAccount requires AccountService implementation')
+  }
+  setAccountActive(code: string, active: boolean) { 
+    if (this.accountService instanceof AccountService) {
+      return this.accountService.setAccountActive(code, active)
+    }
+    throw new Error('setAccountActive requires AccountService implementation')
+  }
   getAccounts() { return this.accountService.getAccounts() }
   
   // Journal management
@@ -109,10 +122,23 @@ export class AccountingEngine {
   initializeUnitOwners() { return this.auxiliaryService.initializeUnitOwners() }
   initializeVendors() { return this.auxiliaryService.initializeVendors() }
   createUnitOwnerAuxiliaryAccounts() { return this.auxiliaryService.createUnitOwnerAuxiliaryAccounts(this.accountService) }
-  getAuxiliaryLedgerSummary() { return this.auxiliaryService.getAuxiliaryLedgerSummary(this.accountService) }
-  getUnitReceivablesSummary() { return this.auxiliaryService.getUnitReceivablesSummary(this.accountService) }
+  getAuxiliaryLedgerSummary() { 
+    if (this.accountService instanceof AccountService) {
+      return this.auxiliaryService.getAuxiliaryLedgerSummary(this.accountService)
+    }
+    throw new Error('getAuxiliaryLedgerSummary requires AccountService implementation')
+  }
+  getUnitReceivablesSummary() { 
+    if (this.accountService instanceof AccountService) {
+      return this.auxiliaryService.getUnitReceivablesSummary(this.accountService)
+    }
+    throw new Error('getUnitReceivablesSummary requires AccountService implementation')
+  }
   createMonthlyBilling(billingDate: string) { 
-    return this.auxiliaryService.createMonthlyBilling(billingDate, this.journalService, this.accountService) 
+    if (this.journalService instanceof JournalService && this.accountService instanceof AccountService) {
+      return this.auxiliaryService.createMonthlyBilling(billingDate, this.journalService, this.accountService)
+    }
+    throw new Error('createMonthlyBilling requires concrete service implementations')
   }
   
   // Report generation
@@ -147,14 +173,29 @@ export class AccountingEngine {
   loadOneMonthSampleData() { return this._sampleDataService.loadOneMonthSampleData() }
   loadSampleData() { return this._sampleDataService.loadSampleData() }
   clearAll() { return this._sampleDataService.clearAll() }
-  rebuildAuxiliaryAccounts() { return this.accountService.rebuildAuxiliaryAccounts() }
+  rebuildAuxiliaryAccounts() { 
+    if (this.accountService instanceof AccountService) {
+      return this.accountService.rebuildAuxiliaryAccounts()
+    }
+    throw new Error('rebuildAuxiliaryAccounts requires AccountService implementation')
+  }
   
   // Closing entries
   createClosingEntries(closingDate: string) { return this.closingService.createClosingEntries(closingDate) }
   
   // Legacy methods for backward compatibility
-  postJournal(journal: Journal) { return this.journalService.postJournal(journal) }
-  validateDivisionAccounting(journal: Journal) { return this.journalService.validateDivisionAccounting(journal) }
+  postJournal(journal: Journal) { 
+    if (this.journalService instanceof JournalService) {
+      return this.journalService.postJournal(journal)
+    }
+    throw new Error('postJournal requires JournalService implementation')
+  }
+  validateDivisionAccounting(journal: Journal) { 
+    if (this.journalService instanceof JournalService) {
+      return this.journalService.validateDivisionAccounting(journal)
+    }
+    throw new Error('validateDivisionAccounting requires JournalService implementation')
+  }
   
   // Chart of accounts
   getChartOfAccounts() {
