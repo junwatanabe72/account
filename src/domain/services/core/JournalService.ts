@@ -63,10 +63,12 @@ export class Journal {
   createdAt = new Date()
   postedAt?: Date
   meta: Record<string, any> = {}
+  division?: string
   
-  constructor(public date: string, public description: string, reference = '') {
+  constructor(public date: string, public description: string, reference = '', division?: string) {
     this.id = `j_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
     if (reference) this.meta.reference = reference
+    this.division = division
   }
   
   addDetail(d: JournalDetail) { this.details.push(d) }
@@ -95,7 +97,8 @@ export class JournalService implements IJournalService {
   createJournal(journalData: { 
     date: string, 
     description: string, 
-    reference?: string, 
+    reference?: string,
+    division?: string,
     details: Array<{ 
       accountCode: string, 
       debitAmount?: number, 
@@ -104,7 +107,7 @@ export class JournalService implements IJournalService {
       auxiliaryCode?: string | null 
     }> 
   }, options?: { autoPost?: boolean, meta?: Record<string, any> }): CreateJournalResult {
-    const journal = new Journal(journalData.date, journalData.description, journalData.reference || '')
+    const journal = new Journal(journalData.date, journalData.description, journalData.reference || '', journalData.division)
     
     for (const d of journalData.details) {
       const account = this.accountService.getAccount(d.accountCode)

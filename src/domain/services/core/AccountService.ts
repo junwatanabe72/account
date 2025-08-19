@@ -37,7 +37,7 @@ type AccountDef = {
   name: string
   type: AccountType
   normalBalance: NormalBalance
-  division?: string
+  availableDivisions?: string[]  // 変更: division -> availableDivisions
   parentCode?: string
   description?: string
   isActive?: boolean
@@ -60,7 +60,7 @@ export class HierarchicalAccount {
     public name: string, 
     public type: AccountType, 
     public normalBalance: NormalBalance, 
-    public division?: string, 
+    public availableDivisions: string[] = ['KANRI', 'SHUZEN', 'PARKING', 'OTHER'], 
     public description?: string,
     public isActive = true
   ) {}
@@ -154,6 +154,24 @@ export class AccountService implements IAccountService {
     }
   }
   
+  private getDivisionsFromLegacyDivisionCode(divisionCode?: string): string[] {
+    // 旧divisionCodeから使用可能な区分の配列に変換
+    switch (divisionCode) {
+      case 'KANRI':
+        return ['KANRI']
+      case 'SHUZEN':
+        return ['SHUZEN']
+      case 'PARKING':
+        return ['PARKING']
+      case 'OTHER':
+        return ['OTHER']
+      case 'COMMON':
+      default:
+        // COMMONまたは未指定の場合は全区分で使用可能
+        return ['KANRI', 'SHUZEN', 'PARKING', 'OTHER']
+    }
+  }
+  
   initializeAccounts() {
     // defaultAccountsDataをAccountDef形式に変換
     const accountDefs: AccountDef[] = defaultAccountsData.map(account => ({
@@ -161,7 +179,8 @@ export class AccountService implements IAccountService {
       name: account.name,
       type: this.mapCategoryToAccountType(account.category),
       normalBalance: account.accountType === 'DEBIT' ? 'DEBIT' as NormalBalance : 'CREDIT' as NormalBalance,
-      division: account.divisionCode,
+      // divisionCodeからavailableDivisionsに変換
+      availableDivisions: this.getDivisionsFromLegacyDivisionCode(account.divisionCode),
       parentCode: account.parentCode,
       description: account.description,
       isActive: true,
@@ -177,7 +196,7 @@ export class AccountService implements IAccountService {
     const parentMap = new Map<string, HierarchicalAccount[]>()
     
     for (const def of defs) {
-      const acc = new HierarchicalAccount(def.code, def.name, def.type, def.normalBalance, def.division, def.description, def.isActive !== false)
+      const acc = new HierarchicalAccount(def.code, def.name, def.type, def.normalBalance, def.availableDivisions || ['KANRI', 'SHUZEN', 'PARKING', 'OTHER'], def.description, def.isActive !== false)
       acc.parentCode = def.parentCode
       if (def.level !== undefined) acc.level = def.level
       if (def.isPostable !== undefined) acc.isPostable = def.isPostable
@@ -198,13 +217,13 @@ export class AccountService implements IAccountService {
   
   addOrUpdateAccount(def: AccountDef) {
     const exists = this.accountsMap.get(def.code)
-    const acc = exists || new HierarchicalAccount(def.code, def.name, def.type, def.normalBalance, def.division, def.description, def.isActive !== false)
+    const acc = exists || new HierarchicalAccount(def.code, def.name, def.type, def.normalBalance, def.availableDivisions || ['KANRI', 'SHUZEN', 'PARKING', 'OTHER'], def.description, def.isActive !== false)
     
     if (exists) {
       acc.name = def.name
       acc.type = def.type
       acc.normalBalance = def.normalBalance
-      acc.division = def.division
+      acc.availableDivisions = def.availableDivisions || ['KANRI', 'SHUZEN', 'PARKING', 'OTHER']
       acc.description = def.description
       if (def.isActive !== undefined) acc.isActive = def.isActive
       if (def.level !== undefined) acc.level = def.level

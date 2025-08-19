@@ -54,28 +54,37 @@ const FilteredTrialBalance: React.FC<{ engine: AccountingEngine, division: strin
   const startDate = `${fiscalYear}-04-01`
   const endDate = `${fiscalYear + 1}-03-31`
   
-  const filteredAccounts = Array.from(engine.accounts.values()).filter(a => a.division === division)
-  const accounts = filteredAccounts.map(a => {
-    let balance = 0
-    engine.journals.forEach(journal => {
-      if (journal.date >= startDate && journal.date <= endDate && journal.status === 'POSTED') {
-        journal.details.forEach(detail => {
-          if (detail.accountCode === a.code) {
-            if (detail.debitAmount) balance += detail.debitAmount
-            if (detail.creditAmount) balance -= detail.creditAmount
-          }
-        })
-      }
-    })
+  // 仕訳のdivisionでフィルタリングして、勘定科目ごとに集計
+  const accountBalances = new Map<string, number>()
+  
+  engine.journals.forEach(journal => {
+    // 仕訳の日付とステータス、区分でフィルタリング
+    if (journal.date >= startDate && journal.date <= endDate && 
+        journal.status === 'POSTED' && 
+        journal.division === division) {
+      journal.details.forEach(detail => {
+        const currentBalance = accountBalances.get(detail.accountCode) || 0
+        let newBalance = currentBalance
+        if (detail.debitAmount) newBalance += detail.debitAmount
+        if (detail.creditAmount) newBalance -= detail.creditAmount
+        accountBalances.set(detail.accountCode, newBalance)
+      })
+    }
+  })
+  
+  // 勘定科目情報と残高を結合
+  const accounts = Array.from(accountBalances.entries()).map(([code, balance]) => {
+    const account = engine.accounts.find(a => a.code === code)
+    if (!account) return null
     
     // 正常残高に基づいて表示残高を調整
     let displayBalance = balance
-    if (a.normalBalance === 'CREDIT') {
+    if (account.normalBalance === 'CREDIT') {
       displayBalance = -balance
     }
     
-    return { ...a, calculatedBalance: balance, displayBalance }
-  }).filter(a => a.calculatedBalance !== 0)
+    return { ...account, calculatedBalance: balance, displayBalance }
+  }).filter(a => a !== null && a.calculatedBalance !== 0)
   
   const rows = accounts.map(a => {
     const bal = Math.abs(a.displayBalance)
@@ -132,18 +141,27 @@ const FilteredIncomeStatement: React.FC<{ engine: AccountingEngine, division: st
   const expenses: Array<{ code: string, name: string, amount: number }> = []
   let totalRevenue = 0, totalExpense = 0
   
-  Array.from(engine.accounts.values()).filter(acc => acc.division === division).forEach(acc => {
-    let balance = 0
-    engine.journals.forEach(journal => {
-      if (journal.date >= startDate && journal.date <= endDate && journal.status === 'POSTED') {
-        journal.details.forEach(detail => {
-          if (detail.accountCode === acc.code) {
-            if (detail.debitAmount) balance += detail.debitAmount
-            if (detail.creditAmount) balance -= detail.creditAmount
-          }
-        })
-      }
-    })
+  // 仕訳のdivisionでフィルタリングして、勘定科目ごとに集計
+  const accountBalances = new Map<string, number>()
+  
+  engine.journals.forEach(journal => {
+    if (journal.date >= startDate && journal.date <= endDate && 
+        journal.status === 'POSTED' && 
+        journal.division === division) {
+      journal.details.forEach(detail => {
+        const currentBalance = accountBalances.get(detail.accountCode) || 0
+        let newBalance = currentBalance
+        if (detail.debitAmount) newBalance += detail.debitAmount
+        if (detail.creditAmount) newBalance -= detail.creditAmount
+        accountBalances.set(detail.accountCode, newBalance)
+      })
+    }
+  })
+  
+  // 勘定科目情報と残高を結合してPL項目を作成
+  accountBalances.forEach((balance, code) => {
+    const acc = engine.accounts.find(a => a.code === code)
+    if (!acc || balance === 0) return
     
     // 正常残高に基づいて表示残高を調整
     let displayBalance = balance
@@ -151,7 +169,6 @@ const FilteredIncomeStatement: React.FC<{ engine: AccountingEngine, division: st
       displayBalance = -balance
     }
     
-    if (displayBalance === 0) return
     const amt = Math.abs(displayBalance)
     
     if (acc.type === 'REVENUE' && displayBalance > 0) { 
@@ -206,18 +223,27 @@ const FilteredBalanceSheet: React.FC<{ engine: AccountingEngine, division: strin
   
   const revenuesExpenses = { rev: 0, exp: 0 }
   
-  Array.from(engine.accounts.values()).filter(acc => acc.division === division).forEach(acc => {
-    let balance = 0
-    engine.journals.forEach(journal => {
-      if (journal.date >= startDate && journal.date <= endDate && journal.status === 'POSTED') {
-        journal.details.forEach(detail => {
-          if (detail.accountCode === acc.code) {
-            if (detail.debitAmount) balance += detail.debitAmount
-            if (detail.creditAmount) balance -= detail.creditAmount
-          }
-        })
-      }
-    })
+  // 仕訳のdivisionでフィルタリングして、勘定科目ごとに集計
+  const accountBalances = new Map<string, number>()
+  
+  engine.journals.forEach(journal => {
+    if (journal.date >= startDate && journal.date <= endDate && 
+        journal.status === 'POSTED' && 
+        journal.division === division) {
+      journal.details.forEach(detail => {
+        const currentBalance = accountBalances.get(detail.accountCode) || 0
+        let newBalance = currentBalance
+        if (detail.debitAmount) newBalance += detail.debitAmount
+        if (detail.creditAmount) newBalance -= detail.creditAmount
+        accountBalances.set(detail.accountCode, newBalance)
+      })
+    }
+  })
+  
+  // 勘定科目情報と残高を結合してBS項目を作成
+  accountBalances.forEach((balance, code) => {
+    const acc = engine.accounts.find(a => a.code === code)
+    if (!acc || balance === 0) return
     
     // 正常残高に基づいて表示残高を調整
     let displayBalance = balance
@@ -225,7 +251,6 @@ const FilteredBalanceSheet: React.FC<{ engine: AccountingEngine, division: strin
       displayBalance = -balance
     }
     
-    if (displayBalance === 0) return
     const amt = Math.abs(displayBalance)
     
     if (acc.type === 'ASSET' && displayBalance > 0) { 
