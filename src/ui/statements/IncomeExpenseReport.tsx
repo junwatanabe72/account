@@ -67,16 +67,31 @@ export const IncomeExpenseReport: React.FC<{ engine: AccountingEngine }> = ({ en
   const shuzen = getFilteredDivisionData('SHUZEN')
   const parking = getFilteredDivisionData('PARKING')
   
-  // 前期繰越金を取得（3111: 前期繰越収支差額）
-  const getPreviousBalance = () => {
-    const account = engine.accounts.find(a => a.code === '3111')
+  // 前期繰越金を取得（区分別の繰越金勘定科目から）
+  const getPreviousBalance = (divisionCode: string) => {
+    let accountCode = '4101' // デフォルト：管理費繰越金
+    switch(divisionCode) {
+      case 'KANRI':
+        accountCode = '4101' // 管理費繰越金
+        break
+      case 'SHUZEN':
+        accountCode = '4102' // 修繕積立金繰越金
+        break
+      case 'PARKING':
+        accountCode = '4103' // 駐車場会計繰越金
+        break
+      case 'OTHER':
+        accountCode = '4104' // その他会計繰越金
+        break
+    }
+    const account = engine.accounts.find(a => a.code === accountCode)
     return account ? account.getDisplayBalance() : 0
   }
 
   const renderReport = (label: string, d?: { revenues: any[], expenses: any[], totalRevenues: number, totalExpenses: number }, divisionCode?: string) => {
     if (!d) return <div className="text-muted">データがありません</div>
     
-    const previousBalance = getPreviousBalance()
+    const previousBalance = divisionCode ? getPreviousBalance(divisionCode) : 0
     const net = (d.totalRevenues || 0) - (d.totalExpenses || 0)
     const nextBalance = previousBalance + net
     
@@ -137,10 +152,17 @@ export const IncomeExpenseReport: React.FC<{ engine: AccountingEngine }> = ({ en
                 </tr>
               </thead>
               <tbody>
+                {/* 前期繰越金を最初に表示 */}
+                <tr>
+                  <td style={cellStyle}>前期繰越金</td>
+                  <td style={{ ...cellStyle, textAlign: 'right' }}>{yen(previousBalance)}</td>
+                  <td style={{ ...cellStyle, textAlign: 'right' }}>{yen(previousBalance)}</td>
+                  <td style={{ ...cellStyle, textAlign: 'right' }}>0</td>
+                </tr>
                 {d.revenues.length === 0 ? (
                   <tr>
                     <td colSpan={4} style={{ ...cellStyle, textAlign: 'center', color: '#888' }}>
-                      収入データなし
+                      その他収入データなし
                     </td>
                   </tr>
                 ) : (
@@ -155,8 +177,8 @@ export const IncomeExpenseReport: React.FC<{ engine: AccountingEngine }> = ({ en
                 )}
                 <tr style={{ backgroundColor: '#e8f5e8', fontWeight: 'bold' }}>
                   <td style={cellStyle}>収入 合計</td>
-                  <td style={{ ...cellStyle, textAlign: 'right' }}>{yen(d.totalRevenues)}</td>
-                  <td style={{ ...cellStyle, textAlign: 'right' }}>{yen(d.totalRevenues)}</td>
+                  <td style={{ ...cellStyle, textAlign: 'right' }}>{yen(previousBalance + d.totalRevenues)}</td>
+                  <td style={{ ...cellStyle, textAlign: 'right' }}>{yen(previousBalance + d.totalRevenues)}</td>
                   <td style={{ ...cellStyle, textAlign: 'right' }}>0</td>
                 </tr>
               </tbody>

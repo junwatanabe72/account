@@ -63,10 +63,23 @@ const FilteredTrialBalance: React.FC<{ engine: AccountingEngine, division: strin
         journal.status === 'POSTED' && 
         journal.division === division) {
       journal.details.forEach(detail => {
+        const account = engine.accounts.find(a => a.code === detail.accountCode)
+        if (!account) return
+        
         const currentBalance = accountBalances.get(detail.accountCode) || 0
         let newBalance = currentBalance
-        if (detail.debitAmount) newBalance += detail.debitAmount
-        if (detail.creditAmount) newBalance -= detail.creditAmount
+        
+        // 勘定科目の正常残高に基づいて残高を計算
+        if (account.normalBalance === 'DEBIT') {
+          // 借方残高科目（資産・費用）
+          newBalance += detail.debitAmount || 0
+          newBalance -= detail.creditAmount || 0
+        } else {
+          // 貸方残高科目（負債・純資産・収益）
+          newBalance -= detail.debitAmount || 0
+          newBalance += detail.creditAmount || 0
+        }
+        
         accountBalances.set(detail.accountCode, newBalance)
       })
     }
@@ -77,19 +90,36 @@ const FilteredTrialBalance: React.FC<{ engine: AccountingEngine, division: strin
     const account = engine.accounts.find(a => a.code === code)
     if (!account) return null
     
-    // 正常残高に基づいて表示残高を調整
-    let displayBalance = balance
-    if (account.normalBalance === 'CREDIT') {
-      displayBalance = -balance
-    }
-    
-    return { ...account, calculatedBalance: balance, displayBalance }
+    return { ...account, calculatedBalance: balance }
   }).filter(a => a !== null && a.calculatedBalance !== 0)
   
   const rows = accounts.map(a => {
-    const bal = Math.abs(a.displayBalance)
-    const isDebit = a.displayBalance >= 0
-    return { code: a.code, name: a.name, type: a.type, debit: isDebit ? bal : 0, credit: !isDebit ? bal : 0 }
+    const bal = Math.abs(a.calculatedBalance)
+    let debit = 0, credit = 0
+    
+    // デバッグ: 費用科目の場合
+    if (a.type === 'EXPENSE' && a.code.startsWith('6')) {
+      console.log(`[試算表] 費用科目 ${a.code} ${a.name}: calculatedBalance=${a.calculatedBalance}`)
+    }
+    
+    // 勘定科目の種類と正常残高に基づいて借方・貸方を決定
+    if (a.type === 'ASSET' || a.type === 'EXPENSE') {
+      // 資産・費用：正の残高は借方、負の残高は貸方
+      if (a.calculatedBalance > 0) {
+        debit = bal
+      } else {
+        credit = bal
+      }
+    } else {
+      // 負債・純資産・収益：正の残高は貸方、負の残高は借方
+      if (a.calculatedBalance > 0) {
+        credit = bal
+      } else {
+        debit = bal
+      }
+    }
+    
+    return { code: a.code, name: a.name, type: a.type, debit, credit }
   }).sort((a,b) => a.code.localeCompare(b.code))
   const totals = rows.reduce((s,r) => { s.debit+=r.debit; s.credit+=r.credit; return s }, { debit: 0, credit: 0 })
   const groups: Record<string, typeof rows> = { '資産の部': [], '負債の部': [], '正味財産の部': [], '収益の部': [], '費用の部': [] }
@@ -149,10 +179,23 @@ const FilteredIncomeStatement: React.FC<{ engine: AccountingEngine, division: st
         journal.status === 'POSTED' && 
         journal.division === division) {
       journal.details.forEach(detail => {
+        const account = engine.accounts.find(a => a.code === detail.accountCode)
+        if (!account) return
+        
         const currentBalance = accountBalances.get(detail.accountCode) || 0
         let newBalance = currentBalance
-        if (detail.debitAmount) newBalance += detail.debitAmount
-        if (detail.creditAmount) newBalance -= detail.creditAmount
+        
+        // 勘定科目の正常残高に基づいて残高を計算
+        if (account.normalBalance === 'DEBIT') {
+          // 借方残高科目（資産・費用）
+          newBalance += detail.debitAmount || 0
+          newBalance -= detail.creditAmount || 0
+        } else {
+          // 貸方残高科目（負債・純資産・収益）
+          newBalance -= detail.debitAmount || 0
+          newBalance += detail.creditAmount || 0
+        }
+        
         accountBalances.set(detail.accountCode, newBalance)
       })
     }
@@ -163,18 +206,13 @@ const FilteredIncomeStatement: React.FC<{ engine: AccountingEngine, division: st
     const acc = engine.accounts.find(a => a.code === code)
     if (!acc || balance === 0) return
     
-    // 正常残高に基づいて表示残高を調整
-    let displayBalance = balance
-    if (acc.normalBalance === 'CREDIT') {
-      displayBalance = -balance
-    }
+    const amt = Math.abs(balance)
     
-    const amt = Math.abs(displayBalance)
-    
-    if (acc.type === 'REVENUE' && displayBalance > 0) { 
+    // 収益は正の残高、費用は正の残高で表示
+    if (acc.type === 'REVENUE' && balance > 0) { 
       revenues.push({ code: acc.code, name: acc.name, amount: amt }); totalRevenue += amt 
     }
-    if (acc.type === 'EXPENSE' && displayBalance > 0) { 
+    if (acc.type === 'EXPENSE' && balance > 0) { 
       expenses.push({ code: acc.code, name: acc.name, amount: amt }); totalExpense += amt 
     }
   })
@@ -231,10 +269,23 @@ const FilteredBalanceSheet: React.FC<{ engine: AccountingEngine, division: strin
         journal.status === 'POSTED' && 
         journal.division === division) {
       journal.details.forEach(detail => {
+        const account = engine.accounts.find(a => a.code === detail.accountCode)
+        if (!account) return
+        
         const currentBalance = accountBalances.get(detail.accountCode) || 0
         let newBalance = currentBalance
-        if (detail.debitAmount) newBalance += detail.debitAmount
-        if (detail.creditAmount) newBalance -= detail.creditAmount
+        
+        // 勘定科目の正常残高に基づいて残高を計算
+        if (account.normalBalance === 'DEBIT') {
+          // 借方残高科目（資産・費用）
+          newBalance += detail.debitAmount || 0
+          newBalance -= detail.creditAmount || 0
+        } else {
+          // 貸方残高科目（負債・純資産・収益）
+          newBalance -= detail.debitAmount || 0
+          newBalance += detail.creditAmount || 0
+        }
+        
         accountBalances.set(detail.accountCode, newBalance)
       })
     }
@@ -245,25 +296,21 @@ const FilteredBalanceSheet: React.FC<{ engine: AccountingEngine, division: strin
     const acc = engine.accounts.find(a => a.code === code)
     if (!acc || balance === 0) return
     
-    // 正常残高に基づいて表示残高を調整
-    let displayBalance = balance
-    if (acc.normalBalance === 'CREDIT') {
-      displayBalance = -balance
-    }
+    const amt = Math.abs(balance)
     
-    const amt = Math.abs(displayBalance)
-    
-    if (acc.type === 'ASSET' && displayBalance > 0) { 
+    // 資産は正の残高で表示、負債・純資産は正の残高で表示
+    if (acc.type === 'ASSET' && balance > 0) { 
       assets.push({ code: acc.code, name: acc.name, amount: amt }); totalAssets += amt 
     }
-    if (acc.type === 'LIABILITY' && displayBalance > 0) { 
+    if (acc.type === 'LIABILITY' && balance > 0) { 
       liabilities.push({ code: acc.code, name: acc.name, amount: amt }); totalLiabilities += amt 
     }
-    if (acc.type === 'EQUITY' && displayBalance > 0) { 
+    if (acc.type === 'EQUITY' && balance > 0) { 
       equity.push({ code: acc.code, name: acc.name, amount: amt }); totalEquity += amt 
     }
-    if (acc.type === 'REVENUE') revenuesExpenses.rev += amt
-    if (acc.type === 'EXPENSE') revenuesExpenses.exp += amt
+    // 収益・費用を当期純利益計算用に集計
+    if (acc.type === 'REVENUE' && balance > 0) revenuesExpenses.rev += amt
+    if (acc.type === 'EXPENSE' && balance > 0) revenuesExpenses.exp += amt
   })
   
   const net = revenuesExpenses.rev - revenuesExpenses.exp

@@ -53,22 +53,54 @@ export class SampleDataService {
     
     const currentYear = 2024
     
-    // 期首残高（2024年4月1日）
-    const openingJournal = this.journalService.createJournal({
+    // 期首残高（2024年4月1日）- 区分ごとに作成
+    // 管理会計の期首残高
+    const openingJournalKanri = this.journalService.createJournal({
       date: `${currentYear}-04-01`,
-      description: '期首残高',
+      description: '期首残高（管理会計）',
       division: 'KANRI',
       details: [
         { accountCode: '1102', debitAmount: 5000000, creditAmount: 0 },  // 普通預金（管理）
-        { accountCode: '1103', debitAmount: 10000000, creditAmount: 0 }, // 普通預金（修繕）
-        { accountCode: '1105', debitAmount: 500000, creditAmount: 0 },   // 普通預金（駐車場）
-        { accountCode: '4101', debitAmount: 0, creditAmount: 15500000 }  // 管理費繰越金（期首の場合は純資産科目を使用）
+        { accountCode: '4101', debitAmount: 0, creditAmount: 5000000 }   // 管理費繰越金
       ]
     })
-    if (openingJournal.success && openingJournal.data) {
-      this.journalService.submitJournal(openingJournal.data.id)
-      this.journalService.approveJournal(openingJournal.data.id)
-      this.journalService.postJournalById(openingJournal.data.id)
+    
+    // 修繕会計の期首残高
+    const openingJournalShuzen = this.journalService.createJournal({
+      date: `${currentYear}-04-01`,
+      description: '期首残高（修繕会計）',
+      division: 'SHUZEN',
+      details: [
+        { accountCode: '1103', debitAmount: 10000000, creditAmount: 0 }, // 普通預金（修繕）
+        { accountCode: '4102', debitAmount: 0, creditAmount: 10000000 }  // 修繕積立金繰越金
+      ]
+    })
+    
+    // 駐車場会計の期首残高
+    const openingJournalParking = this.journalService.createJournal({
+      date: `${currentYear}-04-01`,
+      description: '期首残高（駐車場会計）',
+      division: 'PARKING',
+      details: [
+        { accountCode: '1105', debitAmount: 500000, creditAmount: 0 },   // 普通預金（駐車場）
+        { accountCode: '4103', debitAmount: 0, creditAmount: 500000 }    // 駐車場会計繰越金
+      ]
+    })
+    // 期首残高の転記
+    if (openingJournalKanri.success && openingJournalKanri.data) {
+      this.journalService.submitJournal(openingJournalKanri.data.id)
+      this.journalService.approveJournal(openingJournalKanri.data.id)
+      this.journalService.postJournalById(openingJournalKanri.data.id)
+    }
+    if (openingJournalShuzen.success && openingJournalShuzen.data) {
+      this.journalService.submitJournal(openingJournalShuzen.data.id)
+      this.journalService.approveJournal(openingJournalShuzen.data.id)
+      this.journalService.postJournalById(openingJournalShuzen.data.id)
+    }
+    if (openingJournalParking.success && openingJournalParking.data) {
+      this.journalService.submitJournal(openingJournalParking.data.id)
+      this.journalService.approveJournal(openingJournalParking.data.id)
+      this.journalService.postJournalById(openingJournalParking.data.id)
     }
     
     // 12ヶ月分のデータ生成（2024年4月〜2025年3月）

@@ -71,6 +71,8 @@ export const defaultAccountsData: DefaultAccount[] = [
   { code: '4100', name: '繰越金', shortName: '繰越金', category: 'EQUITY', subCategory: '純資産', accountType: 'CREDIT', level: 2, parentCode: '4000', isPostable: false, divisionCode: 'COMMON', displayOrder: 4100 },
   { code: '4101', name: '管理費繰越金', shortName: '管理費繰越', category: 'EQUITY', subCategory: '純資産', accountType: 'CREDIT', level: 3, parentCode: '4100', isPostable: true, divisionCode: 'KANRI', displayOrder: 4101 },
   { code: '4102', name: '修繕積立金繰越金', shortName: '修繕繰越', category: 'EQUITY', subCategory: '純資産', accountType: 'CREDIT', level: 3, parentCode: '4100', isPostable: true, divisionCode: 'SHUZEN', displayOrder: 4102 },
+  { code: '4103', name: '駐車場会計繰越金', shortName: '駐車場繰越', category: 'EQUITY', subCategory: '純資産', accountType: 'CREDIT', level: 3, parentCode: '4100', isPostable: true, divisionCode: 'PARKING', displayOrder: 4103 },
+  { code: '4104', name: 'その他会計繰越金', shortName: 'その他繰越', category: 'EQUITY', subCategory: '純資産', accountType: 'CREDIT', level: 3, parentCode: '4100', isPostable: true, divisionCode: 'OTHER', displayOrder: 4104 },
   
   // 収益
   { code: '5000', name: '収益', shortName: '収益', category: 'REVENUE', subCategory: '収益', accountType: 'CREDIT', level: 1, isPostable: false, divisionCode: 'COMMON', displayOrder: 5000 },
