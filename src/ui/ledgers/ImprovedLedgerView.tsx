@@ -35,7 +35,7 @@ export const ImprovedLedgerView: React.FC<{ engine: AccountingEngine }> = ({ eng
     if (filters.accountQuery) {
       const q = filters.accountQuery.toLowerCase()
       const hit = j.details.some(d => {
-        const acc = engine.accounts.get(d.accountCode)
+        const acc = engine.accounts.find(a => a.code === d.accountCode)
         const s = (d.accountCode + ' ' + (acc?.name ?? '')).toLowerCase()
         return s.includes(q)
       })
@@ -48,7 +48,7 @@ export const ImprovedLedgerView: React.FC<{ engine: AccountingEngine }> = ({ eng
     const lines = ['number,date,status,description,accountCode,accountName,debit,credit']
     filtered.forEach(j => {
       j.details.forEach(d => {
-        const acc = engine.accounts.get(d.accountCode)
+        const acc = engine.accounts.find(a => a.code === d.accountCode)
         lines.push([j.number, j.date, j.status, JSON.stringify(j.description), d.accountCode, (acc?.name ?? ''), d.debitAmount || 0, d.creditAmount || 0].join(','))
       })
     })
@@ -160,7 +160,7 @@ export const ImprovedLedgerView: React.FC<{ engine: AccountingEngine }> = ({ eng
                   </thead>
                   <tbody>
                     {j.details.map((d, idx) => {
-                      const account = engine.accounts.get(d.accountCode)
+                      const account = engine.accounts.find(a => a.code === d.accountCode)
                       return (
                         <tr key={idx}>
                           <td>

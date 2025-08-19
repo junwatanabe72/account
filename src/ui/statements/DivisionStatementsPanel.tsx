@@ -85,7 +85,7 @@ const FilteredTrialBalance: React.FC<{ engine: AccountingEngine, division: strin
   const totals = rows.reduce((s,r) => { s.debit+=r.debit; s.credit+=r.credit; return s }, { debit: 0, credit: 0 })
   const groups: Record<string, typeof rows> = { '資産の部': [], '負債の部': [], '正味財産の部': [], '収益の部': [], '費用の部': [] }
   rows.forEach(r => {
-    const accountType = engine.accounts.get(r.code)?.type
+    const accountType = engine.accounts.find(a => a.code === r.code)?.type
     if (accountType) {
       switch (accountType) {
         case 'ASSET': groups['資産の部']?.push(r); break

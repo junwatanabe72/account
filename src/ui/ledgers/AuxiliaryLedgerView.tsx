@@ -94,7 +94,7 @@ export const AuxiliaryLedgerView: React.FC<{ engine: AccountingEngine, onChange:
                 {auxiliarySummary.flatMap(accountGroup => 
                   accountGroup.auxiliaries.map(aux => {
                     // 補助元帳の実際のインスタンスを取得して属性情報を取得
-                    const account = engine.accounts.get(accountGroup.accountCode)
+                    const account = engine.accounts.find(a => a.code === accountGroup.accountCode)
                     const auxLedger = account?.getAuxiliaryLedger(aux.code)
                     const attrs: string[] = []
                     if (auxLedger?.attributes?.owner) {

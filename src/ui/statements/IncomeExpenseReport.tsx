@@ -70,7 +70,7 @@ export const IncomeExpenseReport: React.FC<{ engine: AccountingEngine }> = ({ en
   
   // 前期繰越金を取得（3111: 前期繰越収支差額）
   const getPreviousBalance = () => {
-    const account = engine.accounts.get('3111')
+    const account = engine.accounts.find(a => a.code === '3111')
     return account ? account.getDisplayBalance() : 0
   }
 

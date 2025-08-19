@@ -15,7 +15,7 @@ export const TrialBalanceView: React.FC<{ engine: AccountingEngine }> = ({ engin
     '費用の部': [],
   }
   tb.accounts.forEach((a: TrialBalanceEntry) => {
-    const acc = engine.accounts.get(a.code)
+    const acc = engine.accounts.find(account => account.code === a.code)
     if (acc) {
       switch (acc.type) {
         case 'ASSET': groups['資産の部']?.push(a); break
@@ -47,7 +47,7 @@ export const TrialBalanceView: React.FC<{ engine: AccountingEngine }> = ({ engin
                   <td colSpan={4}><strong>{name}</strong></td>
                 </tr>
                 {list.map((a: TrialBalanceEntry) => {
-                  const acc = engine.accounts.get(a.code)
+                  const acc = engine.accounts.find(account => account.code === a.code)
                   const divisionText = acc?.division ?? '-'
                   return (
                     <tr key={a.code}>

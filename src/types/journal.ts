@@ -6,8 +6,9 @@
 // 仕訳ステータス
 export type JournalStatus = 'DRAFT' | 'POSTED' | 'CANCELLED'
 
-// 会計区分
-export type Division = 'KANRI' | 'SHUZEN'
+// 会計区分（仕訳データ用）
+// 注意: COMMONは含まない（COMMONは勘定科目マスタ専用）
+export type Division = 'KANRI' | 'SHUZEN' | 'PARKING' | 'OTHER'
 
 // 仕訳明細行
 export interface JournalLine {

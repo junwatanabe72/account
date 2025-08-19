@@ -44,7 +44,7 @@ export const useFilteredJournals = (
       if (filters.accountQuery) {
         const q = filters.accountQuery.toLowerCase()
         const hit = j.details.some(d => {
-          const acc = engine.accounts.get(d.accountCode)
+          const acc = engine.accounts.find(a => a.code === d.accountCode)
           const s = (d.accountCode + ' ' + (acc?.name ?? '')).toLowerCase()
           return s.includes(q)
         })

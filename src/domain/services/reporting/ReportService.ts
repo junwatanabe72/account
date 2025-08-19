@@ -252,12 +252,15 @@ export class ReportService {
     for (const journal of this.journalService.getJournals()) {
       const journalDate = new Date(journal.date)
       if (journalDate >= start && journalDate <= end && journal.status === 'POSTED') {
+        // 仕訳の区分でフィルタリング
+        if (divisionCode && journal.division !== divisionCode) {
+          continue
+        }
         for (const detail of journal.details) {
           const account = this.accountService.getAccount(detail.accountCode)
           if (account && account.type === 'REVENUE') {
             const amount = detail.creditAmount - detail.debitAmount
-            if (!divisionCode || account.division === divisionCode) {
-              if (amount > 0) {
+            if (amount > 0) {
                 const item: any = {
                   journalId: journal.id,
                   date: journal.date,
@@ -278,7 +281,6 @@ export class ReportService {
                 }
                 
                 details.push(item)
-              }
             }
           }
         }
@@ -353,12 +355,15 @@ export class ReportService {
     for (const journal of this.journalService.getJournals()) {
       const journalDate = new Date(journal.date)
       if (journalDate >= start && journalDate <= end && journal.status === 'POSTED') {
+        // 仕訳の区分でフィルタリング
+        if (divisionCode && journal.division !== divisionCode) {
+          continue
+        }
         for (const detail of journal.details) {
           const account = this.accountService.getAccount(detail.accountCode)
           if (account && account.type === 'EXPENSE') {
             const amount = detail.debitAmount - detail.creditAmount
-            if (!divisionCode || account.division === divisionCode) {
-              if (amount > 0) {
+            if (amount > 0) {
                 const item: any = {
                   journalId: journal.id,
                   date: journal.date,
@@ -379,7 +384,6 @@ export class ReportService {
                 }
                 
                 details.push(item)
-              }
             }
           }
         }

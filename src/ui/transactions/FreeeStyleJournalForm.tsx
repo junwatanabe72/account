@@ -50,7 +50,7 @@ const FreeeStyleJournalForm: React.FC<FreeeStyleJournalFormProps> = ({
   const [transactionType, setTransactionType] = useState<
     "income" | "expense" | "transfer"
   >("expense");
-  const [division, setDivision] = useState<"KANRI" | "SHUZEN">("KANRI");
+  const [division, setDivision] = useState<"KANRI" | "SHUZEN" | "PARKING" | "OTHER">("KANRI");
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
   const [amount, setAmount] = useState("");
   const [description, setDescription] = useState("");
@@ -280,10 +280,7 @@ const FreeeStyleJournalForm: React.FC<FreeeStyleJournalFormProps> = ({
       const preview: JournalEntry = {
         date,
         description,
-        division:
-          fromAccount.division === "KANRI" && toAccount.division === "KANRI"
-            ? "KANRI"
-            : "SHUZEN",
+        division,  // ユーザーが選択した区分を使用
         tags: tags.length > 0 ? tags : undefined,
         details: [
           {
@@ -596,6 +593,23 @@ const FreeeStyleJournalForm: React.FC<FreeeStyleJournalFormProps> = ({
             className={errors.date ? "error" : ""}
           />
           {errors.date && <span className="error-message">{errors.date}</span>}
+        </div>
+
+        {/* 会計区分選択 */}
+        <div className="form-group">
+          <label>
+            会計区分 <span className="required">*</span>
+          </label>
+          <select
+            value={division}
+            onChange={(e) => setDivision(e.target.value as "KANRI" | "SHUZEN" | "PARKING" | "OTHER")}
+            className="form-select"
+          >
+            <option value="KANRI">管理費会計</option>
+            <option value="SHUZEN">修繕積立金会計</option>
+            <option value="PARKING">駐車場会計</option>
+            <option value="OTHER">その他特別会計</option>
+          </select>
         </div>
 
         {/* 振替元・振替先口座選択（振替タブの場合） */}
