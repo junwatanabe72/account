@@ -1,14 +1,14 @@
 import { create } from "zustand";
 import { devtools, persist, subscribeWithSelector } from "zustand/middleware";
-import { createAccountingSlice } from "./slices/accountingSlice";
-import { createBankAccountSlice } from "./slices/bankAccountSlice";
-import { createTransactionSlice } from "./slices/transactionSlice";
-import { createJournalSlice } from "./slices/journalSlice";
-import { createEnhancedJournalSlice } from "./slices/journalSliceEnhanced";
-import { createEnhancedTransactionSlice } from "./slices/transactionSliceEnhanced";
-import { createEnhancedAuxiliarySlice } from "./slices/auxiliarySliceEnhanced";
-import { createUISlice } from "./slices/uiSlice";
-import { createUnifiedJournalSlice } from "./slices/unifiedJournalSlice";
+import { createAccountingSlice } from "./slices/core/accountingSlice";
+import { createBankAccountSlice } from "./slices/auxiliary/bankAccountSlice";
+import { createTransactionSlice } from "./slices/transaction/transactionSlice";
+import { createJournalSlice } from "./slices/journal/journalSlice";
+import { createEnhancedJournalSlice } from "./slices/journal/journalSliceEnhanced";
+import { createEnhancedTransactionSlice } from "./slices/transaction/transactionSliceEnhanced";
+import { createEnhancedAuxiliarySlice } from "./slices/auxiliary/auxiliarySliceEnhanced";
+import { createUISlice } from "./slices/ui/uiSlice";
+import { createUnifiedJournalSlice } from "./slices/journal/unifiedJournalSlice";
 import { StoreState } from "./types";
 
 // メインストアの作成

@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { ReportService } from '../../domain/services/ReportService'
+import { ReportService } from '../../domain/services/reporting/ReportService'
 import { MockAccountService, MockJournalService, MockDivisionService } from '../../domain/__mocks__'
-import { Journal } from '../../domain/services/JournalService'
+import { Journal } from '../../domain/services/core/JournalService'
 
 describe('ReportService Unit Tests', () => {
   let reportService: ReportService

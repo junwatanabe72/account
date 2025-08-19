@@ -1,13 +1,13 @@
 import {
   DivisionCode,
   AccountType
-} from '../../types'
+} from '../../../types'
 import {
   DIVISION_CODES,
   DIVISION_NAMES,
   ACCOUNTING_CONSTANTS
-} from '../../constants'
-import { IDivisionService } from '../interfaces/IDivisionService'
+} from '../../../constants'
+import { IDivisionService } from '../../interfaces/IDivisionService'
 
 export class AccountingDivision {
   transferLimits: Record<string, number> = {}

@@ -30,10 +30,10 @@ import {
 } from '../types'
 
 // 型のエクスポートとinstanceofチェック用にインポート
-import { AccountService, HierarchicalAccount, AuxiliaryLedger } from './services/AccountService'
-import { JournalService, Journal, JournalDetail } from './services/JournalService'
-import { AccountingDivision } from './services/DivisionService'
-import { ServiceFactory, ServiceContainer } from './services/ServiceFactory'
+import { AccountService, HierarchicalAccount, AuxiliaryLedger } from './services/core/AccountService'
+import { JournalService, Journal, JournalDetail } from './services/core/JournalService'
+import { AccountingDivision } from './services/core/DivisionService'
+import { ServiceFactory, ServiceContainer } from './services/factory/ServiceFactory'
 
 // Re-export for backward compatibility
 export { HierarchicalAccount, AuxiliaryLedger, Journal, JournalDetail, AccountingDivision }

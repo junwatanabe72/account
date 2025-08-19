@@ -27,10 +27,10 @@ import {
   AccountDefinition,
   AccountType,
   NormalBalance
-} from '../../types'
-import { ACCOUNTING_CONSTANTS } from '../../constants'
-import { defaultAccountsData } from '../../data/defaultAccounts'
-import { IAccountService } from '../interfaces/IAccountService'
+} from '../../../types'
+import { ACCOUNTING_CONSTANTS } from '../../../constants'
+import { defaultAccountsData } from '../../../data/defaultAccounts'
+import { IAccountService } from '../../interfaces/IAccountService'
 
 type AccountDef = {
   code: string

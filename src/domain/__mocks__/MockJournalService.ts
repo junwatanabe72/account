@@ -1,5 +1,5 @@
 import { IJournalService } from '../interfaces/IJournalService'
-import { Journal } from '../services/JournalService'
+import { Journal } from '../services/core/JournalService'
 import { CreateJournalResult } from '../../types'
 
 export class MockJournalService implements IJournalService {

@@ -16,21 +16,21 @@
  * アーキテクチャ上の位置: Domain層のDIコンテナ
  */
 
-import { AccountService } from './AccountService'
-import { JournalService } from './JournalService'
-import { DivisionService } from './DivisionService'
-import { ReportService } from './ReportService'
-import { ImportExportService } from './ImportExportService'
-import { AuxiliaryService } from './AuxiliaryService'
-import { SampleDataService } from './SampleDataService'
-import { ClosingService } from './ClosingService'
-import { TransactionService } from './TransactionService'
-import { JournalGenerationEngine } from './JournalGenerationEngine'
-import { BankAccountService } from './BankAccountService'
+import { AccountService } from '../core/AccountService'
+import { JournalService } from '../core/JournalService'
+import { DivisionService } from '../core/DivisionService'
+import { ReportService } from '../reporting/ReportService'
+import { ImportExportService } from '../io/ImportExportService'
+import { AuxiliaryService } from '../ledger/AuxiliaryService'
+import { SampleDataService } from '../io/SampleDataService'
+import { ClosingService } from '../reporting/ClosingService'
+import { TransactionService } from '../transaction/TransactionService'
+import { JournalGenerationEngine } from '../transaction/JournalGenerationEngine'
+import { BankAccountService } from '../ledger/BankAccountService'
 
-import { IAccountService } from '../interfaces/IAccountService'
-import { IJournalService } from '../interfaces/IJournalService'
-import { IDivisionService } from '../interfaces/IDivisionService'
+import { IAccountService } from '../../interfaces/IAccountService'
+import { IJournalService } from '../../interfaces/IJournalService'
+import { IDivisionService } from '../../interfaces/IDivisionService'
 
 export interface ServiceContainer {
   accountService: IAccountService

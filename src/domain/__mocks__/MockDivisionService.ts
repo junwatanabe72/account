@@ -1,5 +1,5 @@
 import { IDivisionService } from '../interfaces/IDivisionService'
-import { AccountingDivision } from '../services/DivisionService'
+import { AccountingDivision } from '../services/core/DivisionService'
 
 export class MockDivisionService implements IDivisionService {
   private mockDivisions = new Map<string, AccountingDivision>()

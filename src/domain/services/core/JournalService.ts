@@ -29,18 +29,18 @@ import {
   JournalData,
   CreateJournalOptions,
   CreateJournalResult
-} from '../../types'
+} from '../../../types'
 import { 
   ACCOUNTING_CONSTANTS,
   JOURNAL_STATUS,
   ERROR_MESSAGES,
   ERROR_CODES
-} from '../../constants'
-import { AccountService, HierarchicalAccount } from './AccountService'
-import { DivisionService } from './DivisionService'
-import { IJournalService } from '../interfaces/IJournalService'
-import { IAccountService } from '../interfaces/IAccountService'
-import { IDivisionService } from '../interfaces/IDivisionService'
+} from '../../../constants'
+import { AccountService, HierarchicalAccount } from '../core/AccountService'
+import { DivisionService } from '../core/DivisionService'
+import { IJournalService } from '../../interfaces/IJournalService'
+import { IAccountService } from '../../interfaces/IAccountService'
+import { IDivisionService } from '../../interfaces/IDivisionService'
 
 export class JournalDetail {
   constructor(
