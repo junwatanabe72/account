@@ -21,7 +21,7 @@ interface JournalEntry {
   date: string;
   description: string;
   details: JournalDetail[];
-  division: "KANRI" | "SHUZEN";
+  division: "KANRI" | "SHUZEN" | "PARKING" | "OTHER";
   serviceMonth?: string;
   payerId?: string;
   tags?: string[];
@@ -527,6 +527,62 @@ const FreeeStyleJournalForm: React.FC<FreeeStyleJournalFormProps> = ({
             >
               修繕会計
             </button>
+            <button
+              className={`division-btn ${
+                division === "PARKING" ? "active" : ""
+              }`}
+              onClick={() => {
+                if (division !== "PARKING") {
+                  // 会計区分を変更時に入力をリセット
+                  setDivision("PARKING");
+                  setAmount("");
+                  setDescription("");
+                  setSelectedAccount(null);
+                  setAccountSearchQuery("");
+                  setPayerId("");
+                  setTags([]);
+                  setTagInput("");
+                  setPaymentAccount("kanri_bank"); // デフォルト口座
+                  setErrors({});
+                  setValidationMessage({
+                    type: "info",
+                    message:
+                      "駐車場会計に切り替えました。入力がリセットされました。",
+                  });
+                  setTimeout(() => setValidationMessage(null), 2000);
+                }
+              }}
+            >
+              駐車場会計
+            </button>
+            <button
+              className={`division-btn ${
+                division === "OTHER" ? "active" : ""
+              }`}
+              onClick={() => {
+                if (division !== "OTHER") {
+                  // 会計区分を変更時に入力をリセット
+                  setDivision("OTHER");
+                  setAmount("");
+                  setDescription("");
+                  setSelectedAccount(null);
+                  setAccountSearchQuery("");
+                  setPayerId("");
+                  setTags([]);
+                  setTagInput("");
+                  setPaymentAccount("kanri_bank"); // デフォルト口座
+                  setErrors({});
+                  setValidationMessage({
+                    type: "info",
+                    message:
+                      "その他特別会計に切り替えました。入力がリセットされました。",
+                  });
+                  setTimeout(() => setValidationMessage(null), 2000);
+                }
+              }}
+            >
+              その他特別会計
+            </button>
           </div>
         )}
       </div>
@@ -593,23 +649,6 @@ const FreeeStyleJournalForm: React.FC<FreeeStyleJournalFormProps> = ({
             className={errors.date ? "error" : ""}
           />
           {errors.date && <span className="error-message">{errors.date}</span>}
-        </div>
-
-        {/* 会計区分選択 */}
-        <div className="form-group">
-          <label>
-            会計区分 <span className="required">*</span>
-          </label>
-          <select
-            value={division}
-            onChange={(e) => setDivision(e.target.value as "KANRI" | "SHUZEN" | "PARKING" | "OTHER")}
-            className="form-select"
-          >
-            <option value="KANRI">管理費会計</option>
-            <option value="SHUZEN">修繕積立金会計</option>
-            <option value="PARKING">駐車場会計</option>
-            <option value="OTHER">その他特別会計</option>
-          </select>
         </div>
 
         {/* 振替元・振替先口座選択（振替タブの場合） */}

@@ -17,7 +17,7 @@ export interface AccountItem {
   description?: string
   keywords?: string[]  // 検索用キーワード
   frequency?: number    // 使用頻度（並べ替えに使用）
-  divisions?: ('KANRI' | 'SHUZEN' | 'BOTH')[]  // 使用可能な会計区分
+  divisions?: ('KANRI' | 'SHUZEN' | 'PARKING' | 'OTHER' | 'BOTH')[]  // 使用可能な会計区分
 }
 
 // 収入カテゴリー（正しい5000番台のコード）
@@ -174,7 +174,7 @@ export const transferCategories: AccountCategory[] = [
 ]
 
 // 検索関数
-export function searchAccounts(query: string, type: 'income' | 'expense' | 'transfer', division?: 'KANRI' | 'SHUZEN'): AccountItem[] {
+export function searchAccounts(query: string, type: 'income' | 'expense' | 'transfer', division?: 'KANRI' | 'SHUZEN' | 'PARKING' | 'OTHER'): AccountItem[] {
   const categories = type === 'income' ? incomeCategories : 
                     type === 'expense' ? expenseCategories : 
                     transferCategories
@@ -222,7 +222,7 @@ function calculateMatchScore(account: AccountItem, query: string): number {
 }
 
 // よく使う勘定科目を取得
-export function getFrequentAccounts(type: 'income' | 'expense' | 'transfer', division?: 'KANRI' | 'SHUZEN', limit: number = 5): AccountItem[] {
+export function getFrequentAccounts(type: 'income' | 'expense' | 'transfer', division?: 'KANRI' | 'SHUZEN' | 'PARKING' | 'OTHER', limit: number = 5): AccountItem[] {
   const categories = type === 'income' ? incomeCategories : 
                     type === 'expense' ? expenseCategories : 
                     transferCategories
@@ -243,7 +243,7 @@ export function getFrequentAccounts(type: 'income' | 'expense' | 'transfer', div
 }
 
 // 勘定科目が指定された会計区分で使用可能かチェック
-export function isAccountAvailableForDivision(account: AccountItem, division: 'KANRI' | 'SHUZEN'): boolean {
+export function isAccountAvailableForDivision(account: AccountItem, division: 'KANRI' | 'SHUZEN' | 'PARKING' | 'OTHER'): boolean {
   if (!account.divisions) return true // 区分指定がない場合は使用可能
   return account.divisions.includes(division) || account.divisions.includes('BOTH')
 }
