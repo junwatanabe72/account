@@ -39,7 +39,7 @@ import { ServiceFactory, ServiceContainer } from './services/factory/ServiceFact
 export { HierarchicalAccount, AuxiliaryLedger, Journal, JournalDetail, AccountingDivision }
 
 export class AccountingEngine {
-  private services: ServiceContainer
+  public services: ServiceContainer
   
   constructor(serviceFactory?: ServiceFactory) {
     // ServiceFactoryを使用してサービスを作成

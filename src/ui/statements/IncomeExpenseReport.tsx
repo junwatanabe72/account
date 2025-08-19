@@ -30,18 +30,17 @@ function Section({ title, children }: { title: string, children: React.ReactNode
 function yen(n: number) { return '¥' + n.toLocaleString() }
 
 export const IncomeExpenseReport: React.FC<{ engine: AccountingEngine }> = ({ engine }) => {
-  const currentYear = new Date().getFullYear()
-  const [year, setYear] = useState(String(currentYear))
+  // サンプルデータが2024年度のため、デフォルトを2024年に設定
+  const [year, setYear] = useState('2024')
   const [selectedDivision, setSelectedDivision] = useState<string>('ALL')
   const divisions = DEFAULT_ACCOUNTING_DIVISIONS
   const divisionGroups = getGroupedAccountingDivisions(divisions)
   
   const getFilteredDivisionData = (division: string) => {
     const fiscalYear = parseInt(year)
-    // 現在月のデータを表示（サンプルデータが1ヶ月分のため）
-    const currentMonth = new Date().getMonth() + 1
-    const startDate = `${fiscalYear}-${String(currentMonth).padStart(2, '0')}-01`
-    const endDate = `${fiscalYear}-${String(currentMonth).padStart(2, '0')}-31`
+    // 年度全体のデータを表示（4月〜翌年3月）
+    const startDate = `${fiscalYear}-04-01`
+    const endDate = `${fiscalYear + 1}-03-31`
     
     // 収入の集計
     const incomeSummary = engine.getIncomeDetailSummary(startDate, endDate, division)

@@ -24,6 +24,7 @@ export const defaultAccountsData: DefaultAccount[] = [
   { code: '1102', name: '普通預金', shortName: '普通預金', category: 'ASSET', subCategory: '流動資産', accountType: 'DEBIT', level: 3, parentCode: '1100', isPostable: true, divisionCode: 'KANRI', displayOrder: 1102, description: '管理費口座' },
   { code: '1103', name: '普通預金（修繕）', shortName: '普通預金（修）', category: 'ASSET', subCategory: '流動資産', accountType: 'DEBIT', level: 3, parentCode: '1100', isPostable: true, divisionCode: 'SHUZEN', displayOrder: 1103, description: '修繕積立金口座' },
   { code: '1104', name: '定期預金', shortName: '定期預金', category: 'ASSET', subCategory: '流動資産', accountType: 'DEBIT', level: 3, parentCode: '1100', isPostable: true, divisionCode: 'SHUZEN', displayOrder: 1104 },
+  { code: '1105', name: '普通預金（駐車場）', shortName: '普通預金（駐）', category: 'ASSET', subCategory: '流動資産', accountType: 'DEBIT', level: 3, parentCode: '1100', isPostable: true, divisionCode: 'PARKING', displayOrder: 1105, description: '駐車場会計口座' },
   
   { code: '1200', name: '有価証券', shortName: '有価証券', category: 'ASSET', subCategory: '流動資産', accountType: 'DEBIT', level: 2, parentCode: '1000', isPostable: false, divisionCode: 'SHUZEN', displayOrder: 1200 },
   { code: '1201', name: '国債', shortName: '国債', category: 'ASSET', subCategory: '流動資産', accountType: 'DEBIT', level: 3, parentCode: '1200', isPostable: true, divisionCode: 'SHUZEN', displayOrder: 1201, description: '国債,地方債,すまい・る債' },
@@ -77,6 +78,7 @@ export const defaultAccountsData: DefaultAccount[] = [
   { code: '5101', name: '管理費収入', shortName: '管理費', category: 'REVENUE', subCategory: '管理収益', accountType: 'CREDIT', level: 3, parentCode: '5100', isPostable: true, divisionCode: 'KANRI', displayOrder: 5101 },
   { code: '5102', name: '駐車場使用料収入', shortName: '駐車場', category: 'REVENUE', subCategory: '管理収益', accountType: 'CREDIT', level: 3, parentCode: '5100', isPostable: true, divisionCode: 'KANRI', displayOrder: 5102, description: '月極駐車場,来客用駐車場' },
   { code: '5103', name: '駐輪場使用料収入', shortName: '駐輪場', category: 'REVENUE', subCategory: '管理収益', accountType: 'CREDIT', level: 3, parentCode: '5100', isPostable: true, divisionCode: 'KANRI', displayOrder: 5103, description: '自転車置場,バイク置場' },
+  { code: '5107', name: '駐車場収入', shortName: '駐車場収入', category: 'REVENUE', subCategory: '管理収益', accountType: 'CREDIT', level: 3, parentCode: '5100', isPostable: true, divisionCode: 'PARKING', displayOrder: 5107, description: '月極駐車場収入（駐車場会計）' },
   { code: '5104', name: 'ルーフバルコニー使用料収入', shortName: 'ルーフバルコニー', category: 'REVENUE', subCategory: '管理収益', accountType: 'CREDIT', level: 3, parentCode: '5100', isPostable: true, divisionCode: 'KANRI', displayOrder: 5104, description: '屋上バルコニー専用使用料' },
   { code: '5105', name: 'テラス使用料収入', shortName: 'テラス', category: 'REVENUE', subCategory: '管理収益', accountType: 'CREDIT', level: 3, parentCode: '5100', isPostable: true, divisionCode: 'KANRI', displayOrder: 5105, description: '専用庭,テラス専用使用料' },
   { code: '5106', name: '集会室使用料収入', shortName: '集会室', category: 'REVENUE', subCategory: '管理収益', accountType: 'CREDIT', level: 3, parentCode: '5100', isPostable: true, divisionCode: 'KANRI', displayOrder: 5106, description: '共用施設使用料' },
@@ -115,6 +117,7 @@ export const defaultAccountsData: DefaultAccount[] = [
   { code: '6306', name: '印刷費', shortName: '印刷費', category: 'EXPENSE', subCategory: '一般管理費', accountType: 'DEBIT', level: 3, parentCode: '6300', isPostable: true, divisionCode: 'KANRI', displayOrder: 6306 },
   { code: '6307', name: '租税公課', shortName: '租税公課', category: 'EXPENSE', subCategory: '一般管理費', accountType: 'DEBIT', level: 3, parentCode: '6300', isPostable: true, divisionCode: 'KANRI', displayOrder: 6307 },
   { code: '6308', name: '雑費', shortName: '雑費', category: 'EXPENSE', subCategory: '一般管理費', accountType: 'DEBIT', level: 3, parentCode: '6300', isPostable: true, divisionCode: 'KANRI', displayOrder: 6308 },
+  { code: '6310', name: '駐車場管理費', shortName: '駐車場管理費', category: 'EXPENSE', subCategory: '一般管理費', accountType: 'DEBIT', level: 3, parentCode: '6300', isPostable: true, divisionCode: 'PARKING', displayOrder: 6310, description: '駐車場運営費' },
     // 一般管理費 配下の追加
   { code: '6309', name: '旅費交通費', shortName: '旅費交通費', category: 'EXPENSE', subCategory: '一般管理費', accountType: 'DEBIT', level: 3, parentCode: '6300', isPostable: true, divisionCode: 'KANRI', displayOrder: 6309, description: '交通費,旅費,実費精算' },
   { code: '6311', name: '諸会費', shortName: '諸会費', category: 'EXPENSE', subCategory: '一般管理費', accountType: 'DEBIT', level: 3, parentCode: '6300', isPostable: true, divisionCode: 'KANRI', displayOrder: 6310, description: '自治会費,加入団体会費' },
@@ -125,6 +128,7 @@ export const defaultAccountsData: DefaultAccount[] = [
   
   { code: '6500', name: '特別損失', shortName: '特別損失', category: 'EXPENSE', subCategory: '特別損失', accountType: 'DEBIT', level: 2, parentCode: '6000', isPostable: false, divisionCode: 'COMMON', displayOrder: 6500 },
   { code: '6501', name: '繰出金', shortName: '繰出金', category: 'EXPENSE', subCategory: '特別損失', accountType: 'DEBIT', level: 3, parentCode: '6500', isPostable: true, divisionCode: 'KANRI', displayOrder: 6501, description: '修繕会計繰出' },
+  { code: '6503', name: 'その他支出', shortName: 'その他支出', category: 'EXPENSE', subCategory: '特別損失', accountType: 'DEBIT', level: 3, parentCode: '6500', isPostable: true, divisionCode: 'OTHER', displayOrder: 6503, description: 'その他特別会計支出' },
   { code: '6502', name: '雑損失', shortName: '雑損失', category: 'EXPENSE', subCategory: '特別損失', accountType: 'DEBIT', level: 3, parentCode: '6500', isPostable: true, divisionCode: 'COMMON', displayOrder: 6502 },
 
 ]

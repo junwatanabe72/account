@@ -38,7 +38,7 @@ export const SampleDataPanel: React.FC<{ engine: AccountingEngine, onChange: () 
         created++
       }
     }
-    engine.unitOwners = owners
+    engine.unitOwners = Array.from(owners.values())
     engine.rebuildAuxiliaryAccounts()
     onChange()
     toast.show(`${count}戸のサンプル組合員を作成しました`,'success')
@@ -67,6 +67,18 @@ export const SampleDataPanel: React.FC<{ engine: AccountingEngine, onChange: () 
     }, 0)
   }
 
+  const generateFullYear = () => {
+    if (!confirm('完全な年間サンプルデータを作成します。既存のデータはすべて削除されます。よろしいですか？')) {
+      return
+    }
+    
+    // SampleDataServiceのloadFullYearSampleDataメソッドを呼び出す
+    engine.services.sampleDataService.loadFullYearSampleData()
+    
+    onChange()
+    toast.show('1年分の完全なサンプルデータを生成しました（管理費・修繕・駐車場・その他の4区分）', 'success')
+  }
+
   return (
     <div className="card mt-3">
       <div className="card-header"><strong>サンプルデータ生成</strong></div>
@@ -81,7 +93,15 @@ export const SampleDataPanel: React.FC<{ engine: AccountingEngine, onChange: () 
       </div>
       <div className="card-body pt-0 d-flex flex-wrap gap-2">
         <button className="btn btn-sm btn-warning" onClick={() => buildYearSample50()}>50戸・年間サンプル（期首〜12ヶ月・期末）</button>
-        <small className="text-muted">注意: 既存の組合員情報は上書きされます。必要に応じてバックアップを取得してください。</small>
+        <button className="btn btn-success" onClick={generateFullYear}>
+          🏢 完全な年間サンプル（4区分・実務データ）
+        </button>
+      </div>
+      <div className="card-footer">
+        <small className="text-muted">
+          <strong>完全な年間サンプル：</strong>2024年4月〜2025年3月の1年分の実務的なデータを生成します。
+          管理費、修繕積立金、駐車場、その他の4区分すべてのデータが含まれます。
+        </small>
       </div>
     </div>
   )
