@@ -19,8 +19,8 @@
  */
 
 import { StateCreator } from 'zustand'
-import { Journal } from '../../types/accounting'
-import { JournalState, JournalActions, StoreState } from '../types'
+import { Journal } from '../../../types/accounting'
+import { JournalState, JournalActions, StoreState } from '../../types'
 
 export interface JournalSlice extends JournalState, JournalActions {}
 

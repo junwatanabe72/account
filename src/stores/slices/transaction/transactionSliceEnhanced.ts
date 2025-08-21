@@ -1,6 +1,6 @@
 import { StateCreator } from 'zustand'
-import { Transaction, TransactionType, PaymentMethod } from '../../types/transaction'
-import { StoreState } from '../types'
+import { Transaction, TransactionType, PaymentMethod } from '../../../types/transaction'
+import { StoreState } from '../../types'
 import { v4 as uuidv4 } from 'uuid'
 
 /**

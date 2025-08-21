@@ -12,9 +12,9 @@ import {
   JournalStatus,
   JournalSummary,
   AccountSummary
-} from '../../types/journal'
-import { JournalService } from '../../services/journalService'
-import { StoreState } from '../types'
+} from '../../../types/journal'
+// import { JournalService } from '../../../services/journalService'
+import { StoreState } from '../../types'
 
 export interface UnifiedJournalState {
   // データ

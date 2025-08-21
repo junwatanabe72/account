@@ -1,7 +1,7 @@
 import { StateCreator } from 'zustand'
-import { Journal, JournalEntry, JournalStatus } from '../../types/accounting'
-import { StoreState } from '../types'
-import { JOURNAL_STATUS } from '../../constants'
+import { Journal, JournalEntry, JournalStatus } from '../../../types/accounting'
+import { StoreState } from '../../types'
+import { JOURNAL_STATUS } from '../../../constants'
 
 /**
  * 仕訳管理の拡張スライス

@@ -1,7 +1,7 @@
 import { StateCreator } from 'zustand'
-import { Transaction, TransactionInput } from '../../types/transaction'
+import { Transaction, TransactionInput } from '../../../types/transaction'
 import { TransactionService } from '../../../domain/services/transaction/TransactionService'
-import { TransactionState, TransactionActions, StoreState } from '../types'
+import { TransactionState, TransactionActions, StoreState } from '../../types'
 
 export interface TransactionSlice extends TransactionState, TransactionActions {}
 
