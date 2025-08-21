@@ -7,6 +7,7 @@ import { Journal, JournalEntry } from '../../types/accounting'
 import { EnhancedJournalSlice } from '../slices/journalSliceEnhanced'
 import { EnhancedTransactionSlice } from '../slices/transactionSliceEnhanced'
 import { EnhancedAuxiliarySlice } from '../slices/auxiliarySliceEnhanced'
+import { PaymentSlice } from '../slices/payment/paymentSlice'
 
 // UI状態の型定義
 export interface UIState {
@@ -65,7 +66,8 @@ export interface StoreState extends
   JournalActions,
   EnhancedJournalSlice,
   EnhancedTransactionSlice,
-  EnhancedAuxiliarySlice {
+  EnhancedAuxiliarySlice,
+  PaymentSlice {
   // グローバルアクション
   reset: () => void
   clearError: () => void

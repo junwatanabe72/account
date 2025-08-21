@@ -9,6 +9,7 @@ import { createEnhancedTransactionSlice } from "./slices/transaction/transaction
 import { createEnhancedAuxiliarySlice } from "./slices/auxiliary/auxiliarySliceEnhanced";
 import { createUISlice } from "./slices/ui/uiSlice";
 import { createUnifiedJournalSlice } from "./slices/journal/unifiedJournalSlice";
+import { createPaymentSlice } from "./slices/payment/paymentSlice";
 import { StoreState } from "./types";
 
 // メインストアの作成
@@ -27,6 +28,7 @@ const useStore = create<StoreState>()(
           ...createEnhancedTransactionSlice(set, get, api),
           ...createEnhancedAuxiliarySlice(set, get, api),
           ...createUnifiedJournalSlice(set, get, api),
+          ...createPaymentSlice(set, get, api),
 
           // グローバルアクション
           reset: () => {
