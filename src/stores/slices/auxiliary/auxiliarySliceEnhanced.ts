@@ -1,5 +1,5 @@
 import { StateCreator } from 'zustand'
-import { StoreState } from '../types'
+import { StoreState } from '../../types'
 
 /**
  * 補助元帳管理の拡張スライス

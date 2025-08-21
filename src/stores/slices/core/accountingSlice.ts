@@ -17,8 +17,8 @@
  */
 
 import { StateCreator } from 'zustand'
-import { AccountingEngine } from '../../domain/accountingEngine'
-import { AccountingState, AccountingActions, StoreState } from '../types'
+import { AccountingEngine } from '../../../domain/accountingEngine'
+import { AccountingState, AccountingActions, StoreState } from '../../types'
 
 export interface AccountingSlice extends AccountingState, AccountingActions {}
 

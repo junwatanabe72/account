@@ -1,5 +1,5 @@
 import { StateCreator } from 'zustand'
-import { UIState, StoreState } from '../types'
+import { UIState, StoreState } from '../../types'
 
 export interface UISlice extends UIState {
   showToast: (type: UIState['toastMessage']['type'], message: string) => void

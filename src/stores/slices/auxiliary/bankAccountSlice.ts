@@ -1,7 +1,7 @@
 import { StateCreator } from 'zustand'
-import { BankAccount, defaultBankAccounts } from '../../data/bankAccounts'
+import { BankAccount, defaultBankAccounts } from '../../../data/bankAccounts'
 import { BankAccountService, AccountSyncResult } from '../../../domain/services/ledger/BankAccountService'
-import { BankAccountState, BankAccountActions, StoreState } from '../types'
+import { BankAccountState, BankAccountActions, StoreState } from '../../types'
 
 export interface BankAccountSlice extends BankAccountState, BankAccountActions {}
 
