@@ -31,7 +31,7 @@ const PaymentTestPanel: React.FC = () => {
   }, [store.engine])
 
   const addTestResult = (message: string) => {
-    setTestResults(prev => [...prev, `[${new Date().toLocaleTimeString()}] ${message}`)
+    setTestResults(prev => [...prev, `[${new Date().toLocaleTimeString()}] ${message}`])
   }
 
   // CSVインポートテスト
