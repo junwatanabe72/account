@@ -185,6 +185,26 @@ npm run build
 - [実装計画](../phase14-implementation-plan.md)
 - [実装サマリー](../PHASE14_IMPLEMENTATION_SUMMARY.md)
 
+## 🧪 テスト手順
+
+### クイックスタート
+1. アプリケーションを起動
+   ```bash
+   npm run dev
+   ```
+2. ブラウザで `http://localhost:5173/` にアクセス
+3. サイドバー > データ管理 > 🧪 Phase14テスト をクリック
+4. 「🚀 完全テスト実行」ボタンをクリック
+
+### 詳細なテスト手順
+[TEST_FLOW.md](./TEST_FLOW.md) を参照してください。
+
+### 主要なテストポイント
+- **CSVインポート**: サンプルCSVの読み込みとパース
+- **入金照合**: 摘要からの住戸番号抽出と照合処理
+- **未収金管理**: 未収金の作成と消し込み
+- **データ永続化**: LocalStorageへの保存と読み込み
+
 ## 🤝 コントリビューター
 
 - Implementation: Claude Code Assistant

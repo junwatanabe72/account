@@ -18,6 +18,7 @@ import { ManualView } from "../settings/ManualView";
 import FreeeStyleJournalForm from "../transactions/FreeeStyleJournalForm";
 import { BankAccountPanel } from "../masters/BankAccountPanel";
 import { SampleDataPanel } from "../data-management/SampleDataPanel";
+import PaymentTestPanel from "../payment/PaymentTestPanel";
 import "../Sidebar.css";
 
 export const App: React.FC = () => {
@@ -56,6 +57,7 @@ export const App: React.FC = () => {
     | "manual"
     | "bankAccounts"
     | "sampleData"
+    | "paymentTest"
   >("freeeInput");
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -115,6 +117,7 @@ export const App: React.FC = () => {
         { id: "sampleData", label: "サンプルデータ", icon: "🏢" },
         { id: "export", label: "バックアップ/CSV", icon: "📤" },
         { id: "spec", label: "JSON仕様", icon: "📄" },
+        { id: "paymentTest", label: "Phase14テスト", icon: "🧪" },
       ],
     },
     {
@@ -418,6 +421,12 @@ export const App: React.FC = () => {
           {active === "sampleData" && (
             <section className="mt-2">
               <SampleDataPanel engine={engine} onChange={forceUpdate} />
+            </section>
+          )}
+
+          {active === "paymentTest" && (
+            <section className="mt-2">
+              <PaymentTestPanel />
             </section>
           )}
 
