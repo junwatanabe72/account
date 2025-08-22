@@ -146,7 +146,7 @@ const FilteredTrialBalance: React.FC<{ engine: AccountingEngine, division: strin
           <tbody>
             {Object.entries(groups).map(([name, list]) => list.length>0 && (
               <React.Fragment key={name}>
-                <tr className="table-secondary"><td colSpan={3}><strong>{name}</strong></td></tr>
+                <tr className="bg-light"><td colSpan={3}><strong>{name}</strong></td></tr>
                 {list.map(r => (
                   <tr key={r.code}><td>{r.code} - {r.name}</td><td className="text-end text-primary">{r.debit>0?yen(r.debit):''}</td><td className="text-end text-danger">{r.credit>0?yen(r.credit):''}</td></tr>
                 ))}
