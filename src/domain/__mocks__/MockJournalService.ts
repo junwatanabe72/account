@@ -1,6 +1,8 @@
-import { IJournalService } from '../interfaces/IJournalService'
+import { IJournalService, CreateJournalInput, CreateJournalOptions } from '../interfaces/IJournalService'
 import { Journal } from '../services/core/JournalService'
 import { CreateJournalResult } from '../../types'
+import { JournalInterface } from '../../types/services'
+import { JournalEntry } from '../../types/validation'
 
 export class MockJournalService implements IJournalService {
   private mockJournals: Journal[] = []
@@ -18,7 +20,10 @@ export class MockJournalService implements IJournalService {
     return this.mockJournals.find(j => j.id === id)
   }
   
-  createJournal(journalData: any, options?: any): CreateJournalResult {
+  createJournal(
+    journalData: CreateJournalInput | JournalEntry,
+    options?: CreateJournalOptions
+  ): CreateJournalResult {
     const journal = new Journal(
       journalData.date,
       journalData.description,
@@ -39,7 +44,7 @@ export class MockJournalService implements IJournalService {
           auxiliaryCode: detail.auxiliaryCode,
           getAmount: () => detail.debitAmount || detail.creditAmount || 0,
           isDebit: () => (detail.debitAmount || 0) > 0
-        } as any)
+        })
       }
     }
     
@@ -53,7 +58,7 @@ export class MockJournalService implements IJournalService {
     
     return {
       success: true,
-      data: journal
+      journal: journal as JournalInterface
     }
   }
   
@@ -63,7 +68,7 @@ export class MockJournalService implements IJournalService {
       return { success: false, errors: ['Journal not found'] }
     }
     journal.status = 'SUBMITTED'
-    return { success: true, data: journal }
+    return { success: true, journal: journal as JournalInterface }
   }
   
   approveJournal(id: string): CreateJournalResult {
@@ -72,7 +77,7 @@ export class MockJournalService implements IJournalService {
       return { success: false, errors: ['Journal not found'] }
     }
     journal.status = 'APPROVED'
-    return { success: true, data: journal }
+    return { success: true, journal: journal as JournalInterface }
   }
   
   postJournalById(id: string): CreateJournalResult {
@@ -82,7 +87,7 @@ export class MockJournalService implements IJournalService {
     }
     journal.status = 'POSTED'
     journal.postedAt = new Date()
-    return { success: true, data: journal }
+    return { success: true, journal: journal as JournalInterface }
   }
   
   deleteJournal(id: string): CreateJournalResult {
@@ -94,7 +99,7 @@ export class MockJournalService implements IJournalService {
     return { success: true }
   }
   
-  updateJournal(id: string, data: any): CreateJournalResult {
+  updateJournal(id: string, data: Partial<CreateJournalInput>): CreateJournalResult {
     const journal = this.getJournal(id)
     if (!journal) {
       return { success: false, errors: ['Journal not found'] }
@@ -103,7 +108,7 @@ export class MockJournalService implements IJournalService {
     if (data.date) journal.date = data.date
     if (data.description) journal.description = data.description
     
-    return { success: true, data: journal }
+    return { success: true, journal: journal as JournalInterface }
   }
   
   clearJournals(): void {
@@ -115,7 +120,7 @@ export class MockJournalService implements IJournalService {
     this.mockJournals.push(journal)
   }
   
-  setJournalStatus(id: string, status: any): void {
+  setJournalStatus(id: string, status: 'DRAFT' | 'SUBMITTED' | 'APPROVED' | 'POSTED' | 'CANCELLED'): void {
     const journal = this.getJournal(id)
     if (journal) {
       journal.status = status
