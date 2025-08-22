@@ -14,6 +14,7 @@ import {
   BankAccount,
   getTransferableCombinations,
 } from "../../data/bankAccounts";
+import { AccountingEngine } from '../../domain/accountingEngine';
 import "./FreeeStyleJournalForm.css";
 
 interface JournalEntry {
@@ -37,7 +38,7 @@ interface JournalDetail {
 }
 
 interface FreeeStyleJournalFormProps {
-  engine?: any; // 既存のAccountingEngineとの互換性
+  engine?: AccountingEngine; // 型安全なAccountingEngine
   onChange?: () => void;
   onSubmit?: (entry: JournalEntry) => void;
 }
@@ -856,7 +857,7 @@ const FreeeStyleJournalForm: React.FC<FreeeStyleJournalFormProps> = ({
             <label>決済口座</label>
             <select
               value={paymentAccount}
-              onChange={(e) => setPaymentAccount(e.target.value as any)}
+              onChange={(e) => setPaymentAccount(e.target.value)}
               className="form-select"
             >
               {paymentAccountOptions.map((opt) => (
