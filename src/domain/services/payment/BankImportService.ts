@@ -14,6 +14,8 @@ import {
 import { JournalService } from '../core/JournalService'
 import { AccountService } from '../core/AccountService'
 
+type CSVRow = Record<string, string | number | undefined>
+
 /**
  * 汎用銀行フォーマットアダプター
  */
@@ -31,7 +33,7 @@ class GenericBankAdapter implements BankFormatAdapter {
     }
   }
 
-  parse(rawData: any[]): BankTransaction[] {
+  parse(rawData: CSVRow[]): BankTransaction[] {
     const mapping = this.getColumnMapping()
     return rawData.map((row, index) => {
       const depositAmount = this.parseAmount(row[mapping.deposit!])
@@ -52,12 +54,12 @@ class GenericBankAdapter implements BankFormatAdapter {
     })
   }
 
-  validate(data: any): boolean {
+  validate(data: CSVRow): boolean {
     const mapping = this.getColumnMapping()
     return !!(data[mapping.date] && data[mapping.description])
   }
 
-  private parseAmount(value: any): number {
+  private parseAmount(value: string | number | undefined): number {
     if (!value) return 0
     const cleaned = String(value).replace(/[,，\s]/g, '')
     return parseFloat(cleaned) || 0
@@ -95,7 +97,7 @@ class GenericBankAdapter implements BankFormatAdapter {
     return dateStr
   }
 
-  private generateTransactionId(row: any, index: number): string {
+  private generateTransactionId(row: CSVRow, index: number): string {
     const hash = Object.values(row).join('_')
     return `txn_${Date.now()}_${index}_${this.simpleHash(hash)}`
   }
@@ -263,7 +265,7 @@ export class BankImportService {
   /**
    * CSVファイルを解析
    */
-  private parseCSVFile(file: File): Promise<any[]> {
+  private parseCSVFile(file: File): Promise<CSVRow[]> {
     return new Promise((resolve, reject) => {
       // エンコーディングを自動判定
       const reader = new FileReader()

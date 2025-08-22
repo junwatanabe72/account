@@ -6,6 +6,7 @@ import {
   getGroupedAccountingDivisions,
   TOP_LEVEL_NAMES
 } from '../../types/accountingDivision'
+import { IncomeStatementItem } from '../../types'
 
 const YearSelect: React.FC<{ value: string, onChange: (v: string) => void }> = ({ value, onChange }) => (
   <div className="d-flex align-items-center gap-2 mb-3">
@@ -88,7 +89,7 @@ export const IncomeExpenseReport: React.FC<{ engine: AccountingEngine }> = ({ en
     return account ? account.getDisplayBalance() : 0
   }
 
-  const renderReport = (label: string, d?: { revenues: any[], expenses: any[], totalRevenues: number, totalExpenses: number }, divisionCode?: string) => {
+  const renderReport = (label: string, d?: { revenues: IncomeStatementItem[], expenses: IncomeStatementItem[], totalRevenues: number, totalExpenses: number }, divisionCode?: string) => {
     if (!d) return <div className="text-muted">データがありません</div>
     
     const previousBalance = divisionCode ? getPreviousBalance(divisionCode) : 0
@@ -166,7 +167,7 @@ export const IncomeExpenseReport: React.FC<{ engine: AccountingEngine }> = ({ en
                     </td>
                   </tr>
                 ) : (
-                  d.revenues.map((r: any) => (
+                  d.revenues.map((r: IncomeStatementItem) => (
                     <tr key={r.code}>
                       <td style={cellStyle}>{r.name}</td>
                       <td style={{ ...cellStyle, textAlign: 'right' }}>{yen(r.amount)}</td>
@@ -206,7 +207,7 @@ export const IncomeExpenseReport: React.FC<{ engine: AccountingEngine }> = ({ en
                     </td>
                   </tr>
                 ) : (
-                  d.expenses.map((e: any) => {
+                  d.expenses.map((e: IncomeStatementItem) => {
                     const budgetAmount = Math.round(e.amount * 1.1 / 1000) * 1000
                     const variance = budgetAmount - e.amount
                     return (
@@ -267,7 +268,7 @@ export const IncomeExpenseReport: React.FC<{ engine: AccountingEngine }> = ({ en
                       </td>
                     </tr>
                   ) : (
-                    d.revenues.map((r: any) => (
+                    d.revenues.map((r: IncomeStatementItem) => (
                       <tr key={r.code}>
                         <td style={{ ...cellStyle, fontSize: '12px' }}>{r.name}</td>
                         <td style={{ ...cellStyle, textAlign: 'right', fontSize: '12px' }}>{yen(r.amount)}</td>
@@ -316,7 +317,7 @@ export const IncomeExpenseReport: React.FC<{ engine: AccountingEngine }> = ({ en
                       </td>
                     </tr>
                   ) : (
-                    d.expenses.map((e: any) => {
+                    d.expenses.map((e: IncomeStatementItem) => {
                       const budgetAmount = Math.round(e.amount * 1.1 / 1000) * 1000
                       const variance = budgetAmount - e.amount
                       return (

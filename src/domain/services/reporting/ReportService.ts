@@ -25,6 +25,20 @@ import {
   BalanceSheet,
   BalanceSheetDebugInfo
 } from '../../../types'
+
+interface DetailSummary {
+  accountCode: string
+  accountName: string
+  amount: number
+  count: number
+  division?: string
+  auxiliaryDetails?: Map<string, {
+    auxiliaryCode: string
+    auxiliaryName?: string
+    amount: number
+    count: number
+  }>
+}
 import { 
   ACCOUNTING_CONSTANTS,
   DIVISION_CODES
@@ -292,7 +306,7 @@ export class ReportService {
   
   getIncomeDetailSummary(startDate: string, endDate: string, divisionCode?: string) {
     const details = this.getIncomeDetails(startDate, endDate, divisionCode)
-    const accountSummary = new Map<string, any>()
+    const accountSummary = new Map<string, DetailSummary>()
     
     for (const detail of details) {
       const key = detail.accountCode
@@ -395,7 +409,7 @@ export class ReportService {
   
   getExpenseDetailSummary(startDate: string, endDate: string, divisionCode?: string) {
     const details = this.getExpenseDetails(startDate, endDate, divisionCode)
-    const accountSummary = new Map<string, any>()
+    const accountSummary = new Map<string, DetailSummary>()
     
     for (const detail of details) {
       const key = detail.accountCode

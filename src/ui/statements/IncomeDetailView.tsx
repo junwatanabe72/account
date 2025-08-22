@@ -7,6 +7,33 @@ import {
   TOP_LEVEL_NAMES
 } from '../../types/accountingDivision'
 
+interface IncomeDetail {
+  journalId: string
+  date: string
+  number: string
+  accountCode: string
+  accountName: string
+  description: string
+  amount: number
+  auxiliaryCode?: string
+  auxiliaryName?: string
+  division?: string
+}
+
+interface AccountSummary {
+  accountCode: string
+  accountName: string
+  amount: number
+  count: number
+  division?: string
+  auxiliaryDetails?: Array<{
+    auxiliaryCode: string
+    auxiliaryName: string
+    amount: number
+    count: number
+  }>
+}
+
 const YearSelect: React.FC<{ value: string, onChange: (v: string) => void }> = ({ value, onChange }) => (
   <div className="d-flex align-items-center gap-2 mb-2">
     <label className="form-label mb-0">年度</label>
@@ -107,7 +134,7 @@ export const IncomeDetailView: React.FC<IncomeDetailViewProps> = ({ engine }) =>
     return `${year}年${parseInt(monthNum || '0')}月`
   }
   
-  const getAuxiliaryMonthlyData = (incomeDetails: any[]) => {
+  const getAuxiliaryMonthlyData = (incomeDetails: IncomeDetail[]) => {
     const data = new Map<string, Map<string, number>>()
     
     incomeDetails.forEach(detail => {
@@ -218,12 +245,12 @@ export const IncomeDetailView: React.FC<IncomeDetailViewProps> = ({ engine }) =>
         const totalByMonth = new Map<string, number>()
         
         // 月別の集計を詳細データから作成
-        data.details.forEach((detail: any) => {
+        data.details.forEach((detail: IncomeDetail) => {
           const month = detail.date.substring(0, 7)
           totalByMonth.set(month, (totalByMonth.get(month) || 0) + detail.amount)
         })
         
-        const grandTotal = data.summary.reduce((sum: number, account: any) => sum + account.amount, 0)
+        const grandTotal = data.summary.reduce((sum: number, account: AccountSummary) => sum + account.amount, 0)
         
         return (
           <div key={divCode} style={{ marginBottom: 48, border: '2px solid #0d6efd', borderRadius: 8, padding: 16 }}>
@@ -245,12 +272,12 @@ export const IncomeDetailView: React.FC<IncomeDetailViewProps> = ({ engine }) =>
                     </tr>
                   </thead>
                   <tbody>
-                    {data.summary.map((account: any) => {
+                    {data.summary.map((account: AccountSummary) => {
                       // 各勘定科目の月別集計を計算
                       const accountMonthlyData = new Map<string, number>()
                       data.details
-                        .filter((detail: any) => detail.accountCode === account.accountCode && !detail.auxiliaryCode)
-                        .forEach((detail: any) => {
+                        .filter((detail: IncomeDetail) => detail.accountCode === account.accountCode && !detail.auxiliaryCode)
+                        .forEach((detail: IncomeDetail) => {
                           const month = detail.date.substring(0, 7)
                           accountMonthlyData.set(month, (accountMonthlyData.get(month) || 0) + detail.amount)
                         })
@@ -271,7 +298,7 @@ export const IncomeDetailView: React.FC<IncomeDetailViewProps> = ({ engine }) =>
                             </td>
                           </tr>
                           {account.auxiliaryDetails && account.auxiliaryDetails.length > 0 && (
-                            account.auxiliaryDetails.map((aux: any) => {
+                            account.auxiliaryDetails.map((aux) => {
                               const auxKey = `${account.accountCode}-${aux.auxiliaryCode}`
                               const auxMonthly = auxiliaryMonthlyData.get(auxKey)
                               return (
@@ -332,7 +359,7 @@ export const IncomeDetailView: React.FC<IncomeDetailViewProps> = ({ engine }) =>
                         </td>
                       </tr>
                     ) : (
-                      data.details.map((detail: any, index: number) => (
+                      data.details.map((detail: IncomeDetail, index: number) => (
                         <tr key={index}>
                           <td style={{ border: '1px solid #ddd', padding: 6 }}>{detail.date}</td>
                           <td style={{ border: '1px solid #ddd', padding: 6 }}>{detail.journalNumber}</td>
