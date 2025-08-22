@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { FileUploader } from '../data-management/FileUploader'
 // import { LLMJournalProcessor } from './LLMJournalProcessor'
-import { JournalConfirmation } from './JournalConfirmation'
+// import { JournalConfirmation } from './JournalConfirmation' // TODO: 実装が必要
 import { ParsedFileData } from '../../utils/fileParser'
 import { StandardizedBankTransaction, JournalSuggestion } from '../../types/master'
 import { AccountingEngine } from '../../domain/accountingEngine'
@@ -113,8 +113,8 @@ export const BankImportWizard: React.FC<BankImportWizardProps> = ({
           const result = accountingEngine.createJournal(journalData)
           
           // 仕訳を投稿状態にする
-          if (result.success && result.journal) {
-            accountingEngine.postJournalById(result.journal.id)
+          if (result.success && result.data) {
+            accountingEngine.postJournalById(result.data.id)
           }
           
           importedCount++
@@ -239,7 +239,6 @@ export const BankImportWizard: React.FC<BankImportWizardProps> = ({
                     
                     // FileUploaderが期待する形式でデータを作成
                     const mockParsedData = {
-                      fileName: 'sample-bank-statement.csv',
                       format: 'csv' as const,
                       encoding: 'UTF-8',
                       rawText: text,
@@ -248,6 +247,11 @@ export const BankImportWizard: React.FC<BankImportWizardProps> = ({
                         rows: text.split('\n').slice(1).filter(line => line.trim()).map(line => 
                           line.split(',').map(cell => cell.trim())
                         )
+                      },
+                      metadata: {
+                        fileName: 'sample-bank-statement.csv',
+                        fileSize: text.length,
+                        lastModified: new Date()
                       }
                     }
                     
@@ -330,7 +334,7 @@ export const BankImportWizard: React.FC<BankImportWizardProps> = ({
         )}
       </div>
 
-      <style jsx>{`
+      <style>{`
         .bank-import-wizard {
           max-width: 1200px;
           margin: 0 auto;
