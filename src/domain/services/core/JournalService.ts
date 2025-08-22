@@ -38,7 +38,7 @@ import {
 } from '../../../constants'
 import { AccountService, HierarchicalAccount } from '../core/AccountService'
 import { DivisionService } from '../core/DivisionService'
-import { IJournalService } from '../../interfaces/IJournalService'
+import { IJournalService, CreateJournalInput, CreateJournalOptions } from '../../interfaces/IJournalService'
 import { IAccountService } from '../../interfaces/IAccountService'
 import { IDivisionService } from '../../interfaces/IDivisionService'
 
@@ -62,7 +62,7 @@ export class Journal {
   status: JournalStatus = 'DRAFT'
   createdAt = new Date()
   postedAt?: Date
-  meta: Record<string, any> = {}
+  meta: Record<string, unknown> = {}
   division?: string
   
   constructor(public date: string, public description: string, reference = '', division?: string) {
@@ -94,19 +94,10 @@ export class JournalService implements IJournalService {
     private divisionService: DivisionService | IDivisionService
   ) {}
   
-  createJournal(journalData: { 
-    date: string, 
-    description: string, 
-    reference?: string,
-    division?: string,
-    details: Array<{ 
-      accountCode: string, 
-      debitAmount?: number, 
-      creditAmount?: number, 
-      description?: string, 
-      auxiliaryCode?: string | null 
-    }> 
-  }, options?: { autoPost?: boolean, meta?: Record<string, any> }): CreateJournalResult {
+  createJournal(
+    journalData: CreateJournalInput,
+    options?: CreateJournalOptions & { meta?: Record<string, unknown> }
+  ): CreateJournalResult {
     const journal = new Journal(journalData.date, journalData.description, journalData.reference || '', journalData.division)
     
     for (const d of journalData.details) {
@@ -137,7 +128,7 @@ export class JournalService implements IJournalService {
       return this.postJournal(journal)
     }
     
-    return { success: true, data: journal }
+    return { success: true, journal: journal }
   }
   
   submitJournal(id: string): CreateJournalResult {
@@ -145,7 +136,7 @@ export class JournalService implements IJournalService {
     if (!journal) return { success: false, errors: [ERROR_MESSAGES.JOURNAL_NOT_FOUND] }
     if (journal.status !== 'DRAFT') return { success: false, errors: [ERROR_MESSAGES.JOURNAL_STATUS_INVALID] }
     journal.status = 'SUBMITTED'
-    return { success: true, data: journal }
+    return { success: true, journal: journal }
   }
   
   approveJournal(id: string): CreateJournalResult {
@@ -153,7 +144,7 @@ export class JournalService implements IJournalService {
     if (!journal) return { success: false, errors: [ERROR_MESSAGES.JOURNAL_NOT_FOUND] }
     if (journal.status !== 'SUBMITTED') return { success: false, errors: [ERROR_MESSAGES.JOURNAL_STATUS_INVALID] }
     journal.status = 'APPROVED'
-    return { success: true, data: journal }
+    return { success: true, journal: journal }
   }
   
   postJournalById(id: string): CreateJournalResult {
@@ -206,7 +197,7 @@ export class JournalService implements IJournalService {
     const errors = journal.validate()
     if (errors.length > 0) return { success: false, errors }
     
-    return { success: true, data: journal }
+    return { success: true, journal: journal }
   }
   
   validateDivisionAccounting(journal: Journal): CreateJournalResult {
@@ -269,7 +260,7 @@ export class JournalService implements IJournalService {
     
     journal.status = 'POSTED'
     journal.postedAt = new Date()
-    return { success: true, data: journal }
+    return { success: true, journal: journal }
   }
   
   getJournals() {
