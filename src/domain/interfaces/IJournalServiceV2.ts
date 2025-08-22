@@ -25,6 +25,7 @@ export type {
   StatusChangeResult 
 } from '../../types/services'
 import { CreateJournalResult } from '../../types/accounting'
+import { CreateJournalInput, CreateJournalOptions } from './IJournalService'
 
 /**
  * JournalServiceの基本インターフェース
@@ -56,7 +57,7 @@ export interface IJournalServiceV2 {
   /**
    * 仕訳を作成（レガシー互換）
    */
-  createJournal(journalData: any, options?: any): CreateJournalResult
+  createJournal(journalData: CreateJournalInput, options?: CreateJournalOptions): CreateJournalResult
   
   // ========================================
   // オプションメソッド（ステータス管理）
@@ -119,7 +120,7 @@ export interface IJournalServiceV2 {
    * 仕訳を更新（レガシー）
    * @deprecated Use updateJournalV2 instead
    */
-  updateJournal?(id: string, data: any): CreateJournalResult | boolean
+  updateJournal?(id: string, data: Partial<CreateJournalInput>): CreateJournalResult | boolean
   
   // ========================================
   // オプションメソッド（その他）
@@ -142,8 +143,8 @@ export interface IJournalServiceV2 {
  */
 export interface IJournalServiceExtended extends IJournalServiceV2 {
   // 検証機能
-  validateJournal(journalData: any): string[]
-  validateBalance(details: any[]): boolean
+  validateJournal(journalData: CreateJournalInput): string[]
+  validateBalance(details: Array<{ debitAmount?: number; creditAmount?: number }>): boolean
   
   // 集計機能
   getJournalsByDateRange(startDate: string, endDate: string): JournalInterface[]

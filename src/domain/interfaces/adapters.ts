@@ -9,7 +9,9 @@
  */
 
 import { 
-  IJournalService 
+  IJournalService,
+  CreateJournalInput,
+  CreateJournalOptions
 } from './IJournalService'
 import { 
   IJournalServiceV2,
@@ -105,7 +107,7 @@ export class JournalServiceAdapter implements IJournalServiceV2 {
     return this.legacyService.getJournal(id) as JournalInterface | undefined
   }
 
-  createJournalV2(params: any): JournalOperationResult {
+  createJournalV2(params: CreateJournalParams): JournalOperationResult {
     const result = this.legacyService.createJournal(
       params.journalData,
       params.options
@@ -113,7 +115,7 @@ export class JournalServiceAdapter implements IJournalServiceV2 {
     return convertToOperationResult(result)
   }
 
-  createJournal(journalData: any, options?: any): CreateJournalResult {
+  createJournal(journalData: CreateJournalInput, options?: CreateJournalOptions): CreateJournalResult {
     return this.legacyService.createJournal(journalData, options)
   }
 
@@ -149,7 +151,7 @@ export class JournalServiceAdapter implements IJournalServiceV2 {
     return normalizeResult(result)
   }
 
-  updateJournalV2?(id: string, params: any): JournalOperationResult {
+  updateJournalV2?(id: string, params: UpdateJournalParams): JournalOperationResult {
     if (!this.legacyService.updateJournal) {
       return { success: false, errors: ['Method not implemented'] }
     }
@@ -174,7 +176,7 @@ export class JournalServiceAdapter implements IJournalServiceV2 {
     return this.legacyService.deleteJournal?.(id)
   }
 
-  updateJournal?(id: string, data: any): CreateJournalResult | boolean {
+  updateJournal?(id: string, data: Partial<CreateJournalInput>): CreateJournalResult | boolean {
     return this.legacyService.updateJournal?.(id, data)
   }
 
