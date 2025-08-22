@@ -1,18 +1,24 @@
 import { IDivisionService } from '../interfaces/IDivisionService'
 import { AccountingDivision } from '../services/core/DivisionService'
+import { DivisionCode } from '../../types'
+import { AccountingDivisionInterface } from '../../types/services'
 
 export class MockDivisionService implements IDivisionService {
   private mockDivisions = new Map<string, AccountingDivision>()
+  // DivisionServiceが持つdivisionsMapプロパティを追加
+  get divisionsMap() {
+    return this.mockDivisions
+  }
   
-  get divisions(): AccountingDivision[] {
+  get divisions(): AccountingDivisionInterface[] {
     return Array.from(this.mockDivisions.values())
   }
   
-  getDivision(code: string): AccountingDivision | undefined {
+  getDivision(code: DivisionCode): AccountingDivisionInterface | undefined {
     return this.mockDivisions.get(code)
   }
   
-  getDivisions(): AccountingDivision[] {
+  getDivisions(): AccountingDivisionInterface[] {
     return this.divisions
   }
   

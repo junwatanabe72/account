@@ -4,9 +4,9 @@ import { BankAccountService, AccountSyncResult } from '../../domain/services/led
 import { TransactionService } from '../../domain/services/transaction/TransactionService'
 import { Transaction, TransactionInput } from '../../types/transaction'
 import { Journal, JournalEntry } from '../../types/accounting'
-import { EnhancedJournalSlice } from '../slices/journalSliceEnhanced'
-import { EnhancedTransactionSlice } from '../slices/transactionSliceEnhanced'
-import { EnhancedAuxiliarySlice } from '../slices/auxiliarySliceEnhanced'
+import { EnhancedJournalSlice } from '../slices/journal/journalSliceEnhanced'
+import { EnhancedTransactionSlice } from '../slices/transaction/transactionSliceEnhanced'
+import { EnhancedAuxiliarySlice } from '../slices/auxiliary/auxiliarySliceEnhanced'
 import { PaymentSlice } from '../slices/payment/paymentSlice'
 
 // UI状態の型定義

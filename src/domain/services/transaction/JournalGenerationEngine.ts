@@ -1,7 +1,7 @@
 // 仕訳生成エンジン - 取引データから仕訳を自動生成
 
-import { Transaction, TransactionType, PaymentStatus, JournalGenerationRule, JournalPattern } from '../../types/transaction'
-import { JournalData, JournalDetail } from '../../types/accounting'
+import { Transaction, TransactionType, PaymentStatus, JournalGenerationRule, JournalPattern } from '../../../types/transaction'
+import { JournalData, JournalDetail } from '../../../types/accounting'
 import { AccountService } from '../core/AccountService'
 import { IAccountService } from '../../interfaces/IAccountService'
 

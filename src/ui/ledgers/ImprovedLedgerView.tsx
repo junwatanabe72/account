@@ -1,7 +1,15 @@
 import React from 'react'
 import { AccountingEngine } from '../../domain/accountingEngine'
-import { JournalEditModal } from '../transactions/JournalEditModal'
-import { JournalFilterBar, JournalFilters } from '../transactions/JournalFilterBar'
+// import { JournalEditModal } from '../transactions/JournalEditModal'
+// import { JournalFilterBar, JournalFilters } from '../transactions/JournalFilterBar'
+// TODO: JournalEditModalとJournalFilterBarの実装が必要
+interface JournalFilters {
+  status: string
+  dateFrom?: string
+  dateTo?: string
+  textQuery?: string
+  accountQuery?: string
+}
 import { useToast } from '../common/Toast'
 import { ConfirmDialog } from '../common/ConfirmDialog'
 

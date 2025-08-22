@@ -45,6 +45,7 @@ describe('Smoke Tests - 基本動作確認', () => {
       const journalData = {
         date: '2024-01-01',
         description: 'テスト仕訳',
+        division: 'KANRI',
         details: [
           { 
             accountCode: '101', // 現金
@@ -67,6 +68,7 @@ describe('Smoke Tests - 基本動作確認', () => {
       const journalData = {
         date: '2024-01-01',
         description: '不正な仕訳',
+        division: 'KANRI',
         details: [
           { 
             accountCode: '101', 
@@ -91,6 +93,7 @@ describe('Smoke Tests - 基本動作確認', () => {
       const journalData = {
         date: '2024-01-01',
         description: '不正な仕訳',
+        division: 'KANRI',
         details: [
           { 
             accountCode: '999999', // 存在しない
@@ -117,6 +120,7 @@ describe('Smoke Tests - 基本動作確認', () => {
       const testJournal = {
         date: '2024-01-15',
         description: '管理費収入',
+        division: 'KANRI',
         details: [
           { accountCode: '111', debitAmount: 50000, creditAmount: 0 },
           { accountCode: '301', debitAmount: 0, creditAmount: 50000 }
@@ -161,6 +165,7 @@ describe('Smoke Tests - 基本動作確認', () => {
       engine.createJournal({
         date: '2024-01-20',
         description: 'エクスポートテスト',
+        division: 'KANRI',
         details: [
           { accountCode: '101', debitAmount: 3000, creditAmount: 0 },
           { accountCode: '301', debitAmount: 0, creditAmount: 3000 }

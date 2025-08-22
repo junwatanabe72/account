@@ -24,6 +24,7 @@ describe('JournalService Unit Tests', () => {
       const journalData = {
         date: '2024-01-01',
         description: 'テスト仕訳',
+        division: 'KANRI',
         details: [
           { accountCode: '1101', debitAmount: 1000 },
           { accountCode: '4111', creditAmount: 1000 }
@@ -42,6 +43,7 @@ describe('JournalService Unit Tests', () => {
       const journalData = {
         date: '2024-01-01',
         description: 'テスト仕訳',
+        division: 'KANRI',
         details: [
           { accountCode: '9999', debitAmount: 1000 },  // 存在しない勘定科目
           { accountCode: '4111', creditAmount: 1000 }
@@ -59,6 +61,7 @@ describe('JournalService Unit Tests', () => {
       const journalData = {
         date: '2024-01-01',
         description: 'テスト仕訳',
+        division: 'KANRI',
         details: [
           { accountCode: '1101', debitAmount: 1000 },
           { accountCode: '4111', creditAmount: 500 }  // アンバランス
@@ -78,6 +81,7 @@ describe('JournalService Unit Tests', () => {
       const journalData = {
         date: '2024-01-01',
         description: 'テスト仕訳',
+        division: 'KANRI',
         details: [
           { accountCode: '1101', debitAmount: 1000 },
           { accountCode: '4111', creditAmount: 1000 }
@@ -101,6 +105,7 @@ describe('JournalService Unit Tests', () => {
       const journalData = {
         date: '2024-01-01',
         description: 'テスト仕訳',
+        division: 'KANRI',
         details: [
           { accountCode: '1101', debitAmount: 1000 },
           { accountCode: '4111', creditAmount: 1000 }
@@ -124,6 +129,7 @@ describe('JournalService Unit Tests', () => {
       const journalData1 = {
         date: '2024-01-01',
         description: '仕訳1',
+        division: 'KANRI',
         details: [
           { accountCode: '1101', debitAmount: 1000 },
           { accountCode: '4111', creditAmount: 1000 }
@@ -133,6 +139,7 @@ describe('JournalService Unit Tests', () => {
       const journalData2 = {
         date: '2024-01-02',
         description: '仕訳2',
+        division: 'KANRI',
         details: [
           { accountCode: '1101', debitAmount: 2000 },
           { accountCode: '4111', creditAmount: 2000 }
