@@ -1,18 +1,19 @@
 import { IAccountService } from '../interfaces/IAccountService'
 import { HierarchicalAccount } from '../services/core/AccountService'
+import { HierarchicalAccountInterface } from '../../types/services'
 
 export class MockAccountService implements IAccountService {
-  private mockAccounts = new Map<string, HierarchicalAccount>()
+  private mockAccounts = new Map<string, HierarchicalAccountInterface>()
   
-  get accounts(): HierarchicalAccount[] {
+  get accounts(): HierarchicalAccountInterface[] {
     return Array.from(this.mockAccounts.values())
   }
   
-  getAccount(code: string): HierarchicalAccount | undefined {
+  getAccount(code: string): HierarchicalAccountInterface | undefined {
     return this.mockAccounts.get(code)
   }
   
-  getAccounts(): HierarchicalAccount[] {
+  getAccounts(): HierarchicalAccountInterface[] {
     return this.accounts
   }
   
@@ -23,32 +24,32 @@ export class MockAccountService implements IAccountService {
       name: '現金',
       type: 'ASSET',
       normalBalance: 'DEBIT',
+      level: 2,
+      parentCode: null,
+      children: [],
       balance: 0,
-      isActive: true,
-      isDebitBalance: () => true,
-      getDisplayBalance: () => 0,
-      addToBalance: () => {},
-      getAuxiliaryLedger: () => undefined,
-      hasAuxiliary: false
-    } as any)
+      debitBalance: 0,
+      creditBalance: 0,
+      isActive: true
+    })
     
     this.addMockAccount({
       code: '4111',
       name: '管理費収入',
       type: 'REVENUE',
       normalBalance: 'CREDIT',
+      level: 2,
+      parentCode: null,
+      children: [],
       balance: 0,
-      isActive: true,
-      isDebitBalance: () => false,
-      getDisplayBalance: () => 0,
-      addToBalance: () => {},
-      getAuxiliaryLedger: () => undefined,
-      hasAuxiliary: false
-    } as any)
+      debitBalance: 0,
+      creditBalance: 0,
+      isActive: true
+    })
   }
   
   // テスト用ヘルパーメソッド
-  addMockAccount(account: HierarchicalAccount): void {
+  addMockAccount(account: HierarchicalAccountInterface): void {
     this.mockAccounts.set(account.code, account)
   }
   
