@@ -4,15 +4,7 @@ import { FileUploader } from '../data-management/FileUploader'
 import { JournalConfirmation } from './JournalConfirmation'
 import { ParsedFileData } from '../../utils/fileParser'
 import { StandardizedBankTransaction, JournalSuggestion } from '../../types/master'
-
-// 既存のAccountingEngineを使用するための型定義
-interface AccountingEngine {
-  journalService: any
-  accountService: any
-  auxiliaryService: any
-  divisionService: any
-  addJournal: (date: string, description: string, details: any[], division?: string) => void
-}
+import { AccountingEngine } from '../../domain/accountingEngine'
 
 interface ProcessedResults {
   normalizedData: StandardizedBankTransaction
