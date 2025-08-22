@@ -536,7 +536,7 @@ const UnifiedJournalForm: React.FC = () => {
             <label>決済口座</label>
             <select
               value={paymentAccount}
-              onChange={(e) => setPaymentAccount(e.target.value as any)}
+              onChange={(e) => setPaymentAccount(e.target.value)}
               className="form-select"
             >
               {paymentAccountOptions.map(opt => (
