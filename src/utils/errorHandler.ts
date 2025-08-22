@@ -1,4 +1,5 @@
 import { ERROR_CODES, ERROR_MESSAGES } from '../constants'
+import { isObject } from '../types/core'
 
 // エラーレスポンスの型定義
 export interface ErrorResponse {
@@ -37,19 +38,21 @@ export class ErrorHandler {
     return !response.success
   }
   
-  static getErrorMessage(response: ApiResponse | any): string {
+  static getErrorMessage(response: ApiResponse | unknown): string {
     if (!response) return '不明なエラーが発生しました'
     
     if (ErrorHandler.isError(response)) {
       return response.errors.join(', ')
     }
     
-    if (response.error) {
-      return response.error
-    }
-    
-    if (response.message) {
-      return response.message
+    if (isObject(response)) {
+      if ('error' in response && typeof response.error === 'string') {
+        return response.error
+      }
+      
+      if ('message' in response && typeof response.message === 'string') {
+        return response.message
+      }
     }
     
     return '不明なエラーが発生しました'
@@ -69,8 +72,13 @@ export class ErrorHandler {
   }
 }
 
+// Toastインターフェース
+interface ToastInterface {
+  show(message: string, type: 'success' | 'danger' | 'warning' | 'info'): void
+}
+
 // UIエラー表示用のユーティリティ
-export const showError = (error: unknown, toast?: any) => {
+export const showError = (error: unknown, toast?: ToastInterface) => {
   const message = error instanceof Error ? error.message :
                   typeof error === 'string' ? error :
                   ERROR_MESSAGES.VALIDATION_ERROR
@@ -83,7 +91,7 @@ export const showError = (error: unknown, toast?: any) => {
 }
 
 // 成功メッセージ表示用のユーティリティ
-export const showSuccess = (message: string, toast?: any) => {
+export const showSuccess = (message: string, toast?: ToastInterface) => {
   if (toast) {
     toast.show(message, 'success')
   } else {
