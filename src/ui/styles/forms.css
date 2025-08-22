@@ -2,16 +2,16 @@
 
 /* 借方・貸方セクションのスタイル */
 .debit-section {
-  border-left: 4px solid #007bff;
+  border-left: 4px solid var(--color-primary);
 }
 
 .credit-section {
-  border-left: 4px solid #dc3545;
+  border-left: 4px solid var(--color-danger);
 }
 
 /* 仕訳入力行のスタイル */
 .journal-entry-row {
-  background-color: #f8f9fa;
+  background-color: var(--color-bg-secondary);
   transition: all 0.3s ease;
 }
 
@@ -38,7 +38,7 @@ input[type="text"].text-end {
 
 /* ラベルの改善 */
 .form-label {
-  color: #495057;
+  color: var(--color-text-secondary);
   margin-bottom: 0.5rem;
 }
 
@@ -52,7 +52,7 @@ input[type="text"].text-end {
 
 /* カード内の区切り線 */
 hr.my-4 {
-  border-color: #dee2e6;
+  border-color: var(--color-border-light);
   opacity: 0.5;
 }
 
@@ -63,8 +63,8 @@ hr.my-4 {
 
 /* 合計表示カード */
 .card.bg-light {
-  background-color: #f8f9fa !important;
-  border: 2px solid #e9ecef;
+  background-color: var(--color-bg-secondary) !important;
+  border: 2px solid var(--color-bg-tertiary);
 }
 
 /* アラートメッセージの改善 */
@@ -80,8 +80,8 @@ hr.my-4 {
 
 /* 入力グループの改善 */
 .input-group-text {
-  background-color: #e9ecef;
-  border-color: #ced4da;
+  background-color: var(--color-bg-tertiary);
+  border-color: var(--color-border-default);
   font-weight: 600;
 }
 
@@ -109,33 +109,33 @@ hr.my-4 {
 /* フォーカス時のスタイル */
 .form-control:focus,
 .form-select:focus {
-  border-color: #86b7fe;
-  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+  border-color: var(--color-primary-300);
+  box-shadow: 0 0 0 0.25rem var(--color-state-focus);
 }
 
 /* 無効化された入力フィールド */
 .form-control:disabled,
 .form-select:disabled {
-  background-color: #e9ecef;
+  background-color: var(--color-bg-tertiary);
   opacity: 0.7;
 }
 
 /* エラー状態 */
 .form-control.is-invalid {
-  border-color: #dc3545;
+  border-color: var(--color-danger);
 }
 
 .form-control.is-invalid:focus {
-  border-color: #dc3545;
+  border-color: var(--color-danger);
   box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25);
 }
 
 /* 成功状態 */
 .form-control.is-valid {
-  border-color: #198754;
+  border-color: var(--color-success);
 }
 
 .form-control.is-valid:focus {
-  border-color: #198754;
+  border-color: var(--color-success);
   box-shadow: 0 0 0 0.25rem rgba(25, 135, 84, 0.25);
 }

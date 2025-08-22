@@ -7,6 +7,7 @@ import './ui/styles/responsive.css'
 import './ui/styles/tabs.css'
 import './ui/styles/forms.css'
 import './ui/styles/data-display.css'
+import './ui/styles/theme-unified.css'  // 最後に読み込んで優先度を上げる
 
 const container = document.getElementById('root')!
 createRoot(container).render(

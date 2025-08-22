@@ -19,6 +19,7 @@ import FreeeStyleJournalForm from "../transactions/FreeeStyleJournalForm";
 import { BankAccountPanel } from "../masters/BankAccountPanel";
 import { SampleDataPanel } from "../data-management/SampleDataPanel";
 import PaymentTestPanel from "../payment/PaymentTestPanel";
+import { ThemeSwitcher } from "../components/ThemeSwitcher";
 import "../Sidebar.css";
 
 export const App: React.FC = () => {
@@ -140,7 +141,7 @@ export const App: React.FC = () => {
               padding: "10px",
               background: "none",
               border: "none",
-              color: "#ecf0f1",
+              color: "inherit",
               textAlign: "left",
               cursor: "pointer",
               display: "flex",
@@ -150,7 +151,7 @@ export const App: React.FC = () => {
               transition: "background-color 0.2s",
             }}
             onMouseEnter={(e) =>
-              (e.currentTarget.style.backgroundColor = "#34495e")
+              (e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.1)")
             }
             onMouseLeave={(e) =>
               (e.currentTarget.style.backgroundColor = "transparent")
@@ -193,7 +194,7 @@ export const App: React.FC = () => {
                       padding: "8px 10px",
                       background: active === item.id ? "#3498db" : "none",
                       border: "none",
-                      color: "#ecf0f1",
+                      color: "inherit",
                       textAlign: "left",
                       cursor: "pointer",
                       display: "flex",
@@ -205,7 +206,7 @@ export const App: React.FC = () => {
                     }}
                     onMouseEnter={(e) => {
                       if (active !== item.id) {
-                        e.currentTarget.style.backgroundColor = "#34495e";
+                        e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
                       }
                     }}
                     onMouseLeave={(e) => {
@@ -256,7 +257,7 @@ export const App: React.FC = () => {
                 style={{
                   background: "none",
                   border: "none",
-                  color: "#ecf0f1",
+                  color: "inherit",
                   fontSize: "1.5rem",
                   cursor: "pointer",
                 }}
@@ -272,11 +273,9 @@ export const App: React.FC = () => {
       {/* デスクトップ用サイドバー */}
       {window.innerWidth > 768 && (
         <div
-          className="sidebar"
+          className="sidebar sidebar-desktop"
           style={{
             width: sidebarOpen ? "280px" : "60px",
-            backgroundColor: "#2c3e50",
-            color: "#ecf0f1",
             transition: "width 0.3s ease",
             overflowY: "auto",
             overflowX: "hidden",
@@ -326,15 +325,18 @@ export const App: React.FC = () => {
         style={{
           flex: 1,
           overflow: "auto",
-          backgroundColor: "#f5f5f5",
           marginLeft: window.innerWidth <= 768 ? "0" : "0",
         }}
+        className="main-content-area"
       >
         <div
           className="container-fluid py-3"
           style={{ paddingLeft: window.innerWidth <= 768 ? "60px" : "20px" }}
         >
-          <h1 className="mb-3">マンション管理組合会計エンジン</h1>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
+            <h1 className="mb-0">マンション管理組合会計エンジン</h1>
+            <ThemeSwitcher />
+          </div>
 
           {active === "freeeInput" && (
             <section className="mt-2">

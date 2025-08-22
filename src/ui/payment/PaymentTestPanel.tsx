@@ -51,22 +51,36 @@ const PaymentTestPanel: React.FC = () => {
 
     try {
       addTestResult('🔄 インポート開始...')
+      addTestResult(`  - ファイル: ${selectedFile.name}`)
+      addTestResult(`  - サイズ: ${(selectedFile.size / 1024).toFixed(2)} KB`)
+      addTestResult(`  - 銀行タイプ: ${selectedBankType}`)
+      
       const result = await store.importBankTransactions(selectedFile, selectedBankType)
       
-      addTestResult(`✅ インポート成功！`)
-      addTestResult(`  - 総件数: ${result.total}`)
-      addTestResult(`  - インポート: ${result.imported}`)
-      addTestResult(`  - 重複: ${result.duplicates}`)
-      addTestResult(`  - バッチID: ${result.batchId}`)
+      if (result.imported > 0) {
+        addTestResult(`✅ インポート成功！`)
+        addTestResult(`  - 総件数: ${result.total}`)
+        addTestResult(`  - インポート: ${result.imported}`)
+        addTestResult(`  - 重複: ${result.duplicates}`)
+        addTestResult(`  - バッチID: ${result.batchId}`)
+      } else {
+        addTestResult(`⚠️ インポートされたデータがありません`)
+        addTestResult(`  - 総件数: ${result.total}`)
+        addTestResult(`  - 重複: ${result.duplicates}`)
+      }
       
-      if (result.errors.length > 0) {
+      if (result.errors && result.errors.length > 0) {
         addTestResult(`⚠️ エラー: ${result.errors.length}件`)
-        result.errors.forEach(err => {
+        result.errors.slice(0, 5).forEach(err => {
           addTestResult(`  - Row ${err.row}: ${err.message}`)
         })
+        if (result.errors.length > 5) {
+          addTestResult(`  ... 他 ${result.errors.length - 5}件のエラー`)
+        }
       }
     } catch (error) {
-      addTestResult(`❌ インポートエラー: ${error}`)
+      console.error('インポートエラー:', error)
+      addTestResult(`❌ インポートエラー: ${error instanceof Error ? error.message : String(error)}`)
     }
   }
 
@@ -112,7 +126,14 @@ const PaymentTestPanel: React.FC = () => {
     try {
       addTestResult('🔄 サンプルCSV読み込み中...')
       const response = await fetch('/sample-bank-statement-phase14.csv')
+      
+      if (!response.ok) {
+        throw new Error(`HTTPエラー: ${response.status} ${response.statusText}`)
+      }
+      
       const blob = await response.blob()
+      addTestResult(`📁 ファイルサイズ: ${(blob.size / 1024).toFixed(2)} KB`)
+      
       const file = new File([blob], 'sample-bank-statement-phase14.csv', { type: 'text/csv' })
       
       setSelectedFile(file)
@@ -121,8 +142,15 @@ const PaymentTestPanel: React.FC = () => {
       // 自動インポート
       const result = await store.importBankTransactions(file, 'generic')
       addTestResult(`✅ 自動インポート完了: ${result.imported}件`)
+      
+      // 詳細情報
+      if (result.imported > 0) {
+        addTestResult(`  - バッチID: ${result.batchId}`)
+        addTestResult(`  - 重複: ${result.duplicates}件`)
+      }
     } catch (error) {
-      addTestResult(`❌ サンプル読み込みエラー: ${error}`)
+      console.error('サンプル読み込みエラー:', error)
+      addTestResult(`❌ サンプル読み込みエラー: ${error instanceof Error ? error.message : String(error)}`)
     }
   }
 
@@ -155,30 +183,30 @@ const PaymentTestPanel: React.FC = () => {
   const renderBankTransactions = () => {
     return (
       <div className="mt-4">
-        <h3 className="font-bold mb-2">銀行取引 ({store.bankTransactions.length}件)</h3>
+        <h3 className="font-bold mb-2" style={{ color: '#2d3748' }}>銀行取引 ({store.bankTransactions.length}件)</h3>
         <div className="overflow-x-auto">
-          <table className="min-w-full border">
-            <thead className="bg-gray-50">
+          <table className="min-w-full border border-gray-300 bg-white">
+            <thead className="bg-gray-50 border-b-2 border-gray-300">
               <tr>
-                <th className="border p-2">日付</th>
-                <th className="border p-2">摘要</th>
-                <th className="border p-2">入金</th>
-                <th className="border p-2">状態</th>
+                <th className="border border-gray-300 p-2 font-medium" style={{ color: '#4a5568', backgroundColor: '#f7fafc' }}>日付</th>
+                <th className="border border-gray-300 p-2 font-medium" style={{ color: '#4a5568', backgroundColor: '#f7fafc' }}>摘要</th>
+                <th className="border border-gray-300 p-2 font-medium" style={{ color: '#4a5568', backgroundColor: '#f7fafc' }}>入金</th>
+                <th className="border border-gray-300 p-2 font-medium" style={{ color: '#4a5568', backgroundColor: '#f7fafc' }}>状態</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="bg-white">
               {store.bankTransactions.slice(0, 10).map(txn => (
-                <tr key={txn.id}>
-                  <td className="border p-2">{txn.date}</td>
-                  <td className="border p-2">{txn.description}</td>
-                  <td className="border p-2 text-right">
+                <tr key={txn.id} className="hover:bg-gray-50">
+                  <td className="border border-gray-300 p-2" style={{ color: '#2d3748' }}>{txn.date}</td>
+                  <td className="border border-gray-300 p-2" style={{ color: '#2d3748' }}>{txn.description}</td>
+                  <td className="border border-gray-300 p-2 text-right" style={{ color: '#2d3748' }}>
                     {txn.amount > 0 ? `¥${txn.amount.toLocaleString()}` : '-'}
                   </td>
-                  <td className="border p-2">
-                    <span className={`px-2 py-1 rounded text-xs ${
-                      txn.status === 'matched' ? 'bg-green-100' :
-                      txn.status === 'processed' ? 'bg-blue-100' :
-                      'bg-gray-100'
+                  <td className="border border-gray-300 p-2" style={{ color: '#2d3748' }}>
+                    <span className={`px-2 py-1 rounded text-xs font-semibold ${
+                      txn.status === 'matched' ? 'bg-green-100 text-green-800' :
+                      txn.status === 'processed' ? 'bg-blue-100 text-blue-800' :
+                      'bg-gray-100 text-gray-800'
                     }`}>
                       {txn.status}
                     </span>
@@ -196,41 +224,41 @@ const PaymentTestPanel: React.FC = () => {
     const results = Array.from(store.matchingResults.values())
     return (
       <div className="mt-4">
-        <h3 className="font-bold mb-2">照合結果 ({results.length}件)</h3>
+        <h3 className="font-bold mb-2" style={{ color: '#2d3748' }}>照合結果 ({results.length}件)</h3>
         <div className="overflow-x-auto">
-          <table className="min-w-full border">
-            <thead className="bg-gray-50">
+          <table className="min-w-full border border-gray-300 bg-white">
+            <thead className="bg-gray-50 border-b-2 border-gray-300">
               <tr>
-                <th className="border p-2">住戸</th>
-                <th className="border p-2">照合タイプ</th>
-                <th className="border p-2">金額</th>
-                <th className="border p-2">差額</th>
-                <th className="border p-2">信頼度</th>
+                <th className="border border-gray-300 p-2 font-medium" style={{ color: '#4a5568', backgroundColor: '#f7fafc' }}>住戸</th>
+                <th className="border border-gray-300 p-2 font-medium" style={{ color: '#4a5568', backgroundColor: '#f7fafc' }}>照合タイプ</th>
+                <th className="border border-gray-300 p-2 font-medium" style={{ color: '#4a5568', backgroundColor: '#f7fafc' }}>金額</th>
+                <th className="border border-gray-300 p-2 font-medium" style={{ color: '#4a5568', backgroundColor: '#f7fafc' }}>差額</th>
+                <th className="border border-gray-300 p-2 font-medium" style={{ color: '#4a5568', backgroundColor: '#f7fafc' }}>信頼度</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="bg-white">
               {results.slice(0, 10).map(match => (
-                <tr key={match.id}>
-                  <td className="border p-2">{match.unitNumber || '不明'}</td>
-                  <td className="border p-2">
-                    <span className={`px-2 py-1 rounded text-xs ${
-                      match.matchingType === 'exact' ? 'bg-green-100' :
-                      match.matchingType === 'partial' ? 'bg-yellow-100' :
-                      match.matchingType === 'over' ? 'bg-blue-100' :
-                      'bg-red-100'
+                <tr key={match.id} className="hover:bg-gray-50">
+                  <td className="border border-gray-300 p-2" style={{ color: '#2d3748' }}>{match.unitNumber || '不明'}</td>
+                  <td className="border border-gray-300 p-2" style={{ color: '#2d3748' }}>
+                    <span className={`px-2 py-1 rounded text-xs font-semibold ${
+                      match.matchingType === 'exact' ? 'bg-green-100 text-green-800' :
+                      match.matchingType === 'partial' ? 'bg-yellow-100 text-yellow-800' :
+                      match.matchingType === 'over' ? 'bg-blue-100 text-blue-800' :
+                      'bg-red-100 text-red-800'
                     }`}>
                       {match.matchingType}
                     </span>
                   </td>
-                  <td className="border p-2 text-right">¥{match.actualAmount.toLocaleString()}</td>
-                  <td className="border p-2 text-right">
+                  <td className="border border-gray-300 p-2 text-right" style={{ color: '#2d3748' }}>¥{match.actualAmount.toLocaleString()}</td>
+                  <td className="border border-gray-300 p-2 text-right" style={{ color: '#2d3748' }}>
                     {match.difference !== 0 && (
                       <span className={match.difference > 0 ? 'text-blue-600' : 'text-red-600'}>
                         {match.difference > 0 ? '+' : ''}¥{Math.abs(match.difference).toLocaleString()}
                       </span>
                     )}
                   </td>
-                  <td className="border p-2 text-center">{(match.confidence * 100).toFixed(0)}%</td>
+                  <td className="border border-gray-300 p-2 text-center" style={{ color: '#2d3748' }}>{(match.confidence * 100).toFixed(0)}%</td>
                 </tr>
               ))}
             </tbody>
@@ -243,34 +271,34 @@ const PaymentTestPanel: React.FC = () => {
   const renderReceivables = () => {
     return (
       <div className="mt-4">
-        <h3 className="font-bold mb-2">未収金一覧 ({store.receivables.length}件)</h3>
+        <h3 className="font-bold mb-2" style={{ color: '#2d3748' }}>未収金一覧 ({store.receivables.length}件)</h3>
         <div className="overflow-x-auto">
-          <table className="min-w-full border">
-            <thead className="bg-gray-50">
+          <table className="min-w-full border border-gray-300 bg-white">
+            <thead className="bg-gray-50 border-b-2 border-gray-300">
               <tr>
-                <th className="border p-2">住戸</th>
-                <th className="border p-2">科目</th>
-                <th className="border p-2">金額</th>
-                <th className="border p-2">期日</th>
-                <th className="border p-2">状態</th>
+                <th className="border border-gray-300 p-2 font-medium" style={{ color: '#4a5568', backgroundColor: '#f7fafc' }}>住戸</th>
+                <th className="border border-gray-300 p-2 font-medium" style={{ color: '#4a5568', backgroundColor: '#f7fafc' }}>科目</th>
+                <th className="border border-gray-300 p-2 font-medium" style={{ color: '#4a5568', backgroundColor: '#f7fafc' }}>金額</th>
+                <th className="border border-gray-300 p-2 font-medium" style={{ color: '#4a5568', backgroundColor: '#f7fafc' }}>期日</th>
+                <th className="border border-gray-300 p-2 font-medium" style={{ color: '#4a5568', backgroundColor: '#f7fafc' }}>状態</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="bg-white">
               {store.receivables.slice(0, 10).map(rcv => (
-                <tr key={rcv.id}>
-                  <td className="border p-2">{rcv.unitNumber}号室</td>
-                  <td className="border p-2">
+                <tr key={rcv.id} className="hover:bg-gray-50">
+                  <td className="border border-gray-300 p-2" style={{ color: '#2d3748' }}>{rcv.unitNumber}号室</td>
+                  <td className="border border-gray-300 p-2" style={{ color: '#2d3748' }}>
                     {rcv.accountCode === '1301' ? '管理費' :
                      rcv.accountCode === '1302' ? '修繕積立金' :
                      '駐車場'}
                   </td>
-                  <td className="border p-2 text-right">¥{rcv.amount.toLocaleString()}</td>
-                  <td className="border p-2">{rcv.dueDate}</td>
-                  <td className="border p-2">
-                    <span className={`px-2 py-1 rounded text-xs ${
-                      rcv.status === 'paid' ? 'bg-green-100' :
-                      rcv.status === 'partially_paid' ? 'bg-yellow-100' :
-                      'bg-red-100'
+                  <td className="border border-gray-300 p-2 text-right" style={{ color: '#2d3748' }}>¥{rcv.amount.toLocaleString()}</td>
+                  <td className="border border-gray-300 p-2" style={{ color: '#2d3748' }}>{rcv.dueDate}</td>
+                  <td className="border border-gray-300 p-2" style={{ color: '#2d3748' }}>
+                    <span className={`px-2 py-1 rounded text-xs font-semibold ${
+                      rcv.status === 'paid' ? 'bg-green-100 text-green-800' :
+                      rcv.status === 'partially_paid' ? 'bg-yellow-100 text-yellow-800' :
+                      'bg-red-100 text-red-800'
                     }`}>
                       {rcv.status}
                     </span>
@@ -282,17 +310,17 @@ const PaymentTestPanel: React.FC = () => {
         </div>
 
         {store.receivableSummary && (
-          <div className="mt-4 p-4 bg-gray-50 rounded">
-            <h4 className="font-bold mb-2">未収金サマリー</h4>
+          <div className="mt-4 p-4 bg-white rounded border border-gray-300 shadow-sm">
+            <h4 className="font-bold mb-2" style={{ color: '#2d3748' }}>未収金サマリー</h4>
             <div className="grid grid-cols-2 gap-2">
-              <div>総未収金額:</div>
-              <div className="text-right font-bold">¥{store.receivableSummary.totalOutstanding.toLocaleString()}</div>
-              <div>対象住戸数:</div>
-              <div className="text-right">{store.receivableSummary.unitCount}戸</div>
-              <div>当月分:</div>
-              <div className="text-right">¥{store.receivableSummary.byAge.current.toLocaleString()}</div>
-              <div>1ヶ月延滞:</div>
-              <div className="text-right">¥{store.receivableSummary.byAge.oneMonth.toLocaleString()}</div>
+              <div style={{ color: '#718096' }}>総未収金額:</div>
+              <div className="text-right font-bold" style={{ color: '#1a202c' }}>¥{store.receivableSummary.totalOutstanding.toLocaleString()}</div>
+              <div style={{ color: '#718096' }}>対象住戸数:</div>
+              <div className="text-right" style={{ color: '#2d3748' }}>{store.receivableSummary.unitCount}戸</div>
+              <div style={{ color: '#718096' }}>当月分:</div>
+              <div className="text-right" style={{ color: '#2d3748' }}>¥{store.receivableSummary.byAge.current.toLocaleString()}</div>
+              <div style={{ color: '#718096' }}>1ヶ月延滞:</div>
+              <div className="text-right" style={{ color: '#2d3748' }}>¥{store.receivableSummary.byAge.oneMonth.toLocaleString()}</div>
             </div>
           </div>
         )}
@@ -301,32 +329,32 @@ const PaymentTestPanel: React.FC = () => {
   }
 
   return (
-    <div className="p-4">
+    <div className="p-4 min-h-screen">
       <h2 className="text-2xl font-bold mb-4">Phase 14 テストパネル</h2>
       
       {/* タブナビゲーション */}
       <div className="flex gap-2 mb-4">
         <button
           onClick={() => setActiveTab('test')}
-          className={`px-4 py-2 rounded ${activeTab === 'test' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+          className={`px-4 py-2 rounded font-medium ${activeTab === 'test' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
         >
           テスト実行
         </button>
         <button
           onClick={() => setActiveTab('import')}
-          className={`px-4 py-2 rounded ${activeTab === 'import' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+          className={`px-4 py-2 rounded font-medium ${activeTab === 'import' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
         >
           インポート
         </button>
         <button
           onClick={() => setActiveTab('matching')}
-          className={`px-4 py-2 rounded ${activeTab === 'matching' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+          className={`px-4 py-2 rounded font-medium ${activeTab === 'matching' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
         >
           照合結果
         </button>
         <button
           onClick={() => setActiveTab('receivables')}
-          className={`px-4 py-2 rounded ${activeTab === 'receivables' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+          className={`px-4 py-2 rounded font-medium ${activeTab === 'receivables' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
         >
           未収金
         </button>
@@ -335,8 +363,8 @@ const PaymentTestPanel: React.FC = () => {
       {/* テスト実行タブ */}
       {activeTab === 'test' && (
         <div>
-          <div className="bg-white p-4 rounded border mb-4">
-            <h3 className="font-bold mb-4">クイックテスト</h3>
+          <div className="bg-white p-4 rounded border border-gray-300 mb-4 shadow-sm">
+            <h3 className="font-bold mb-4" style={{ color: '#2d3748' }}>クイックテスト</h3>
             <div className="flex gap-2 flex-wrap">
               <button 
                 onClick={runFullTest}
@@ -372,13 +400,13 @@ const PaymentTestPanel: React.FC = () => {
           </div>
 
           {/* テスト結果ログ */}
-          <div className="bg-black text-green-400 p-4 rounded font-mono text-sm h-96 overflow-y-auto">
+          <div className="bg-gray-900 text-green-400 p-4 rounded font-mono text-sm h-96 overflow-y-auto border border-gray-700">
             <div className="mb-2 text-yellow-400">== Phase 14 Test Console ==</div>
             {testResults.map((result, index) => (
-              <div key={index}>{result}</div>
+              <div key={index} className="mb-1">{result}</div>
             ))}
             {testResults.length === 0 && (
-              <div className="text-gray-500">テストを実行してください...</div>
+              <div className="text-gray-400">テストを実行してください...</div>
             )}
           </div>
         </div>
@@ -387,14 +415,15 @@ const PaymentTestPanel: React.FC = () => {
       {/* インポートタブ */}
       {activeTab === 'import' && (
         <div>
-          <div className="bg-white p-4 rounded border mb-4">
-            <h3 className="font-bold mb-4">CSVインポート</h3>
+          <div className="bg-white p-4 rounded border border-gray-300 mb-4 shadow-sm">
+            <h3 className="font-bold mb-4" style={{ color: '#2d3748' }}>CSVインポート</h3>
             <div className="mb-4">
-              <label className="block mb-2">銀行タイプ:</label>
+              <label className="block mb-2 font-medium" style={{ color: '#4a5568' }}>銀行タイプ:</label>
               <select 
                 value={selectedBankType}
                 onChange={(e) => setSelectedBankType(e.target.value as any)}
-                className="border p-2 rounded w-full"
+                className="border border-gray-300 p-2 rounded w-full bg-white"
+                style={{ color: '#2d3748' }}
               >
                 <option value="generic">汎用</option>
                 <option value="mufg">三菱UFJ銀行</option>
@@ -404,12 +433,13 @@ const PaymentTestPanel: React.FC = () => {
             </div>
             
             <div className="mb-4">
-              <label className="block mb-2">CSVファイル:</label>
+              <label className="block mb-2 font-medium" style={{ color: '#4a5568' }}>CSVファイル:</label>
               <input 
                 type="file" 
                 accept=".csv"
                 onChange={handleFileSelect}
-                className="border p-2 rounded w-full"
+                className="border border-gray-300 p-2 rounded w-full bg-white"
+                style={{ color: '#2d3748' }}
               />
             </div>
             

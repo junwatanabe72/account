@@ -2,7 +2,7 @@
 
 .bank-account-panel {
   padding: 24px;
-  background: #ffffff;
+  background: var(--color-bg-primary);
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
@@ -13,12 +13,12 @@
   align-items: center;
   margin-bottom: 24px;
   padding-bottom: 16px;
-  border-bottom: 2px solid #e5e7eb;
+  border-bottom: 2px solid var(--color-border-light);
 }
 
 .panel-header h2 {
   margin: 0;
-  color: #1f2937;
+  color: var(--color-text-primary);
   font-size: 24px;
   display: flex;
   align-items: center;
@@ -36,7 +36,7 @@
   align-items: center;
   gap: 8px;
   font-size: 14px;
-  color: #6b7280;
+  color: var(--color-text-muted);
 }
 
 .show-inactive-toggle input[type="checkbox"] {
@@ -51,33 +51,33 @@
 .table {
   width: 100%;
   border-collapse: collapse;
-  background: white;
+  background: var(--color-bg-primary);
 }
 
 .table-striped tbody tr:nth-of-type(odd) {
-  background-color: #f9fafb;
+  background-color: var(--color-bg-secondary);
 }
 
 .table th {
   padding: 12px;
   text-align: left;
   font-weight: 600;
-  color: #374151;
-  background: #f3f4f6;
-  border-bottom: 2px solid #e5e7eb;
+  color: var(--color-text-secondary);
+  background: var(--color-bg-tertiary);
+  border-bottom: 2px solid var(--color-border-light);
   font-size: 14px;
 }
 
 .table td {
   padding: 12px;
-  color: #1f2937;
-  border-bottom: 1px solid #e5e7eb;
+  color: var(--color-text-primary);
+  border-bottom: 1px solid var(--color-border-light);
   font-size: 14px;
 }
 
 .table tbody tr.inactive {
   opacity: 0.6;
-  background: #f9fafb;
+  background: var(--color-bg-secondary);
 }
 
 .account-name {
@@ -92,7 +92,7 @@
 
 .short-name {
   font-size: 12px;
-  color: #6b7280;
+  color: var(--color-text-muted);
 }
 
 /* バッジ */
@@ -105,18 +105,18 @@
 }
 
 .division-badge.kanri {
-  background: #dbeafe;
-  color: #1e40af;
+  background: rgba(0, 86, 179, 0.1);
+  color: var(--color-primary);
 }
 
 .division-badge.shuzen {
-  background: #fce7f3;
-  color: #9f1239;
+  background: rgba(220, 53, 69, 0.1);
+  color: var(--color-danger);
 }
 
 .division-badge.both {
-  background: #f3e8ff;
-  color: #6b21a8;
+  background: rgba(108, 117, 125, 0.1);
+  color: var(--color-secondary);
 }
 
 .status-badge {
@@ -128,13 +128,13 @@
 }
 
 .status-badge.active {
-  background: #dcfce7;
-  color: #166534;
+  background: rgba(40, 167, 69, 0.1);
+  color: var(--color-success);
 }
 
 .status-badge.inactive {
-  background: #fee2e2;
-  color: #991b1b;
+  background: rgba(220, 53, 69, 0.1);
+  color: var(--color-danger);
 }
 
 /* アクションボタン */
@@ -155,12 +155,12 @@
 }
 
 .btn-primary {
-  background: #3b82f6;
-  color: white;
+  background: var(--color-primary);
+  color: var(--color-text-inverse);
 }
 
 .btn-primary:hover {
-  background: #2563eb;
+  background: var(--color-primary-400);
 }
 
 .btn-sm {
@@ -169,42 +169,42 @@
 }
 
 .btn-outline-primary {
-  background: white;
-  color: #3b82f6;
-  border: 1px solid #3b82f6;
+  background: var(--color-bg-primary);
+  color: var(--color-primary);
+  border: 1px solid var(--color-primary);
 }
 
 .btn-outline-primary:hover {
-  background: #eff6ff;
+  background: var(--color-primary-50);
 }
 
 .btn-outline-danger {
-  background: white;
-  color: #ef4444;
-  border: 1px solid #ef4444;
+  background: var(--color-bg-primary);
+  color: var(--color-danger);
+  border: 1px solid var(--color-danger);
 }
 
 .btn-outline-danger:hover {
-  background: #fef2f2;
+  background: rgba(220, 53, 69, 0.05);
 }
 
 .btn-outline-success {
-  background: white;
-  color: #10b981;
-  border: 1px solid #10b981;
+  background: var(--color-bg-primary);
+  color: var(--color-semantic-income);
+  border: 1px solid var(--color-semantic-income);
 }
 
 .btn-outline-success:hover {
-  background: #f0fdf4;
+  background: rgba(40, 167, 69, 0.05);
 }
 
 .btn-secondary {
-  background: #6b7280;
-  color: white;
+  background: var(--color-secondary);
+  color: var(--color-text-inverse);
 }
 
 .btn-secondary:hover {
-  background: #4b5563;
+  background: var(--color-secondary-700);
 }
 
 /* 編集モーダル */
@@ -228,7 +228,7 @@
 }
 
 .edit-modal {
-  background: white;
+  background: var(--color-bg-primary);
   border-radius: 12px;
   width: 90%;
   max-width: 600px;
@@ -255,21 +255,21 @@
   justify-content: space-between;
   align-items: center;
   padding: 20px;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--color-border-light);
 }
 
 .modal-header h3 {
   margin: 0;
   font-size: 18px;
   font-weight: 600;
-  color: #1f2937;
+  color: var(--color-text-primary);
 }
 
 .close-btn {
   background: none;
   border: none;
   font-size: 24px;
-  color: #6b7280;
+  color: var(--color-text-muted);
   cursor: pointer;
   padding: 0;
   width: 32px;
@@ -282,8 +282,8 @@
 }
 
 .close-btn:hover {
-  background: #f3f4f6;
-  color: #374151;
+  background: var(--color-bg-tertiary);
+  color: var(--color-text-secondary);
 }
 
 .modal-body {
@@ -294,7 +294,7 @@
 
 .modal-footer {
   padding: 16px 20px;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid var(--color-border-light);
   display: flex;
   justify-content: flex-end;
   gap: 12px;
@@ -316,14 +316,14 @@
 .form-group label {
   font-size: 14px;
   font-weight: 500;
-  color: #374151;
+  color: var(--color-text-secondary);
 }
 
 .form-group input,
 .form-group select,
 .form-group textarea {
   padding: 8px 12px;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--color-border-default);
   border-radius: 6px;
   font-size: 14px;
   transition: all 0.2s ease;
@@ -333,7 +333,7 @@
 .form-group select:focus,
 .form-group textarea:focus {
   outline: none;
-  border-color: #3b82f6;
+  border-color: var(--color-primary);
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
@@ -342,7 +342,7 @@
 }
 
 .required {
-  color: #ef4444;
+  color: var(--color-danger);
   margin-left: 2px;
 }
 

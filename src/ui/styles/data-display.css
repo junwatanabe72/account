@@ -13,17 +13,17 @@
 }
 
 .journal-list::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: var(--color-bg-tertiary);
   border-radius: 4px;
 }
 
 .journal-list::-webkit-scrollbar-thumb {
-  background: #888;
+  background: var(--color-text-muted);
   border-radius: 4px;
 }
 
 .journal-list::-webkit-scrollbar-thumb:hover {
-  background: #555;
+  background: var(--color-text-secondary);
 }
 
 /* 仕訳アイテム */
@@ -39,7 +39,7 @@
 
 /* 仕訳ヘッダー */
 .journal-header {
-  border-bottom: 1px solid #e9ecef;
+  border-bottom: 1px solid var(--color-bg-tertiary);
   padding-bottom: 0.75rem;
 }
 
@@ -54,11 +54,11 @@
 }
 
 .table thead th {
-  background-color: #e9ecef;
+  background-color: var(--color-bg-tertiary);
   border: none;
   padding: 0.75rem;
   font-weight: 600;
-  color: #495057;
+  color: var(--color-text-secondary);
   text-transform: uppercase;
   font-size: 0.875rem;
   letter-spacing: 0.5px;
@@ -75,11 +75,11 @@
 .table tbody td {
   padding: 0.75rem;
   vertical-align: middle;
-  border-top: 1px solid #f1f1f1;
+  border-top: 1px solid var(--color-bg-tertiary);
 }
 
 .table tfoot tr {
-  border-top: 2px solid #dee2e6;
+  border-top: 2px solid var(--color-border-light);
 }
 
 .table tfoot td {
@@ -115,7 +115,7 @@
 
 /* フィルターバー */
 .journal-filter-bar {
-  background-color: #f8f9fa;
+  background-color: var(--color-bg-secondary);
   padding: 1rem;
   border-radius: 0.5rem;
   margin-bottom: 1.5rem;
@@ -146,7 +146,7 @@
 
   .journal-item {
     page-break-inside: avoid;
-    border: 1px solid #000;
+    border: 1px solid var(--color-text-primary);
     margin-bottom: 1rem;
   }
 
@@ -182,26 +182,4 @@
   }
 }
 
-/* ダークモード対応 */
-@media (prefers-color-scheme: dark) {
-  .journal-item-even {
-    background-color: rgba(255, 255, 255, 0.02) !important;
-  }
-
-  .journal-item {
-    border-color: #495057 !important;
-  }
-
-  .table thead th {
-    background-color: #343a40;
-    color: #f8f9fa;
-  }
-
-  .table tbody tr:hover {
-    background-color: rgba(255, 255, 255, 0.05);
-  }
-
-  .journal-filter-bar {
-    background-color: #2d2d2d;
-  }
-}
+/* ダークモード対応 - theme-unified.cssのダークテーマ変数を使用 */

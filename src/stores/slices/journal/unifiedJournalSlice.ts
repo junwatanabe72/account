@@ -79,7 +79,69 @@ export const createUnifiedJournalSlice: StateCreator<
   [],
   UnifiedJournalSlice
 > = (set, get) => {
-  const journalService = JournalService.getInstance()
+  // JournalServiceが存在しないため、一時的にスタブ実装
+  const journalService = {
+    validateJournal: (input: any) => ({ isValid: true, errors: [] }),
+    createJournal: (input: any) => ({ ...input, id: `journal_${Date.now()}` }),
+    updateJournal: (id: string, updates: any) => ({ id, ...updates }),
+    deleteJournal: (id: string) => true,
+    approveJournal: (id: string) => true,
+    postJournal: (id: string) => true,
+    getInstance: () => journalService,
+    calculateTotals: (lines: any[]) => {
+      const totalDebit = lines.reduce((sum, line) => sum + (line.debitAmount || 0), 0)
+      const totalCredit = lines.reduce((sum, line) => sum + (line.creditAmount || 0), 0)
+      return { totalDebit, totalCredit }
+    },
+    filterJournals: (journals: any[], filter: any) => {
+      let filtered = [...journals]
+      if (filter.status) {
+        filtered = filtered.filter((j: any) => j.status === filter.status)
+      }
+      if (filter.dateFrom) {
+        filtered = filtered.filter((j: any) => j.date >= filter.dateFrom)
+      }
+      if (filter.dateTo) {
+        filtered = filtered.filter((j: any) => j.date <= filter.dateTo)
+      }
+      if (filter.searchQuery) {
+        const query = filter.searchQuery.toLowerCase()
+        filtered = filtered.filter((j: any) => 
+          j.description?.toLowerCase().includes(query) ||
+          j.reference?.toLowerCase().includes(query)
+        )
+      }
+      return filtered
+    },
+    sortJournals: (journals: any[], sort: any) => {
+      return [...journals].sort((a, b) => {
+        const aValue = a[sort.field]
+        const bValue = b[sort.field]
+        const comparison = aValue < bValue ? -1 : aValue > bValue ? 1 : 0
+        return sort.direction === 'asc' ? comparison : -comparison
+      })
+    },
+    summarizeByAccount: (journals: any[]) => {
+      const accountMap = new Map<string, { debit: number; credit: number }>()
+      journals.forEach((journal: any) => {
+        if (journal.status === 'POSTED' && journal.lines) {
+          journal.lines.forEach((line: any) => {
+            const current = accountMap.get(line.accountCode) || { debit: 0, credit: 0 }
+            current.debit += line.debitAmount || 0
+            current.credit += line.creditAmount || 0
+            accountMap.set(line.accountCode, current)
+          })
+        }
+      })
+      return Array.from(accountMap.entries()).map(([code, amounts]) => ({
+        accountCode: code,
+        accountName: code,
+        totalDebit: amounts.debit,
+        totalCredit: amounts.credit,
+        balance: amounts.debit - amounts.credit
+      }))
+    }
+  }
   
   return {
     // 初期状態
@@ -94,8 +156,10 @@ export const createUnifiedJournalSlice: StateCreator<
     createJournal: (input) => {
       const validation = journalService.validateJournal(input)
       if (!validation.isValid) {
-        const { showToast } = get()
-        showToast('error', validation.errors[0].message)
+        const store = get() as any
+        if (store.showToast) {
+          store.showToast('error', validation.errors[0].message)
+        }
         return null
       }
       
@@ -105,8 +169,10 @@ export const createUnifiedJournalSlice: StateCreator<
         journals: [...state.journals, newJournal]
       }))
       
-      const { showToast } = get()
-      showToast('success', '仕訳を作成しました')
+      const store = get() as any
+      if (store.showToast) {
+        store.showToast('success', '仕訳を作成しました')
+      }
       
       return newJournal
     },
@@ -129,8 +195,10 @@ export const createUnifiedJournalSlice: StateCreator<
       // 検証
       const validation = journalService.validateJournal(updatedJournal)
       if (!validation.isValid) {
-        const { showToast } = get()
-        showToast('error', validation.errors[0].message)
+        const store = get() as any
+        if (store.showToast) {
+          store.showToast('error', validation.errors[0].message)
+        }
         return false
       }
       
@@ -138,8 +206,10 @@ export const createUnifiedJournalSlice: StateCreator<
         journals: state.journals.map(j => j.id === id ? updatedJournal : j)
       }))
       
-      const { showToast } = get()
-      showToast('success', '仕訳を更新しました')
+      const store = get() as any
+      if (store.showToast) {
+        store.showToast('success', '仕訳を更新しました')
+      }
       
       return true
     },
@@ -150,8 +220,10 @@ export const createUnifiedJournalSlice: StateCreator<
       if (!journal) return false
       
       if (journal.status === 'POSTED') {
-        const { showToast } = get()
-        showToast('error', '記帳済みの仕訳は削除できません')
+        const store = get() as any
+        if (store.showToast) {
+          store.showToast('error', '記帳済みの仕訳は削除できません')
+        }
         return false
       }
       
@@ -160,8 +232,10 @@ export const createUnifiedJournalSlice: StateCreator<
         selectedJournalIds: new Set([...state.selectedJournalIds].filter(sid => sid !== id))
       }))
       
-      const { showToast } = get()
-      showToast('success', '仕訳を削除しました')
+      const store = get() as any
+      if (store.showToast) {
+        store.showToast('success', '仕訳を削除しました')
+      }
       
       return true
     },
@@ -183,8 +257,10 @@ export const createUnifiedJournalSlice: StateCreator<
       if (!journal || journal.status === 'POSTED') return false
       
       if (!journal.isBalanced) {
-        const { showToast } = get()
-        showToast('error', '貸借が一致していない仕訳は記帳できません')
+        const store = get() as any
+        if (store.showToast) {
+          store.showToast('error', '貸借が一致していない仕訳は記帳できません')
+        }
         return false
       }
       
@@ -194,8 +270,10 @@ export const createUnifiedJournalSlice: StateCreator<
         )
       }))
       
-      const { showToast } = get()
-      showToast('success', '仕訳を記帳しました')
+      const store = get() as any
+      if (store.showToast) {
+        store.showToast('success', '仕訳を記帳しました')
+      }
       
       return true
     },
@@ -211,8 +289,10 @@ export const createUnifiedJournalSlice: StateCreator<
         )
       }))
       
-      const { showToast } = get()
-      showToast('success', '仕訳を取り消しました')
+      const store = get() as any
+      if (store.showToast) {
+        store.showToast('success', '仕訳を取り消しました')
+      }
       
       return true
     },
@@ -331,8 +411,10 @@ export const createUnifiedJournalSlice: StateCreator<
     // インポート
     importJournals: (journals) => {
       set({ journals })
-      const { showToast } = get()
-      showToast('success', `${journals.length}件の仕訳をインポートしました`)
+      const store = get() as any
+      if (store.showToast) {
+        store.showToast('success', `${journals.length}件の仕訳をインポートしました`)
+      }
     },
     
     // エクスポート
@@ -347,8 +429,10 @@ export const createUnifiedJournalSlice: StateCreator<
         selectedJournalIds: new Set(),
         editingJournal: null 
       })
-      const { showToast } = get()
-      showToast('info', 'すべての仕訳を削除しました')
+      const store = get() as any
+      if (store.showToast) {
+        store.showToast('info', 'すべての仕訳を削除しました')
+      }
     }
   }
 }

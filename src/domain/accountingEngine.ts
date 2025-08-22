@@ -27,7 +27,10 @@ import {
   ImportJson,
   UnitOwner,
   Vendor,
+  AccountDefinition
 } from '../types'
+import { TransactionInput, TransactionSearchCriteria } from '../types/transaction'
+import { CreateJournalInput, CreateJournalOptions } from './interfaces/IJournalService'
 
 // 型のエクスポートとinstanceofチェック用にインポート
 import { AccountService, HierarchicalAccount, AuxiliaryLedger } from './services/core/AccountService'
@@ -54,7 +57,10 @@ export class AccountingEngine {
     this.services.divisionService.initializeDivisions()
     this.services.auxiliaryService.initializeUnitOwners()
     this.services.auxiliaryService.initializeVendors()
-    this.services.auxiliaryService.createUnitOwnerAuxiliaryAccounts(this.services.accountService)
+    // AuxiliaryServiceは具象型のAccountServiceを必要とする
+    if (this.services.accountService instanceof AccountService) {
+      this.services.auxiliaryService.createUnitOwnerAuxiliaryAccounts(this.services.accountService)
+    }
     this.services.sampleDataService.loadOneMonthSampleData()
   }
   
@@ -62,14 +68,14 @@ export class AccountingEngine {
   get accounts() { return this.services.accountService.accounts }
   get divisions() { return this.services.divisionService.divisions }
   initializeAccounts() { return this.services.accountService.initializeAccounts() }
-  rebuildAccountsFrom(defs: any[]) { 
+  rebuildAccountsFrom(defs: AccountDefinition[]) { 
     // AccountServiceの具象型にキャストが必要な場合
     if (this.services.accountService instanceof AccountService) {
       return this.services.accountService.rebuildAccountsFrom(defs)
     }
     throw new Error('rebuildAccountsFrom requires AccountService implementation')
   }
-  addOrUpdateAccount(def: any) { 
+  addOrUpdateAccount(def: AccountDefinition) { 
     if (this.services.accountService instanceof AccountService) {
       return this.services.accountService.addOrUpdateAccount(def)
     }
@@ -85,12 +91,34 @@ export class AccountingEngine {
   
   // Journal management
   get journals() { return this.services.journalService.getJournals() }
-  createJournal(journalData: any, options?: any) { return this.services.journalService.createJournal(journalData, options) }
-  submitJournal(id: string) { return this.services.journalService.submitJournal(id) }
-  approveJournal(id: string) { return this.services.journalService.approveJournal(id) }
-  postJournalById(id: string) { return this.services.journalService.postJournalById(id) }
-  deleteJournal(id: string) { return this.services.journalService.deleteJournal(id) }
-  updateJournal(id: string, data: any) { return this.services.journalService.updateJournal(id, data) }
+  createJournal(journalData: CreateJournalInput, options?: CreateJournalOptions) { 
+    return this.services.journalService.createJournal(journalData, options) 
+  }
+  submitJournal(id: string) { 
+    return this.services.journalService.submitJournal ? 
+      this.services.journalService.submitJournal(id) : 
+      { success: false, errors: ['Method not implemented'] }
+  }
+  approveJournal(id: string) { 
+    return this.services.journalService.approveJournal ? 
+      this.services.journalService.approveJournal(id) : 
+      { success: false, errors: ['Method not implemented'] }
+  }
+  postJournalById(id: string) { 
+    return this.services.journalService.postJournalById ? 
+      this.services.journalService.postJournalById(id) : 
+      { success: false, errors: ['Method not implemented'] }
+  }
+  deleteJournal(id: string) { 
+    return this.services.journalService.deleteJournal ? 
+      this.services.journalService.deleteJournal(id) : 
+      { success: false, errors: ['Method not implemented'] }
+  }
+  updateJournal(id: string, data: Partial<CreateJournalInput>) { 
+    return this.services.journalService.updateJournal ? 
+      this.services.journalService.updateJournal(id, data) : 
+      { success: false, errors: ['Method not implemented'] }
+  }
   
   // Division management
   initializeDivisions() { return this.services.divisionService.initializeDivisions() }
@@ -143,9 +171,11 @@ export class AccountingEngine {
   
   // Import/Export
   serialize() { return this.services.importExportService.serialize() }
-  restore(data: any) { return this.services.importExportService.restore(data) }
+  restore(data: unknown) { return this.services.importExportService.restore(data) }
   importJsonData(json: ImportJson) { return this.services.importExportService.importJsonData(json) }
-  createOpeningBalance(date: string, entries: any[]) { return this.services.importExportService.createOpeningBalance(date, entries) }
+  createOpeningBalance(date: string, entries: Array<{ accountCode: string; balance: number }>) { 
+    return this.services.importExportService.createOpeningBalance(date, entries) 
+  }
   exportCurrentBalancesAsOpeningDetails() { return this.services.importExportService.exportCurrentBalancesAsOpeningDetails() }
   
   // Sample data
@@ -189,8 +219,8 @@ export class AccountingEngine {
       parentCode: acc.parentCode,
       description: acc.description,
       isActive: acc.isActive,
-      level: (acc as any).level,
-      isPostable: (acc as any).isPostable
+      level: 'level' in acc ? (acc as { level: number }).level : 0,
+      isPostable: 'isPostable' in acc ? (acc as { isPostable: boolean }).isPostable : true
     }))
   }
   
@@ -198,9 +228,9 @@ export class AccountingEngine {
   getTransactionService() { return this.services.transactionService }
   getJournalGenerationEngine() { return this.services.journalGenerationEngine }
   getAccountService() { return this.services.accountService }
-  createTransaction(input: any) { return this.services.transactionService.createTransaction(input) }
+  createTransaction(input: TransactionInput) { return this.services.transactionService.createTransaction(input) }
   getTransactions() { return this.services.transactionService.getTransactions() }
-  searchTransactions(criteria: any) { return this.services.transactionService.searchTransactions(criteria) }
+  searchTransactions(criteria: TransactionSearchCriteria) { return this.services.transactionService.searchTransactions(criteria) }
   settleTransaction(id: string, paymentAccountCode: string) { 
     return this.services.transactionService.settleTransaction(id, paymentAccountCode) 
   }

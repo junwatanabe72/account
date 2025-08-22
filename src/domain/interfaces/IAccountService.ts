@@ -5,14 +5,15 @@
  * 目的: 依存性逆転の原則を適用し、サービス間の結合度を下げる
  */
 
-import { HierarchicalAccount } from '../services/AccountService'
+// 循環参照を避けるため、型定義は types から import
 import { AccountDefinition } from '../../types'
+import { HierarchicalAccountInterface } from '../../types/services'
 
 export interface IAccountService {
   // 読み取り専用メソッド
-  getAccount(code: string): HierarchicalAccount | undefined
-  getAccounts(): HierarchicalAccount[]
-  accounts: HierarchicalAccount[]
+  getAccount(code: string): HierarchicalAccountInterface | undefined
+  getAccounts(): HierarchicalAccountInterface[]
+  accounts: HierarchicalAccountInterface[]
   
   // 初期化メソッド（必要最小限）
   initializeAccounts(): void
