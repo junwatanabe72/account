@@ -1,65 +1,275 @@
-/* アクセシビリティを考慮したカラースキーム */
+/**
+ * テーマカラー定義ファイル
+ * 
+ * 使い方:
+ * 1. 下記のCSS変数を使用してください
+ * 2. 直接色コード（#ffffffなど）の使用は禁止
+ * 3. 新しい色が必要な場合はこのファイルに追加
+ * 
+ * 例: color: var(--color-text-primary);
+ */
 
+/* ============================================
+   ライトモード（デフォルト）
+   ============================================ */
 :root {
-  /* プライマリカラー */
-  --primary: #0056b3;
-  --primary-light: #4d94ff;
-  --primary-dark: #003d82;
-  
-  /* セカンダリカラー */
-  --secondary: #6c757d;
-  --secondary-light: #868e96;
-  --secondary-dark: #495057;
-  
-  /* 成功・エラー・警告 */
-  --success: #28a745;
-  --success-light: #48b461;
-  --success-dark: #1e7e34;
-  
-  --danger: #dc3545;
-  --danger-light: #e4606d;
-  --danger-dark: #bd2130;
-  
-  --warning: #ffc107;
-  --warning-light: #ffcd39;
-  --warning-dark: #e0a800;
-  
-  --info: #17a2b8;
-  --info-light: #3ab0c3;
-  --info-dark: #117a8b;
+  /* テキストカラー */
+  --color-text-primary: #212529;
+  --color-text-secondary: #6c757d;
+  --color-text-muted: #adb5bd;
+  --color-text-light: #f8f9fa;
+  --color-text-danger: #dc3545;
+  --color-text-success: #28a745;
+  --color-text-warning: #ffc107;
+  --color-text-info: #17a2b8;
   
   /* 背景色 */
-  --bg-light: #f8f9fa;
-  --bg-white: #ffffff;
-  --bg-gray: #e9ecef;
+  --color-bg-primary: #ffffff;
+  --color-bg-secondary: #f8f9fa;
+  --color-bg-tertiary: #e9ecef;
+  --color-bg-hover: rgba(0, 0, 0, 0.02);
+  --color-bg-light: #f8f9fa;
+  --color-bg-disabled: #e9ecef;
   
-  /* テキストカラー */
-  --text-primary: #212529;
-  --text-secondary: #495057;
-  --text-muted: #6c757d;
-  --text-light: #f8f9fa;
+  /* ボーダー */
+  --color-border: #dee2e6;
+  --color-border-light: #f0f0f0;
+  --color-border-dark: #adb5bd;
   
-  /* ボーダーカラー */
-  --border-color: #dee2e6;
-  --border-light: #e9ecef;
+  /* プライマリカラー */
+  --color-primary: #3498db;
+  --color-primary-light: #e3f2fd;
+  --color-primary-dark: #2980b9;
+  --color-primary-rgb: 52, 152, 219;
+  
+  /* セカンダリカラー */
+  --color-secondary: #6c757d;
+  --color-secondary-light: #868e96;
+  --color-secondary-dark: #495057;
+  
+  /* 成功 */
+  --color-success: #28a745;
+  --color-success-light: #d4edda;
+  --color-success-dark: #155724;
+  --color-success-border: #c3e6cb;
+  --color-success-text: #155724;
+  
+  /* 危険・エラー */
+  --color-danger: #dc3545;
+  --color-danger-light: #f8d7da;
+  --color-danger-dark: #721c24;
+  --color-danger-border: #f5c6cb;
+  --color-danger-text: #721c24;
+  
+  /* 警告 */
+  --color-warning: #ffc107;
+  --color-warning-light: #fff3cd;
+  --color-warning-dark: #856404;
+  --color-warning-border: #ffeeba;
+  --color-warning-text: #856404;
+  
+  /* 情報 */
+  --color-info: #17a2b8;
+  --color-info-light: #d1ecf1;
+  --color-info-dark: #0c5460;
+  --color-info-border: #bee5eb;
+  --color-info-text: #0c5460;
   
   /* シャドウ */
   --shadow-sm: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
   --shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
   --shadow-lg: 0 1rem 3rem rgba(0, 0, 0, 0.175);
+  
+  /* 旧変数との互換性維持（段階的に削除予定） */
+  --primary: var(--color-primary);
+  --primary-light: var(--color-primary-light);
+  --primary-dark: var(--color-primary-dark);
+  --secondary: var(--color-secondary);
+  --secondary-light: var(--color-secondary-light);
+  --secondary-dark: var(--color-secondary-dark);
+  --success: var(--color-success);
+  --success-light: var(--color-success-light);
+  --success-dark: var(--color-success-dark);
+  --danger: var(--color-danger);
+  --danger-light: var(--color-danger-light);
+  --danger-dark: var(--color-danger-dark);
+  --warning: var(--color-warning);
+  --warning-light: var(--color-warning-light);
+  --warning-dark: var(--color-warning-dark);
+  --info: var(--color-info);
+  --info-light: var(--color-info-light);
+  --info-dark: var(--color-info-dark);
+  --bg-light: var(--color-bg-secondary);
+  --bg-white: var(--color-bg-primary);
+  --bg-gray: var(--color-bg-tertiary);
+  --text-primary: var(--color-text-primary);
+  --text-secondary: var(--color-text-secondary);
+  --text-muted: var(--color-text-muted);
+  --text-light: var(--color-text-light);
+  --border-color: var(--color-border);
+  --border-light: var(--color-border-light);
 }
 
-/* ベースのスタイル調整 */
+/* ============================================
+   ダークモード
+   ============================================ */
+[data-theme="dark"] {
+  /* テキストカラー */
+  --color-text-primary: #e5e7eb;
+  --color-text-secondary: #9ca3af;
+  --color-text-muted: #6b7280;
+  --color-text-light: #1f2937;
+  --color-text-danger: #ef4444;
+  --color-text-success: #10b981;
+  --color-text-warning: #f59e0b;
+  --color-text-info: #3b82f6;
+  
+  /* 背景色 */
+  --color-bg-primary: #1a1a1a;
+  --color-bg-secondary: #2a2a2a;
+  --color-bg-tertiary: #3a3a3a;
+  --color-bg-hover: rgba(255, 255, 255, 0.05);
+  --color-bg-light: #2d2d2d;
+  --color-bg-disabled: #404040;
+  
+  /* ボーダー */
+  --color-border: #4a4a4a;
+  --color-border-light: #3a3a3a;
+  --color-border-dark: #5a5a5a;
+  
+  /* プライマリカラー */
+  --color-primary: #60a5fa;
+  --color-primary-light: #1e3a5f;
+  --color-primary-dark: #3b82f6;
+  --color-primary-rgb: 96, 165, 250;
+  
+  /* セカンダリカラー */
+  --color-secondary: #9ca3af;
+  --color-secondary-light: #d1d5db;
+  --color-secondary-dark: #6b7280;
+  
+  /* 成功 */
+  --color-success: #10b981;
+  --color-success-light: #064e3b;
+  --color-success-dark: #059669;
+  --color-success-border: #047857;
+  --color-success-text: #34d399;
+  
+  /* 危険・エラー */
+  --color-danger: #ef4444;
+  --color-danger-light: #7f1d1d;
+  --color-danger-dark: #dc2626;
+  --color-danger-border: #b91c1c;
+  --color-danger-text: #f87171;
+  
+  /* 警告 */
+  --color-warning: #f59e0b;
+  --color-warning-light: #78350f;
+  --color-warning-dark: #d97706;
+  --color-warning-border: #b45309;
+  --color-warning-text: #fbbf24;
+  
+  /* 情報 */
+  --color-info: #3b82f6;
+  --color-info-light: #1e3a8a;
+  --color-info-dark: #2563eb;
+  --color-info-border: #1d4ed8;
+  --color-info-text: #60a5fa;
+  
+  /* シャドウ */
+  --shadow-sm: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.3);
+  --shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 1rem 3rem rgba(0, 0, 0, 0.5);
+}
+
+/* ============================================
+   システム設定に従う場合
+   ============================================ */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    /* テキストカラー */
+    --color-text-primary: #e5e7eb;
+    --color-text-secondary: #9ca3af;
+    --color-text-muted: #6b7280;
+    --color-text-light: #1f2937;
+    --color-text-danger: #ef4444;
+    --color-text-success: #10b981;
+    --color-text-warning: #f59e0b;
+    --color-text-info: #3b82f6;
+    
+    /* 背景色 */
+    --color-bg-primary: #1a1a1a;
+    --color-bg-secondary: #2a2a2a;
+    --color-bg-tertiary: #3a3a3a;
+    --color-bg-hover: rgba(255, 255, 255, 0.05);
+    --color-bg-light: #2d2d2d;
+    --color-bg-disabled: #404040;
+    
+    /* ボーダー */
+    --color-border: #4a4a4a;
+    --color-border-light: #3a3a3a;
+    --color-border-dark: #5a5a5a;
+    
+    /* プライマリカラー */
+    --color-primary: #60a5fa;
+    --color-primary-light: #1e3a5f;
+    --color-primary-dark: #3b82f6;
+    --color-primary-rgb: 96, 165, 250;
+    
+    /* セカンダリカラー */
+    --color-secondary: #9ca3af;
+    --color-secondary-light: #d1d5db;
+    --color-secondary-dark: #6b7280;
+    
+    /* 成功 */
+    --color-success: #10b981;
+    --color-success-light: #064e3b;
+    --color-success-dark: #059669;
+    --color-success-border: #047857;
+    --color-success-text: #34d399;
+    
+    /* 危険・エラー */
+    --color-danger: #ef4444;
+    --color-danger-light: #7f1d1d;
+    --color-danger-dark: #dc2626;
+    --color-danger-border: #b91c1c;
+    --color-danger-text: #f87171;
+    
+    /* 警告 */
+    --color-warning: #f59e0b;
+    --color-warning-light: #78350f;
+    --color-warning-dark: #d97706;
+    --color-warning-border: #b45309;
+    --color-warning-text: #fbbf24;
+    
+    /* 情報 */
+    --color-info: #3b82f6;
+    --color-info-light: #1e3a8a;
+    --color-info-dark: #2563eb;
+    --color-info-border: #1d4ed8;
+    --color-info-text: #60a5fa;
+    
+    /* シャドウ */
+    --shadow-sm: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.3);
+    --shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 1rem 3rem rgba(0, 0, 0, 0.5);
+  }
+}
+
+/* ============================================
+   ベーススタイル（CSS変数を使用）
+   ============================================ */
 body {
-  color: var(--text-primary);
-  background-color: var(--bg-light);
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-secondary);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* カードのスタイル改善 */
+/* カードのスタイル */
 .card {
-  background-color: var(--bg-white);
-  border-color: var(--border-color);
+  background-color: var(--color-bg-primary);
+  border-color: var(--color-border);
   box-shadow: var(--shadow-sm);
   transition: box-shadow 0.3s ease;
 }
@@ -69,12 +279,13 @@ body {
 }
 
 .card-header {
-  background-color: var(--bg-light);
-  border-bottom-color: var(--border-color);
+  background-color: var(--color-bg-secondary);
+  border-bottom-color: var(--color-border);
   font-weight: 600;
+  color: var(--color-text-primary);
 }
 
-/* ボタンのスタイル改善 */
+/* ボタンのスタイル */
 .btn {
   font-weight: 500;
   transition: all 0.2s ease;
@@ -82,58 +293,41 @@ body {
 }
 
 .btn-primary {
-  background-color: var(--primary);
-  border-color: var(--primary);
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+  color: white;
 }
 
 .btn-primary:hover {
-  background-color: var(--primary-dark);
-  border-color: var(--primary-dark);
+  background-color: var(--color-primary-dark);
+  border-color: var(--color-primary-dark);
   transform: translateY(-1px);
   box-shadow: var(--shadow-sm);
 }
 
 .btn-success {
-  background-color: var(--success);
-  border-color: var(--success);
+  background-color: var(--color-success);
+  border-color: var(--color-success);
+  color: white;
 }
 
 .btn-success:hover {
-  background-color: var(--success-dark);
-  border-color: var(--success-dark);
+  background-color: var(--color-success-dark);
+  border-color: var(--color-success-dark);
 }
 
 .btn-danger {
-  background-color: var(--danger);
-  border-color: var(--danger);
+  background-color: var(--color-danger);
+  border-color: var(--color-danger);
+  color: white;
 }
 
 .btn-danger:hover {
-  background-color: var(--danger-dark);
-  border-color: var(--danger-dark);
+  background-color: var(--color-danger-dark);
+  border-color: var(--color-danger-dark);
 }
 
-.btn-outline-primary {
-  color: var(--primary);
-  border-color: var(--primary);
-}
-
-.btn-outline-primary:hover {
-  background-color: var(--primary);
-  border-color: var(--primary);
-}
-
-.btn-outline-danger {
-  color: var(--danger);
-  border-color: var(--danger);
-}
-
-.btn-outline-danger:hover {
-  background-color: var(--danger);
-  border-color: var(--danger);
-}
-
-/* アラートの改善 */
+/* アラート */
 .alert {
   border: none;
   border-radius: 0.5rem;
@@ -141,113 +335,82 @@ body {
 }
 
 .alert-success {
-  background-color: rgba(40, 167, 69, 0.1);
-  color: var(--success-dark);
-  border-left: 4px solid var(--success);
+  background-color: var(--color-success-light);
+  color: var(--color-success-text);
+  border-left: 4px solid var(--color-success);
 }
 
 .alert-danger {
-  background-color: rgba(220, 53, 69, 0.1);
-  color: var(--danger-dark);
-  border-left: 4px solid var(--danger);
+  background-color: var(--color-danger-light);
+  color: var(--color-danger-text);
+  border-left: 4px solid var(--color-danger);
 }
 
 .alert-warning {
-  background-color: rgba(255, 193, 7, 0.1);
-  color: var(--warning-dark);
-  border-left: 4px solid var(--warning);
+  background-color: var(--color-warning-light);
+  color: var(--color-warning-text);
+  border-left: 4px solid var(--color-warning);
 }
 
 .alert-info {
-  background-color: rgba(23, 162, 184, 0.1);
-  color: var(--info-dark);
-  border-left: 4px solid var(--info);
+  background-color: var(--color-info-light);
+  color: var(--color-info-text);
+  border-left: 4px solid var(--color-info);
 }
 
-/* バッジの改善 */
-.badge {
-  font-weight: 600;
-  padding: 0.375rem 0.75rem;
-  border-radius: 0.375rem;
-}
-
-.bg-secondary {
-  background-color: var(--secondary) !important;
-}
-
-/* テーブルの改善 */
+/* テーブル */
 .table {
-  color: var(--text-primary);
+  color: var(--color-text-primary);
 }
 
 .table thead th {
-  background-color: var(--bg-light);
-  color: var(--text-secondary);
+  background-color: var(--color-bg-secondary);
+  color: var(--color-text-secondary);
   font-weight: 600;
-  border-bottom: 2px solid var(--border-color);
+  border-bottom: 2px solid var(--color-border);
 }
 
 .table tbody tr:hover {
-  background-color: rgba(0, 0, 0, 0.02);
+  background-color: var(--color-bg-hover);
 }
 
-/* フォーム要素の改善 */
+/* フォーム要素 */
 .form-control,
 .form-select {
-  border-color: var(--border-color);
-  color: var(--text-primary);
-  background-color: var(--bg-white);
+  border-color: var(--color-border);
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-primary);
 }
 
 .form-control:focus,
 .form-select:focus {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 0.2rem rgba(0, 86, 179, 0.25);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 0.2rem rgba(var(--color-primary-rgb), 0.25);
 }
 
-/* 金額表示の色 */
+/* テキストユーティリティ */
 .text-primary {
-  color: var(--primary) !important;
+  color: var(--color-primary) !important;
 }
 
 .text-danger {
-  color: var(--danger) !important;
+  color: var(--color-danger) !important;
 }
 
-/* ダークモード対応 */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg-light: #1a1a1a;
-    --bg-white: #2d2d2d;
-    --bg-gray: #3d3d3d;
-    
-    --text-primary: #f8f9fa;
-    --text-secondary: #adb5bd;
-    --text-muted: #6c757d;
-    
-    --border-color: #495057;
-    --border-light: #6c757d;
-  }
-  
-  .card {
-    background-color: var(--bg-white);
-    color: var(--text-primary);
-  }
-  
-  .form-control,
-  .form-select {
-    background-color: var(--bg-gray);
-    color: var(--text-primary);
-    border-color: var(--border-color);
-  }
-  
-  .table {
-    color: var(--text-primary);
-  }
-  
-  .alert-info {
-    background-color: rgba(23, 162, 184, 0.2);
-  }
+.text-success {
+  color: var(--color-success) !important;
+}
+
+.text-warning {
+  color: var(--color-warning) !important;
+}
+
+.text-info {
+  color: var(--color-info) !important;
+}
+
+.text-muted {
+  color: var(--color-text-muted) !important;
 }
 
 /* 高コントラストモード */
@@ -263,6 +426,6 @@ body {
   
   .card {
     border-width: 2px;
-    border-color: var(--text-primary);
+    border-color: var(--color-text-primary);
   }
 }
