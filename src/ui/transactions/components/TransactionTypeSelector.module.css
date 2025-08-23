@@ -5,7 +5,7 @@
 
 .tabs {
   display: flex;
-  background-color: var(--bg-secondary, #f8f9fa);
+  background-color: var(--color-bg-secondary, #f8f9fa);
   border-radius: 12px;
   padding: 4px;
   box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
@@ -24,31 +24,31 @@
   justify-content: center;
   gap: 0.5rem;
   font-weight: 500;
-  color: var(--text-secondary, #6c757d);
+  color: var(--color-text-secondary, #6c757d);
   position: relative;
   z-index: 1;
 }
 
 .tab:hover {
-  background-color: rgba(255, 255, 255, 0.5);
+  background-color: var(--color-bg-hover, rgba(255, 255, 255, 0.5));
 }
 
 .tab.active {
-  background-color: white;
+  background-color: var(--color-bg-primary, white);
   color: white;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--shadow, 0 2px 8px rgba(0, 0, 0, 0.15));
 }
 
 .tab.active.success {
-  background-color: var(--success-color, #28a745);
+  background-color: var(--color-success, #28a745);
 }
 
 .tab.active.danger {
-  background-color: var(--danger-color, #dc3545);
+  background-color: var(--color-danger, #dc3545);
 }
 
 .tab.active.info {
-  background-color: var(--info-color, #17a2b8);
+  background-color: var(--color-info, #17a2b8);
 }
 
 .icon {
@@ -65,7 +65,7 @@
   left: 0;
   right: 0;
   height: 3px;
-  background-color: var(--bg-secondary, #f8f9fa);
+  background-color: var(--color-bg-secondary, #f8f9fa);
   overflow: hidden;
 }
 
@@ -76,15 +76,15 @@
 }
 
 .indicatorBar.success {
-  background-color: var(--success-color, #28a745);
+  background-color: var(--color-success, #28a745);
 }
 
 .indicatorBar.danger {
-  background-color: var(--danger-color, #dc3545);
+  background-color: var(--color-danger, #dc3545);
 }
 
 .indicatorBar.info {
-  background-color: var(--info-color, #17a2b8);
+  background-color: var(--color-info, #17a2b8);
 }
 
 /* レスポンシブ対応 */

@@ -1,7 +1,7 @@
 .container {
   margin-bottom: 1.5rem;
   padding: 1rem;
-  background-color: var(--bg-secondary, #f8f9fa);
+  background-color: var(--color-bg-secondary, #f8f9fa);
   border-radius: 8px;
 }
 
@@ -9,7 +9,7 @@
   display: block;
   font-weight: 600;
   margin-bottom: 0.75rem;
-  color: var(--text-primary, #2c3e50);
+  color: var(--color-text-primary, #2c3e50);
   font-size: 0.9rem;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -23,25 +23,25 @@
 
 .divisionButton {
   padding: 0.5rem 1rem;
-  border: 2px solid var(--border-color, #dee2e6);
-  background-color: white;
+  border: 2px solid var(--color-border, #dee2e6);
+  background-color: var(--color-bg-primary, white);
   border-radius: 6px;
   cursor: pointer;
   transition: all 0.2s ease;
   font-weight: 500;
   font-size: 0.95rem;
-  color: var(--text-secondary, #6c757d);
+  color: var(--color-text-secondary, #6c757d);
   min-width: 100px;
 }
 
 .divisionButton:hover {
-  border-color: var(--primary-color, #3498db);
-  background-color: var(--primary-light, #e3f2fd);
+  border-color: var(--color-primary, #3498db);
+  background-color: var(--color-primary-light, #e3f2fd);
 }
 
 .divisionButton.active {
-  background-color: var(--primary-color, #3498db);
-  border-color: var(--primary-color, #3498db);
+  background-color: var(--color-primary, #3498db);
+  border-color: var(--color-primary, #3498db);
   color: white;
   box-shadow: 0 2px 4px rgba(52, 152, 219, 0.3);
 }
@@ -49,7 +49,7 @@
 .description {
   margin-top: 0.5rem;
   font-size: 0.85rem;
-  color: var(--text-muted, #6c757d);
+  color: var(--color-text-muted, #6c757d);
   font-style: italic;
 }
 
