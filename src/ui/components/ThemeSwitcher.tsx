@@ -2,73 +2,47 @@ import React, { useState, useEffect } from 'react';
 
 type ThemeMode = 'light' | 'dark' | 'auto';
 
+/**
+ * テーマ切り替えコンポーネント
+ * CSS変数ベースでライト/ダーク/自動モードを制御
+ */
 export const ThemeSwitcher: React.FC = () => {
   const [theme, setTheme] = useState<ThemeMode>(() => {
     const saved = localStorage.getItem('theme') as ThemeMode;
-    return saved || 'light';
+    return saved || 'auto'; // デフォルトを'auto'に変更
   });
 
   useEffect(() => {
     const applyTheme = (mode: ThemeMode) => {
-      let isDark = false;
+      // DOM操作を削除し、data-theme属性のみを制御
+      const root = document.documentElement;
       
-      if (mode === 'auto') {
-        isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      if (mode === 'light') {
+        root.setAttribute('data-theme', 'light');
+      } else if (mode === 'dark') {
+        root.setAttribute('data-theme', 'dark');
       } else {
-        isDark = mode === 'dark';
+        // autoモードの場合はdata-theme属性を削除
+        // CSS側の@media (prefers-color-scheme)が有効になる
+        root.removeAttribute('data-theme');
       }
       
-      if (isDark) {
-        document.documentElement.setAttribute('data-theme', 'dark');
-        document.body.classList.add('theme-dark');
-        document.body.classList.remove('theme-light');
-        // ダークテーマの背景色を直接適用
-        document.body.style.backgroundColor = '#1a1a1a';
-        document.body.style.color = '#e5e7eb';
-        
-        // インラインスタイルを持つ要素の色を強制的に変更
-        const elementsWithStyle = document.querySelectorAll('[style]');
-        elementsWithStyle.forEach((el: Element) => {
-          const htmlEl = el as HTMLElement;
-          // 背景色が白系の場合、ダーク系に変更
-          if (htmlEl.style.backgroundColor) {
-            const bgColor = htmlEl.style.backgroundColor;
-            if (bgColor.includes('255') || bgColor.includes('fff') || bgColor === 'white') {
-              htmlEl.style.backgroundColor = '#2a2a2a';
-            }
-            if (bgColor.includes('248') || bgColor.includes('f8') || bgColor.includes('f5')) {
-              htmlEl.style.backgroundColor = '#2d2d2d';
-            }
-          }
-          // 文字色を強制的に設定
-          if (!htmlEl.style.color || htmlEl.style.color.includes('255') || htmlEl.style.color === 'white') {
-            htmlEl.style.color = '#e5e7eb';
-          }
-        });
-      } else {
-        document.documentElement.removeAttribute('data-theme');
-        document.body.classList.add('theme-light');
-        document.body.classList.remove('theme-dark');
-        // ライトテーマの背景色を直接適用
-        document.body.style.backgroundColor = '#f8f9fa';
-        document.body.style.color = '#212529';
-        
-        // インラインスタイルをリセット
-        const elementsWithStyle = document.querySelectorAll('[style]');
-        elementsWithStyle.forEach((el: Element) => {
-          const htmlEl = el as HTMLElement;
-          // スタイルを元に戻すために、data属性から復元するか、ページをリロード
-        });
-      }
+      // bodyのクラスも更新（レガシーコードとの互換性）
+      document.body.classList.remove('theme-light', 'theme-dark', 'theme-auto');
+      document.body.classList.add(`theme-${mode}`);
     };
 
     applyTheme(theme);
     localStorage.setItem('theme', theme);
 
-    // Listen for system theme changes when in auto mode
+    // autoモードの場合、システムテーマの変更を監視
     if (theme === 'auto') {
       const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-      const handleChange = () => applyTheme('auto');
+      const handleChange = () => {
+        // data-theme属性は設定せず、CSSのメディアクエリに任せる
+        const isDark = mediaQuery.matches;
+        console.log(`System theme changed: ${isDark ? 'dark' : 'light'}`);
+      };
       
       mediaQuery.addEventListener('change', handleChange);
       return () => mediaQuery.removeEventListener('change', handleChange);
@@ -76,25 +50,55 @@ export const ThemeSwitcher: React.FC = () => {
   }, [theme]);
 
   return (
-    <div className="theme-switcher">
+    <div className="theme-switcher" style={{ display: 'flex', gap: '0.5rem' }}>
       <button
-        className={theme === 'light' ? 'active' : ''}
+        className={`btn btn-sm ${theme === 'light' ? 'btn-primary' : 'btn-outline-primary'}`}
         onClick={() => setTheme('light')}
         title="ライトテーマ"
+        style={{ 
+          padding: '0.25rem 0.5rem',
+          fontSize: '1.2rem',
+          border: 'none',
+          background: theme === 'light' ? 'var(--color-primary)' : 'transparent',
+          color: theme === 'light' ? 'white' : 'var(--color-text-primary)',
+          cursor: 'pointer',
+          borderRadius: '0.25rem',
+          transition: 'all 0.2s ease'
+        }}
       >
         ☀️
       </button>
       <button
-        className={theme === 'dark' ? 'active' : ''}
+        className={`btn btn-sm ${theme === 'dark' ? 'btn-primary' : 'btn-outline-primary'}`}
         onClick={() => setTheme('dark')}
         title="ダークテーマ"
+        style={{ 
+          padding: '0.25rem 0.5rem',
+          fontSize: '1.2rem',
+          border: 'none',
+          background: theme === 'dark' ? 'var(--color-primary)' : 'transparent',
+          color: theme === 'dark' ? 'white' : 'var(--color-text-primary)',
+          cursor: 'pointer',
+          borderRadius: '0.25rem',
+          transition: 'all 0.2s ease'
+        }}
       >
         🌙
       </button>
       <button
-        className={theme === 'auto' ? 'active' : ''}
+        className={`btn btn-sm ${theme === 'auto' ? 'btn-primary' : 'btn-outline-primary'}`}
         onClick={() => setTheme('auto')}
         title="自動（システム設定に従う）"
+        style={{ 
+          padding: '0.25rem 0.5rem',
+          fontSize: '1.2rem',
+          border: 'none',
+          background: theme === 'auto' ? 'var(--color-primary)' : 'transparent',
+          color: theme === 'auto' ? 'white' : 'var(--color-text-primary)',
+          cursor: 'pointer',
+          borderRadius: '0.25rem',
+          transition: 'all 0.2s ease'
+        }}
       >
         🔄
       </button>
