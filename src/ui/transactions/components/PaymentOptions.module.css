@@ -1,7 +1,7 @@
 .container {
   margin-bottom: 1.5rem;
   padding: 1rem;
-  background-color: var(--bg-secondary, #f8f9fa);
+  background-color: var(--color-bg-secondary, #f8f9fa);
   border-radius: 8px;
 }
 
@@ -17,7 +17,7 @@
   display: block;
   font-weight: 600;
   margin-bottom: 0.75rem;
-  color: var(--text-primary, #2c3e50);
+  color: var(--color-text-primary, #2c3e50);
   font-size: 0.95rem;
 }
 
@@ -37,25 +37,25 @@
   padding: 0.75rem 1rem;
   min-width: 100px;
   background: white;
-  border: 2px solid var(--border-color, #dee2e6);
+  border: 2px solid var(--color-border, #dee2e6);
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .optionButton:hover {
-  border-color: var(--primary-color, #3498db);
-  background-color: var(--primary-light, #e3f2fd);
+  border-color: var(--color-primary, #3498db);
+  background-color: var(--color-primary-light, #e3f2fd);
 }
 
 .optionButton.active {
-  border-color: var(--primary-color, #3498db);
-  background-color: var(--primary-color, #3498db);
+  border-color: var(--color-primary, #3498db);
+  background-color: var(--color-primary, #3498db);
   color: white;
 }
 
 .optionButton.recommended {
-  border-color: var(--success-color, #28a745);
+  border-color: var(--color-success, #28a745);
 }
 
 .optionIcon {
@@ -72,7 +72,7 @@
   top: -8px;
   right: -8px;
   padding: 0.2rem 0.4rem;
-  background-color: var(--success-color, #28a745);
+  background-color: var(--color-success, #28a745);
   color: white;
   font-size: 0.7rem;
   border-radius: 10px;
@@ -91,24 +91,24 @@
   gap: 0.5rem;
   padding: 0.5rem 1rem;
   background: white;
-  border: 2px solid var(--border-color, #dee2e6);
+  border: 2px solid var(--color-border, #dee2e6);
   border-radius: 6px;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .statusOption:hover {
-  border-color: var(--primary-color, #3498db);
+  border-color: var(--color-primary, #3498db);
 }
 
 .statusOption.success {
-  border-color: var(--success-color, #28a745);
-  background-color: var(--success-light, #d4edda);
+  border-color: var(--color-success, #28a745);
+  background-color: var(--color-success-light, #d4edda);
 }
 
 .statusOption.warning {
-  border-color: var(--warning-color, #ffc107);
-  background-color: var(--warning-light, #fff3cd);
+  border-color: var(--color-warning, #ffc107);
+  background-color: var(--color-warning-light, #fff3cd);
 }
 
 .radio {
@@ -128,7 +128,7 @@
   padding: 0.75rem;
   background-color: white;
   border-radius: 6px;
-  border: 1px solid var(--border-color, #dee2e6);
+  border: 1px solid var(--color-border, #dee2e6);
 }
 
 .summaryItem {
@@ -139,27 +139,27 @@
 }
 
 .summaryItem:not(:last-child) {
-  border-bottom: 1px solid var(--border-light, #f0f0f0);
+  border-bottom: 1px solid var(--color-border-light, #f0f0f0);
   padding-bottom: 0.5rem;
   margin-bottom: 0.5rem;
 }
 
 .summaryLabel {
   font-size: 0.85rem;
-  color: var(--text-secondary, #6c757d);
+  color: var(--color-text-secondary, #6c757d);
 }
 
 .summaryValue {
   font-weight: 600;
-  color: var(--text-primary, #2c3e50);
+  color: var(--color-text-primary, #2c3e50);
 }
 
 .summaryValue.success {
-  color: var(--success-color, #28a745);
+  color: var(--color-success, #28a745);
 }
 
 .summaryValue.warning {
-  color: var(--warning-color, #ffc107);
+  color: var(--color-warning, #ffc107);
 }
 
 /* レスポンシブ対応 */

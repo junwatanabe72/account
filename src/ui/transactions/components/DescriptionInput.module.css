@@ -10,12 +10,12 @@
   display: block;
   font-weight: 600;
   margin-bottom: 0.5rem;
-  color: var(--text-primary, #2c3e50);
+  color: var(--color-text-primary, #2c3e50);
   font-size: 0.95rem;
 }
 
 .required {
-  color: var(--danger-color, #dc3545);
+  color: var(--color-danger, #dc3545);
   margin-left: 0.25rem;
 }
 
@@ -28,7 +28,7 @@
   flex: 1;
   padding: 0.75rem;
   font-size: 0.95rem;
-  border: 2px solid var(--border-color, #dee2e6);
+  border: 2px solid var(--color-border, #dee2e6);
   border-radius: 8px;
   resize: vertical;
   font-family: inherit;
@@ -37,17 +37,17 @@
 
 .textarea:focus {
   outline: none;
-  border-color: var(--primary-color, #3498db);
+  border-color: var(--color-primary, #3498db);
   box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
 }
 
 .textarea.error {
-  border-color: var(--danger-color, #dc3545);
+  border-color: var(--color-danger, #dc3545);
 }
 
 .templateButton {
   padding: 0.75rem;
-  background-color: var(--primary-color, #3498db);
+  background-color: var(--color-primary, #3498db);
   color: white;
   border: none;
   border-radius: 8px;
@@ -57,7 +57,7 @@
 }
 
 .templateButton:hover {
-  background-color: var(--primary-dark, #2980b9);
+  background-color: var(--color-primary-dark, #2980b9);
 }
 
 /* 文字数カウント */
@@ -65,18 +65,18 @@
   text-align: right;
   margin-top: 0.25rem;
   font-size: 0.8rem;
-  color: var(--text-muted, #6c757d);
+  color: var(--color-text-muted, #6c757d);
 }
 
 .characterCount .warning {
-  color: var(--warning-color, #ffc107);
+  color: var(--color-warning, #ffc107);
   font-weight: 600;
 }
 
 /* エラーメッセージ */
 .errorMessage {
   margin-top: 0.5rem;
-  color: var(--danger-color, #dc3545);
+  color: var(--color-danger, #dc3545);
   font-size: 0.85rem;
 }
 
@@ -85,7 +85,7 @@
   margin-top: 0.5rem;
   padding: 1rem;
   background-color: white;
-  border: 1px solid var(--border-color, #dee2e6);
+  border: 1px solid var(--color-border, #dee2e6);
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   animation: slideDown 0.2s ease;
@@ -97,19 +97,19 @@
   align-items: center;
   margin-bottom: 0.75rem;
   padding-bottom: 0.5rem;
-  border-bottom: 1px solid var(--border-light, #f0f0f0);
+  border-bottom: 1px solid var(--color-border-light, #f0f0f0);
 }
 
 .templatesTitle {
   font-weight: 600;
-  color: var(--text-primary, #2c3e50);
+  color: var(--color-text-primary, #2c3e50);
 }
 
 .closeButton {
   background: none;
   border: none;
   font-size: 1.5rem;
-  color: var(--text-secondary, #6c757d);
+  color: var(--color-text-secondary, #6c757d);
   cursor: pointer;
   padding: 0;
   width: 24px;
@@ -127,8 +127,8 @@
 
 .categoryButton {
   padding: 0.5rem 1rem;
-  background-color: var(--bg-light, #f8f9fa);
-  border: 1px solid var(--border-color, #dee2e6);
+  background-color: var(--color-bg-light, #f8f9fa);
+  border: 1px solid var(--color-border, #dee2e6);
   border-radius: 6px;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -136,8 +136,8 @@
 }
 
 .categoryButton:hover {
-  background-color: var(--primary-light, #e3f2fd);
-  border-color: var(--primary-color, #3498db);
+  background-color: var(--color-primary-light, #e3f2fd);
+  border-color: var(--color-primary, #3498db);
 }
 
 .backButton {
@@ -145,16 +145,16 @@
   padding: 0.5rem;
   margin-bottom: 0.5rem;
   background: none;
-  border: 1px solid var(--border-color, #dee2e6);
+  border: 1px solid var(--color-border, #dee2e6);
   border-radius: 6px;
   cursor: pointer;
   font-size: 0.85rem;
-  color: var(--text-secondary, #6c757d);
+  color: var(--color-text-secondary, #6c757d);
   transition: all 0.2s ease;
 }
 
 .backButton:hover {
-  background-color: var(--bg-light, #f8f9fa);
+  background-color: var(--color-bg-light, #f8f9fa);
 }
 
 .templateList {
@@ -166,7 +166,7 @@
 .templateItem {
   padding: 0.5rem 0.75rem;
   background-color: white;
-  border: 1px solid var(--border-color, #dee2e6);
+  border: 1px solid var(--color-border, #dee2e6);
   border-radius: 6px;
   cursor: pointer;
   text-align: left;
@@ -175,15 +175,15 @@
 }
 
 .templateItem:hover {
-  background-color: var(--primary-light, #e3f2fd);
-  border-color: var(--primary-color, #3498db);
+  background-color: var(--color-primary-light, #e3f2fd);
+  border-color: var(--color-primary, #3498db);
 }
 
 /* 補足情報 */
 .additionalInfo {
   margin-top: 1rem;
   padding: 0.75rem;
-  background-color: var(--bg-light, #f8f9fa);
+  background-color: var(--color-bg-light, #f8f9fa);
   border-radius: 6px;
   display: flex;
   gap: 1rem;
@@ -198,7 +198,7 @@
 .infoLabel {
   display: block;
   font-size: 0.85rem;
-  color: var(--text-secondary, #6c757d);
+  color: var(--color-text-secondary, #6c757d);
   margin-bottom: 0.25rem;
   font-weight: 500;
 }
@@ -207,7 +207,7 @@
 .payerInput {
   width: 100%;
   padding: 0.5rem;
-  border: 1px solid var(--border-color, #dee2e6);
+  border: 1px solid var(--color-border, #dee2e6);
   border-radius: 4px;
   font-size: 0.9rem;
   transition: border-color 0.2s ease;
@@ -216,7 +216,7 @@
 .monthInput:focus,
 .payerInput:focus {
   outline: none;
-  border-color: var(--primary-color, #3498db);
+  border-color: var(--color-primary, #3498db);
 }
 
 /* アニメーション */
