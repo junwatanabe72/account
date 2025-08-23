@@ -2,7 +2,7 @@
 
 /* タブコンテナ */
 .nav-tabs {
-  border-bottom: 2px solid #dee2e6;
+  border-bottom: 2px solid var(--color-border, #dee2e6);
   margin-bottom: 1.5rem;
   position: relative;
 }
@@ -16,7 +16,7 @@
 .nav-tabs .nav-link {
   position: relative;
   padding: 0.75rem 1.25rem;
-  color: #6c757d;
+  color: var(--color-text-secondary, #6c757d);
   background-color: transparent;
   border: none;
   border-bottom: 3px solid transparent;
@@ -27,16 +27,16 @@
 
 /* ホバー時のスタイル */
 .nav-tabs .nav-link:hover:not(.active) {
-  color: #495057;
-  background-color: #f8f9fa;
-  border-bottom-color: #dee2e6;
+  color: var(--color-secondary-dark, #495057);
+  background-color: var(--color-bg-secondary, #f8f9fa);
+  border-bottom-color: var(--color-border, #dee2e6);
 }
 
 /* アクティブタブのスタイル */
 .nav-tabs .nav-link.active {
-  color: #007bff;
-  background-color: #fff;
-  border-bottom: 3px solid #007bff;
+  color: var(--color-primary, #007bff);
+  background-color: var(--color-bg-primary, #fff);
+  border-bottom: 3px solid var(--color-primary, #007bff);
   font-weight: 600;
   position: relative;
 }

@@ -11,7 +11,7 @@
 .nav-tabs {
   display: flex;
   flex-wrap: wrap;
-  border-bottom: 1px solid #dee2e6;
+  border-bottom: 1px solid var(--color-border, #dee2e6);
   margin-bottom: 1rem;
 }
 
@@ -28,14 +28,14 @@
 }
 
 .nav-tabs .nav-link:hover {
-  border-color: #e9ecef #e9ecef #dee2e6;
-  background-color: #f8f9fa;
+  border-color: var(--color-bg-tertiary, #e9ecef) var(--color-bg-tertiary, #e9ecef) var(--color-border, #dee2e6);
+  background-color: var(--color-bg-secondary, #f8f9fa);
 }
 
 .nav-tabs .nav-link.active {
-  color: #495057;
-  background-color: #fff;
-  border-color: #dee2e6 #dee2e6 #fff;
+  color: var(--color-secondary-dark, #495057);
+  background-color: var(--color-bg-primary, #fff);
+  border-color: var(--color-border, #dee2e6) var(--color-border, #dee2e6) var(--color-bg-primary, #fff);
   font-weight: 600;
 }
 
