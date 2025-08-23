@@ -1,0 +1,99 @@
+.container {
+  border: 1px solid var(--color-border, #ddd);
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.divisionCard {
+  border: 1px solid var(--color-border-light, #eee);
+  border-radius: 8px;
+}
+
+.divisionHeader {
+  background: var(--color-primary, #0d6efd);
+  color: white;
+  padding: 8px 12px;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+}
+
+.divisionBody {
+  padding: 12px;
+}
+
+.accountGroups {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.accountGroup {
+  flex: 1 1 200px;
+}
+
+.accountGroupTitle {
+  margin: 6px 0;
+  font-size: 14px;
+}
+
+.accountGroupTitle.assets {
+  color: var(--color-primary, #0d6efd);
+}
+
+.accountGroupTitle.liabilities {
+  color: var(--color-warning-dark, #b36b00);
+}
+
+.accountGroupTitle.revenue {
+  color: var(--color-success, green);
+}
+
+.accountGroupTitle.expenses {
+  color: var(--color-danger, red);
+}
+
+.accountList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-size: 12px;
+}
+
+.emptyItem {
+  color: var(--color-text-muted, #888);
+}
+
+.totalAmount {
+  font-size: 13px;
+  font-weight: bold;
+}
+
+.netIncomeSection {
+  background: var(--color-bg-secondary, #f8f9fa);
+  padding: 8px 12px;
+  border-radius: 4px;
+  margin-top: 12px;
+}
+
+.netIncomeTitle {
+  font-size: 14px;
+  margin: 4px 0;
+  color: var(--color-text-primary, #333);
+}
+
+.netIncomeValue {
+  font-size: 16px;
+  font-weight: bold;
+  color: var(--color-primary, #0d6efd);
+}
+
+.netIncomeValue.negative {
+  color: var(--color-danger, red);
+}

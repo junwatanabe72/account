@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import styles from './ThemeSwitcher.module.css';
 
 type ThemeMode = 'light' | 'dark' | 'auto';
 
@@ -50,55 +51,25 @@ export const ThemeSwitcher: React.FC = () => {
   }, [theme]);
 
   return (
-    <div className="theme-switcher" style={{ display: 'flex', gap: '0.5rem' }}>
+    <div className={styles.themeSwitcher}>
       <button
-        className={`btn btn-sm ${theme === 'light' ? 'btn-primary' : 'btn-outline-primary'}`}
+        className={`${styles.button} ${theme === 'light' ? styles.active : ''}`}
         onClick={() => setTheme('light')}
         title="ライトテーマ"
-        style={{ 
-          padding: '0.25rem 0.5rem',
-          fontSize: '1.2rem',
-          border: 'none',
-          background: theme === 'light' ? 'var(--color-primary)' : 'transparent',
-          color: theme === 'light' ? 'white' : 'var(--color-text-primary)',
-          cursor: 'pointer',
-          borderRadius: '0.25rem',
-          transition: 'all 0.2s ease'
-        }}
       >
         ☀️
       </button>
       <button
-        className={`btn btn-sm ${theme === 'dark' ? 'btn-primary' : 'btn-outline-primary'}`}
+        className={`${styles.button} ${theme === 'dark' ? styles.active : ''}`}
         onClick={() => setTheme('dark')}
         title="ダークテーマ"
-        style={{ 
-          padding: '0.25rem 0.5rem',
-          fontSize: '1.2rem',
-          border: 'none',
-          background: theme === 'dark' ? 'var(--color-primary)' : 'transparent',
-          color: theme === 'dark' ? 'white' : 'var(--color-text-primary)',
-          cursor: 'pointer',
-          borderRadius: '0.25rem',
-          transition: 'all 0.2s ease'
-        }}
       >
         🌙
       </button>
       <button
-        className={`btn btn-sm ${theme === 'auto' ? 'btn-primary' : 'btn-outline-primary'}`}
+        className={`${styles.button} ${theme === 'auto' ? styles.active : ''}`}
         onClick={() => setTheme('auto')}
         title="自動（システム設定に従う）"
-        style={{ 
-          padding: '0.25rem 0.5rem',
-          fontSize: '1.2rem',
-          border: 'none',
-          background: theme === 'auto' ? 'var(--color-primary)' : 'transparent',
-          color: theme === 'auto' ? 'white' : 'var(--color-text-primary)',
-          cursor: 'pointer',
-          borderRadius: '0.25rem',
-          transition: 'all 0.2s ease'
-        }}
       >
         🔄
       </button>

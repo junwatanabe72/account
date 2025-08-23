@@ -1,0 +1,24 @@
+.themeSwitcher {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.button {
+  padding: 0.25rem 0.5rem;
+  font-size: 1.2rem;
+  border: none;
+  cursor: pointer;
+  border-radius: 0.25rem;
+  transition: all 0.2s ease;
+  background: transparent;
+  color: var(--color-text-primary, #212529);
+}
+
+.button.active {
+  background: var(--color-primary, #3498db);
+  color: white;
+}
+
+.button:not(.active):hover {
+  background: var(--color-bg-tertiary, #e9ecef);
+}
