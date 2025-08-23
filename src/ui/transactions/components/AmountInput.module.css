@@ -1,0 +1,95 @@
+.container {
+  margin-bottom: 1.5rem;
+}
+
+.label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: var(--text-primary, #2c3e50);
+  font-size: 0.95rem;
+}
+
+.required {
+  color: var(--danger-color, #dc3545);
+  margin-left: 0.25rem;
+}
+
+.inputWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.currency {
+  font-size: 1.2rem;
+  color: var(--text-secondary, #6c757d);
+  font-weight: 500;
+}
+
+.input {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  font-size: 1.1rem;
+  border: 2px solid var(--border-color, #dee2e6);
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  background-color: white;
+  font-weight: 500;
+  max-width: 300px;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--primary-color, #3498db);
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+.input.error {
+  border-color: var(--danger-color, #dc3545);
+}
+
+.input.error:focus {
+  box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.1);
+}
+
+.formatted {
+  font-size: 0.9rem;
+  color: var(--text-muted, #6c757d);
+  white-space: nowrap;
+}
+
+.errorMessage {
+  margin-top: 0.5rem;
+  color: var(--danger-color, #dc3545);
+  font-size: 0.85rem;
+  animation: slideDown 0.2s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+  .input {
+    max-width: 100%;
+    font-size: 1rem;
+  }
+  
+  .currency {
+    font-size: 1.1rem;
+  }
+  
+  .formatted {
+    display: none;
+  }
+}

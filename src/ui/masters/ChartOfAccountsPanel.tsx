@@ -1,5 +1,7 @@
 import React from 'react'
 import { AccountingEngine, AccountDef } from '../../domain/accountingEngine'
+import { OperationResult } from '../../types/services'
+import { AccountType, NormalBalance } from '../../types'
 
 export const ChartOfAccountsPanel: React.FC<{ engine: AccountingEngine, onChanged: () => void }> = ({ engine, onChanged }) => {
   const [defs, setDefs] = React.useState<AccountDef[]>(engine.getChartOfAccounts())
@@ -10,8 +12,8 @@ export const ChartOfAccountsPanel: React.FC<{ engine: AccountingEngine, onChange
   const save = () => {
     const errors: string[] = []
     for (const d of defs) {
-      const res = engine.addOrUpdateAccount(d)
-      if (!(res as any).success) errors.push(`${d.code}: ${(res as any).errors.join(', ')}`)
+      const res = engine.addOrUpdateAccount(d) as OperationResult
+      if (!res.success) errors.push(`${d.code}: ${res.errors?.join(', ') || 'エラーが発生しました'}`)
     }
     onChanged();
     if (errors.length) alert('一部保存に失敗:\n' + errors.join('\n'))
@@ -19,8 +21,8 @@ export const ChartOfAccountsPanel: React.FC<{ engine: AccountingEngine, onChange
   }
   const add = () => {
     if (!newDef.code || !newDef.name) { alert('コードと名称は必須です'); return }
-    const res = engine.addOrUpdateAccount(newDef)
-    if (!(res as any).success) { alert((res as any).errors.join(', ')); return }
+    const res = engine.addOrUpdateAccount(newDef) as OperationResult
+    if (!res.success) { alert(res.errors?.join(', ') || 'エラーが発生しました'); return }
     setDefs(engine.getChartOfAccounts())
     setNewDef({ code: '', name: '', type: 'ASSET', normalBalance: 'DEBIT', level: 4, parentCode: undefined, division: undefined, isActive: true })
     onChanged()
@@ -53,13 +55,13 @@ export const ChartOfAccountsPanel: React.FC<{ engine: AccountingEngine, onChange
             </div>
             <div className="col-md-2">
               <label className="form-label">種別</label>
-              <select className="form-select" value={newDef.type} onChange={e => setNewDef({ ...newDef, type: e.target.value as any })}>
+              <select className="form-select" value={newDef.type} onChange={e => setNewDef({ ...newDef, type: e.target.value as AccountType })}>
                 {types.map(t => <option key={t} value={t}>{t}</option>)}
               </select>
             </div>
             <div className="col-md-2">
               <label className="form-label">正規残</label>
-              <select className="form-select" value={newDef.normalBalance} onChange={e => setNewDef({ ...newDef, normalBalance: e.target.value as any })}>
+              <select className="form-select" value={newDef.normalBalance} onChange={e => setNewDef({ ...newDef, normalBalance: e.target.value as NormalBalance })}>
                 {normals.map(n => <option key={n} value={n}>{n}</option>)}
               </select>
             </div>
@@ -115,12 +117,12 @@ export const ChartOfAccountsPanel: React.FC<{ engine: AccountingEngine, onChange
                   <td style={{ whiteSpace: 'nowrap' }}>{d.code}</td>
                   <td><input className="form-control form-control-sm" value={d.name} onChange={e => setDefs(ds => ds.map((x,i) => i===idx? { ...x, name: e.target.value } : x))} /></td>
                   <td>
-                    <select className="form-select form-select-sm" value={d.type} onChange={e => setDefs(ds => ds.map((x,i) => i===idx? { ...x, type: e.target.value as any } : x))}>
+                    <select className="form-select form-select-sm" value={d.type} onChange={e => setDefs(ds => ds.map((x,i) => i===idx? { ...x, type: e.target.value as AccountType } : x))}>
                       {['ASSET','LIABILITY','EQUITY','REVENUE','EXPENSE'].map(t => <option key={t} value={t}>{t}</option>)}
                     </select>
                   </td>
                   <td>
-                    <select className="form-select form-select-sm" value={d.normalBalance} onChange={e => setDefs(ds => ds.map((x,i) => i===idx? { ...x, normalBalance: e.target.value as any } : x))}>
+                    <select className="form-select form-select-sm" value={d.normalBalance} onChange={e => setDefs(ds => ds.map((x,i) => i===idx? { ...x, normalBalance: e.target.value as NormalBalance } : x))}>
                       {['DEBIT','CREDIT'].map(n => <option key={n} value={n}>{n}</option>)}
                     </select>
                   </td>

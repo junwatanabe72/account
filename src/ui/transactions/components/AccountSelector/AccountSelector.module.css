@@ -1,0 +1,204 @@
+.container {
+  margin-bottom: 1.5rem;
+}
+
+.label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: var(--text-primary, #2c3e50);
+  font-size: 0.95rem;
+}
+
+.required {
+  color: var(--danger-color, #dc3545);
+  margin-left: 0.25rem;
+}
+
+/* 検索入力 */
+.searchWrapper {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.searchInput {
+  flex: 1;
+  padding: 0.75rem;
+  border: 2px solid var(--border-color, #dee2e6);
+  border-radius: 8px;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: var(--primary-color, #3498db);
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+.searchInput.error {
+  border-color: var(--danger-color, #dc3545);
+}
+
+.categoryButton {
+  padding: 0.75rem 1rem;
+  background-color: var(--primary-color, #3498db);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1.2rem;
+  transition: background-color 0.2s ease;
+}
+
+.categoryButton:hover {
+  background-color: var(--primary-dark, #2980b9);
+}
+
+/* 選択された科目 */
+.selectedAccount {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background-color: var(--success-light, #d4edda);
+  border-radius: 6px;
+  animation: fadeIn 0.2s ease;
+}
+
+.accountCode {
+  font-weight: 600;
+  color: var(--success-text, #155724);
+}
+
+.accountName {
+  flex: 1;
+  color: var(--success-text, #155724);
+}
+
+.clearButton {
+  background: none;
+  border: none;
+  color: var(--success-text, #155724);
+  cursor: pointer;
+  font-size: 1.2rem;
+  padding: 0;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.6;
+  transition: opacity 0.2s ease;
+}
+
+.clearButton:hover {
+  opacity: 1;
+}
+
+/* サジェスト */
+.suggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: 0.25rem;
+  background: white;
+  border: 1px solid var(--border-color, #dee2e6);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  z-index: 100;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.suggestionItem {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  cursor: pointer;
+  transition: background-color 0.1s ease;
+}
+
+.suggestionItem:hover {
+  background-color: var(--bg-hover, #f8f9fa);
+}
+
+.suggestionCode {
+  font-weight: 600;
+  color: var(--text-secondary, #6c757d);
+  min-width: 60px;
+}
+
+.suggestionName {
+  flex: 1;
+  color: var(--text-primary, #2c3e50);
+}
+
+/* よく使う科目 */
+.frequentAccounts {
+  margin-top: 1rem;
+  padding: 0.75rem;
+  background-color: var(--bg-secondary, #f8f9fa);
+  border-radius: 8px;
+}
+
+.frequentTitle {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-secondary, #6c757d);
+  margin-bottom: 0.5rem;
+}
+
+.frequentList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.frequentItem {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.375rem 0.75rem;
+  background: white;
+  border: 1px solid var(--border-color, #dee2e6);
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.85rem;
+}
+
+.frequentItem:hover {
+  border-color: var(--primary-color, #3498db);
+  background-color: var(--primary-light, #e3f2fd);
+}
+
+.frequentCode {
+  font-weight: 600;
+  color: var(--text-secondary, #6c757d);
+}
+
+.frequentName {
+  color: var(--text-primary, #2c3e50);
+}
+
+/* エラーメッセージ */
+.errorMessage {
+  margin-top: 0.5rem;
+  color: var(--danger-color, #dc3545);
+  font-size: 0.85rem;
+}
+
+/* アニメーション */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

@@ -40,7 +40,7 @@ export const App: React.FC = () => {
     onConfirm: () => {},
   });
 
-  const [active, setActive] = useState<
+  type MenuItemId = 
     | "freeeInput"
     | "input"
     | "statements"
@@ -58,8 +58,9 @@ export const App: React.FC = () => {
     | "manual"
     | "bankAccounts"
     | "sampleData"
-    | "paymentTest"
-  >("freeeInput");
+    | "paymentTest";
+
+  const [active, setActive] = useState<MenuItemId>("freeeInput");
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [expandedMenus, setExpandedMenus] = useState<{
@@ -71,7 +72,7 @@ export const App: React.FC = () => {
   };
 
   const handleMenuClick = (itemId: string) => {
-    setActive(itemId as any);
+    setActive(itemId as MenuItemId);
     if (window.innerWidth <= 768) {
       setMobileMenuOpen(false);
     }

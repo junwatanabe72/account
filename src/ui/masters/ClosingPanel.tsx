@@ -2,26 +2,29 @@ import React from 'react'
 import { AccountingEngine } from '../../domain/accountingEngine'
 import { useToast } from '../common/Toast'
 
+interface ClosingResult {
+  division: string
+  success: boolean
+  journalId?: string
+  error?: string
+}
+
 export const ClosingPanel: React.FC<{ engine: AccountingEngine, onChange: () => void }> = ({ engine, onChange }) => {
   const [date, setDate] = React.useState<string>(new Date().toISOString().split('T')[0] || '')
   const toast = useToast()
   const runClosing = () => {
-    const res = engine.createClosingEntries(date)
-    if ((res as any).success) {
-      toast.show(`期末振替を作成: ${res.createdCount}件`, 'success')
+    const res = engine.createClosingEntries(date) as ClosingResult[]
+    const successCount = res.filter(r => r.success).length
+    if (successCount > 0) {
+      toast.show(`期末振替を作成: ${successCount}件`, 'success')
       onChange()
     } else {
       toast.show('期末振替に失敗しました', 'danger')
     }
   }
   const reverse = () => {
-    const res = (engine as any).reverseClosingEntries?.(date)
-    if ((res as any)?.success) {
-      toast.show(`期末振替取消を作成: ${res.reversedCount}件`, 'success')
-      onChange()
-    } else {
-      toast.show('取消に失敗しました', 'danger')
-    }
+    // reverseClosingEntriesメソッドは現在未実装
+    toast.show('期末振替取消機能は現在利用できません', 'warning')
   }
 
   return (

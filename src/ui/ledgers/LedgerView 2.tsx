@@ -1,6 +1,5 @@
 import React from 'react'
 import { AccountingEngine } from '../../domain/accountingEngine'
-import { OperationResult } from '../../types/services'
 // import { JournalEditModal } from '../transactions/JournalEditModal'
 // import { JournalFilterBar, JournalFilters } from '../transactions/JournalFilterBar'
 // TODO: JournalEditModalとJournalFilterBarの実装が必要
@@ -115,10 +114,10 @@ export const LedgerView: React.FC<{ engine: AccountingEngine }> = ({ engine }) =
               </tbody>
             </table>
             <div className="d-flex gap-2">
-              {j.status === 'DRAFT' && <><button className="btn btn-sm btn-outline-primary" onClick={() => { const r = engine.submitJournal(j.id) as OperationResult; if (!r.success) toast.show(r.errors?.join(', ') || 'エラーが発生しました','danger'); else { toast.show('提出しました','success'); refresh() } }}>提出</button>
+              {j.status === 'DRAFT' && <><button className="btn btn-sm btn-outline-primary" onClick={() => { const r = engine.submitJournal(j.id); if (!(r as any).success) toast.show((r as any).errors.join(', '),'danger'); else { toast.show('提出しました','success'); refresh() } }}>提出</button>
               <button className="btn btn-sm btn-outline-secondary" onClick={() => setEditingId(j.id)}>編集</button></>}
-              {j.status === 'SUBMITTED' && <button className="btn btn-sm btn-outline-success" onClick={() => { const r = engine.approveJournal(j.id) as OperationResult; if (!r.success) toast.show(r.errors?.join(', ') || 'エラーが発生しました','danger'); else { toast.show('承認しました','success'); refresh() } }}>承認</button>}
-              {j.status === 'APPROVED' && <button className="btn btn-sm btn-primary" onClick={() => { const r = engine.postJournalById(j.id) as OperationResult; if (!r.success) toast.show(r.errors?.join(', ') || 'エラーが発生しました','danger'); else { toast.show('記帳しました','success'); refresh() } }}>記帳</button>}
+              {j.status === 'SUBMITTED' && <button className="btn btn-sm btn-outline-success" onClick={() => { const r = engine.approveJournal(j.id); if (!(r as any).success) toast.show((r as any).errors.join(', '),'danger'); else { toast.show('承認しました','success'); refresh() } }}>承認</button>}
+              {j.status === 'APPROVED' && <button className="btn btn-sm btn-primary" onClick={() => { const r = engine.postJournalById(j.id); if (!(r as any).success) toast.show((r as any).errors.join(', '),'danger'); else { toast.show('記帳しました','success'); refresh() } }}>記帳</button>}
               {j.status !== 'POSTED' && <button 
                 className="btn btn-sm btn-outline-danger" 
                 onClick={() => {
@@ -127,9 +126,9 @@ export const LedgerView: React.FC<{ engine: AccountingEngine }> = ({ engine }) =
                     title: '仕訳の削除',
                     message: `仕訳番号 ${j.number} を削除しますか？この操作は取り消せません。`,
                     onConfirm: () => {
-                      const r = engine.deleteJournal(j.id) as OperationResult;
-                      if (!r.success) {
-                        toast.show(r.errors?.join(', ') || 'エラーが発生しました', 'danger');
+                      const r = engine.deleteJournal(j.id);
+                      if (!(r as any).success) {
+                        toast.show((r as any).errors.join(', '), 'danger');
                       } else {
                         toast.show('削除しました', 'success');
                         refresh();

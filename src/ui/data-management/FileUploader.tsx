@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react'
-import { useDropzone } from 'react-dropzone'
+import { useDropzone, FileRejection, ErrorCode } from 'react-dropzone'
 import { FileParser, ParsedFileData, FileParseError, fileParserUtils } from '../../utils/fileParser'
 
 interface FileUploaderProps {
@@ -32,14 +32,15 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
     isProcessing: false
   })
 
-  const onDrop = useCallback(async (acceptedFiles: File[], rejectedFiles: any[]) => {
+  const onDrop = useCallback(async (acceptedFiles: File[], rejectedFiles: FileRejection[]) => {
     // 拒否されたファイルの処理
     if (rejectedFiles.length > 0) {
       const rejection = rejectedFiles[0]
+      if (!rejection) return
       const errorMessages: string[] = []
       
-      rejection.errors.forEach((error: any) => {
-        switch (error.code) {
+      rejection.errors.forEach((error) => {
+        switch (error.code as ErrorCode) {
           case 'file-too-large':
             errorMessages.push(`ファイルサイズが${maxSizeInMB}MBを超えています`)
             break
@@ -68,7 +69,7 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
 
     try {
       // ファイルサイズチェック
-      if (!FileParser.validateFileSize(file, maxSizeInMB)) {
+      if (!file || !FileParser.validateFileSize(file, maxSizeInMB)) {
         throw new Error(`ファイルサイズが${maxSizeInMB}MBを超えています`)
       }
 
@@ -179,7 +180,7 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
                 </div>
                 <div className="info-item">
                   <span className="label">サイズ:</span>
-                  <span className="value">{FileParser.getFileInfo(state.uploadedFile).size}</span>
+                  <span className="value">{state.uploadedFile ? FileParser.getFileInfo(state.uploadedFile).size : 'N/A'}</span>
                 </div>
                 <div className="info-item">
                   <span className="label">形式:</span>
@@ -273,7 +274,7 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
         </div>
       )}
 
-      <style jsx>{`
+      <style>{`
         .file-uploader {
           width: 100%;
           max-width: 600px;

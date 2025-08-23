@@ -26,8 +26,9 @@ export const JsonImport: React.FC<{ engine: AccountingEngine, onImported: () => 
       if (!result.success) toast.show(`JSONデータの読み込みに失敗: ${result.error}`,'danger')
       else toast.show(`JSONデータを読み込みました`,'success')
       onImported()
-    } catch (err: any) {
-      toast.show(`JSON解析に失敗: ${err.message ?? String(err)}`,'danger')
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : String(err)
+      toast.show(`JSON解析に失敗: ${errorMessage}`,'danger')
     } finally {
       if (fileRef.current) fileRef.current.value = ''
     }

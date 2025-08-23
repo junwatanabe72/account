@@ -1,5 +1,6 @@
 import React from 'react'
 import { AccountingEngine } from '../../domain/accountingEngine'
+import { OperationResult } from '../../types/services'
 // import { JournalEditModal } from '../transactions/JournalEditModal'
 // import { JournalFilterBar, JournalFilters } from '../transactions/JournalFilterBar'
 // TODO: JournalEditModalとJournalFilterBarの実装が必要
@@ -218,9 +219,9 @@ export const ImprovedLedgerView: React.FC<{ engine: AccountingEngine }> = ({ eng
                     <button 
                       className="btn btn-sm btn-outline-primary" 
                       onClick={() => { 
-                        const r = engine.submitJournal(j.id); 
-                        if (!(r as any).success) {
-                          toast.show((r as any).errors.join(', '),'danger'); 
+                        const r = engine.submitJournal(j.id) as OperationResult; 
+                        if (!r.success) {
+                          toast.show(r.errors?.join(', ') || 'エラーが発生しました','danger'); 
                         } else { 
                           toast.show('提出しました','success'); 
                           refresh() 
@@ -241,9 +242,9 @@ export const ImprovedLedgerView: React.FC<{ engine: AccountingEngine }> = ({ eng
                   <button 
                     className="btn btn-sm btn-outline-success" 
                     onClick={() => { 
-                      const r = engine.approveJournal(j.id); 
-                      if (!(r as any).success) {
-                        toast.show((r as any).errors.join(', '),'danger'); 
+                      const r = engine.approveJournal(j.id) as OperationResult; 
+                      if (!r.success) {
+                        toast.show(r.errors?.join(', ') || 'エラーが発生しました','danger'); 
                       } else { 
                         toast.show('承認しました','success'); 
                         refresh() 
@@ -257,9 +258,9 @@ export const ImprovedLedgerView: React.FC<{ engine: AccountingEngine }> = ({ eng
                   <button 
                     className="btn btn-sm btn-primary" 
                     onClick={() => { 
-                      const r = engine.postJournalById(j.id); 
-                      if (!(r as any).success) {
-                        toast.show((r as any).errors.join(', '),'danger'); 
+                      const r = engine.postJournalById(j.id) as OperationResult; 
+                      if (!r.success) {
+                        toast.show(r.errors?.join(', ') || 'エラーが発生しました','danger'); 
                       } else { 
                         toast.show('記帳しました','success'); 
                         refresh() 
@@ -278,9 +279,9 @@ export const ImprovedLedgerView: React.FC<{ engine: AccountingEngine }> = ({ eng
                         title: '仕訳の削除',
                         message: `仕訳番号 ${j.number} を削除しますか？この操作は取り消せません。`,
                         onConfirm: () => {
-                          const r = engine.deleteJournal(j.id);
-                          if (!(r as any).success) {
-                            toast.show((r as any).errors.join(', '), 'danger');
+                          const r = engine.deleteJournal(j.id) as OperationResult;
+                          if (!r.success) {
+                            toast.show(r.errors?.join(', ') || 'エラーが発生しました', 'danger');
                           } else {
                             toast.show('削除しました', 'success');
                             refresh();

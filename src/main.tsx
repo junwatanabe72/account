@@ -1,5 +1,5 @@
 import React from 'react'
-import { App } from './ui/app/AppWithSidebar'
+import { App } from './ui/app/App'
 import { createRoot } from 'react-dom/client'
 import { ToastProvider } from './ui/common/Toast'
 import './ui/styles/theme.css'

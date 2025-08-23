@@ -1,6 +1,8 @@
 import React from 'react'
 import { AccountingEngine } from '../../domain/accountingEngine'
 import { useToast } from '../common/Toast'
+import { UnitOwner } from '../../types/accounting'
+import { CreateJournalResult } from '../../types/accounting'
 
 function buildUnitNumber(floor: number, indexOnFloor: number) {
   const room = String(indexOnFloor).padStart(2, '0')
@@ -15,7 +17,7 @@ export const SampleDataPanel: React.FC<{ engine: AccountingEngine, onChange: () 
     // 分布: 最大10階まで、1フロアあたり均等
     const maxFloors = Math.min(10, Math.ceil(count / 50)) || 1
     const perFloor = Math.ceil(count / maxFloors)
-    const owners = new Map<string, any>()
+    const owners = new Map<string, UnitOwner>()
     let created = 0
     for (let f = 1; f <= maxFloors; f++) {
       for (let i = 1; i <= perFloor && created < count; i++) {
@@ -50,18 +52,19 @@ export const SampleDataPanel: React.FC<{ engine: AccountingEngine, onChange: () 
     setTimeout(() => {
       // 事前チェック（合計）
       let totalMF = 0, totalRR = 0, activeCount = 0
-      engine.unitOwners.forEach((o: any) => { if (o.isActive) { activeCount++; totalMF += Number(o.managementFee)||0; totalRR += Number(o.repairReserve)||0 } })
+      engine.unitOwners.forEach((o) => { if (o.isActive) { activeCount++; totalMF += Number(o.managementFee)||0; totalRR += Number(o.repairReserve)||0 } })
       if (activeCount === 0 || (totalMF + totalRR) === 0) {
         toast.show('月次請求の作成に失敗しました: 有効な組合員または月額がありません','danger')
         return
       }
       const firstOfMonth = (() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-01` })()
       const res = engine.createMonthlyBilling(firstOfMonth)
-      if ((res as any).success) {
+      const result = res as CreateJournalResult
+      if (result.success) {
         onChange()
         toast.show('月次請求仕訳を作成しました','success')
       } else {
-        const msg = ((res as any).errors && (res as any).errors.join(', ')) || '原因不明のエラー'
+        const msg = (result.errors && result.errors.join(', ')) || '原因不明のエラー'
         toast.show(`月次請求の作成に失敗しました: ${msg}`,'danger')
       }
     }, 0)
@@ -137,15 +140,16 @@ export const SampleDataPanel: React.FC<{ engine: AccountingEngine, onChange: () 
         { accountCode: '3111', creditAmount: 13_000_000 }, // 前期繰越
       ],
     }
-    const obRes = engine.createOpeningBalance(opening.date, opening.entries as any)
-    if (!(obRes as any).success) {
+    const obRes = engine.createOpeningBalance(opening.date, opening.entries)
+    const obResult = obRes as CreateJournalResult
+    if (!obResult.success) {
       toast.show('期首残高の作成に失敗しました','danger'); return
     }
 
     // 月次処理（請求→入金→費用）
     // 月額合計を事前算定
     let totalMF = 0, totalRR = 0
-    engine.unitOwners.forEach((o: any) => { if (o.isActive) { totalMF += Number(o.managementFee)||0; totalRR += Number(o.repairReserve)||0 } })
+    engine.unitOwners.forEach((o) => { if (o.isActive) { totalMF += Number(o.managementFee)||0; totalRR += Number(o.repairReserve)||0 } })
 
     for (let k = 0; k < 12; k++) {
       const { y, m } = addMonths(startYear, 4, k)
@@ -156,7 +160,8 @@ export const SampleDataPanel: React.FC<{ engine: AccountingEngine, onChange: () 
 
       // 請求（補助付与）
       const billRes = engine.createMonthlyBilling(billDate)
-      if (!(billRes as any).success) { toast.show(`月次請求失敗: ${y}/${m}`,'danger'); return }
+      const billResult = billRes as CreateJournalResult
+      if (!billResult.success) { toast.show(`月次請求失敗: ${y}/${m}`,'danger'); return }
 
       // 入金（口座振替）
       if (totalMF > 0) {
