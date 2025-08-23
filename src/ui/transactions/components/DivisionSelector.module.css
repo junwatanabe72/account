@@ -43,7 +43,7 @@
   background-color: var(--color-primary, #3498db);
   border-color: var(--color-primary, #3498db);
   color: white;
-  box-shadow: 0 2px 4px rgba(52, 152, 219, 0.3);
+  box-shadow: 0 2px 4px var(--color-primary-alpha-30, rgba(52, 152, 219, 0.3));
 }
 
 .description {

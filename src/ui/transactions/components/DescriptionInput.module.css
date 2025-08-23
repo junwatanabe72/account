@@ -38,7 +38,7 @@
 .textarea:focus {
   outline: none;
   border-color: var(--color-primary, #3498db);
-  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+  box-shadow: var(--shadow-focus-primary, 0 0 0 3px rgba(52, 152, 219, 0.1));
 }
 
 .textarea.error {
@@ -87,7 +87,7 @@
   background-color: white;
   border: 1px solid var(--color-border, #dee2e6);
   border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow, 0 2px 8px rgba(0, 0, 0, 0.1));
   animation: slideDown 0.2s ease;
 }
 
