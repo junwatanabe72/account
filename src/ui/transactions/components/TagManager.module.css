@@ -6,13 +6,13 @@
   display: block;
   font-weight: 600;
   margin-bottom: 0.5rem;
-  color: var(--text-primary, #2c3e50);
+  color: var(--color-text-primary, #2c3e50);
   font-size: 0.95rem;
 }
 
 .counter {
   font-weight: normal;
-  color: var(--text-muted, #6c757d);
+  color: var(--color-text-muted, #6c757d);
   font-size: 0.85rem;
   margin-left: 0.5rem;
 }
@@ -29,8 +29,8 @@
   align-items: center;
   gap: 0.25rem;
   padding: 0.25rem 0.75rem;
-  background-color: var(--primary-light, #e3f2fd);
-  color: var(--primary-dark, #1976d2);
+  background-color: var(--color-primary-light, #e3f2fd);
+  color: var(--color-primary-dark, #1976d2);
   border-radius: 16px;
   font-size: 0.875rem;
   animation: fadeIn 0.2s ease;
@@ -50,7 +50,7 @@
 .removeButton {
   background: none;
   border: none;
-  color: var(--primary-dark, #1976d2);
+  color: var(--color-primary-dark, #1976d2);
   cursor: pointer;
   font-size: 1.2rem;
   line-height: 1;
@@ -76,7 +76,7 @@
 .input {
   flex: 1;
   padding: 0.5rem 0.75rem;
-  border: 2px solid var(--border-color, #dee2e6);
+  border: 2px solid var(--color-border, #dee2e6);
   border-radius: 6px;
   font-size: 0.95rem;
   transition: border-color 0.2s ease;
@@ -84,13 +84,13 @@
 
 .input:focus {
   outline: none;
-  border-color: var(--primary-color, #3498db);
+  border-color: var(--color-primary, #3498db);
   box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
 }
 
 .addButton {
   padding: 0.5rem 1rem;
-  background-color: var(--primary-color, #3498db);
+  background-color: var(--color-primary, #3498db);
   color: white;
   border: none;
   border-radius: 6px;
@@ -100,7 +100,7 @@
 }
 
 .addButton:hover:not(:disabled) {
-  background-color: var(--primary-dark, #2980b9);
+  background-color: var(--color-primary-dark, #2980b9);
 }
 
 .addButton:disabled {
@@ -110,8 +110,8 @@
 
 .maxTagsMessage {
   padding: 0.5rem;
-  background-color: var(--warning-light, #fff3cd);
-  color: var(--warning-text, #856404);
+  background-color: var(--color-warning-light, #fff3cd);
+  color: var(--color-warning-text, #856404);
   border-radius: 6px;
   font-size: 0.875rem;
   text-align: center;
