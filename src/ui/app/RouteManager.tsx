@@ -1,26 +1,52 @@
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import { AccountingEngine } from '../../domain/accountingEngine';
 import { useNavigationStore } from '../../stores/slices/ui/navigationSlice';
 
-// 各コンポーネントのインポート
-import FreeeStyleJournalForm from '../transactions/FreeeStyleJournalForm';
-import { BankImportWizard } from '../transactions/BankImportWizard';
-import { AuxiliaryLedgerView } from '../ledgers/AuxiliaryLedgerView';
-import { IncomeDetailView } from '../statements/IncomeDetailView';
-import { ExpenseDetailView } from '../statements/ExpenseDetailView';
-import { IncomeExpenseReport } from '../statements/IncomeExpenseReport';
-import { DivisionStatementsPanel } from '../statements/DivisionStatementsPanel';
-import { ChartOfAccountsPanel } from '../masters/ChartOfAccountsPanel';
-import { BankAccountPanel } from '../masters/BankAccountPanel';
-import { SettingsPanel } from '../settings/SettingsPanel';
-import { ClosingPanel } from '../masters/ClosingPanel';
-import { SampleDataPanel } from '../data-management/SampleDataPanel';
-import { ExportPanel } from '../data-management/ExportPanel';
-import { LocalStoragePanel } from '../data-management/LocalStoragePanel';
-import { PrintPanel } from '../settings/PrintPanel';
-import { JsonSpecView } from '../settings/JsonSpecView';
-import PaymentTestPanel from '../payment/PaymentTestPanel';
-import { ManualView } from '../settings/ManualView';
+// 動的インポートでコード分割
+// トランザクション関連
+const FreeeStyleJournalForm = lazy(() => import('../transactions/FreeeStyleJournalForm'));
+const BankImportWizard = lazy(() => import('../transactions/BankImportWizard').then(m => ({ default: m.BankImportWizard })));
+
+// 帳票関連
+const AuxiliaryLedgerView = lazy(() => import('../ledgers/AuxiliaryLedgerView').then(m => ({ default: m.AuxiliaryLedgerView })));
+
+// 財務諸表関連
+const IncomeDetailView = lazy(() => import('../statements/IncomeDetailView').then(m => ({ default: m.IncomeDetailView })));
+const ExpenseDetailView = lazy(() => import('../statements/ExpenseDetailView').then(m => ({ default: m.ExpenseDetailView })));
+const IncomeExpenseReport = lazy(() => import('../statements/IncomeExpenseReport').then(m => ({ default: m.IncomeExpenseReport })));
+const DivisionStatementsPanel = lazy(() => import('../statements/DivisionStatementsPanel').then(m => ({ default: m.DivisionStatementsPanel })));
+
+// マスタ関連
+const ChartOfAccountsPanel = lazy(() => import('../masters/ChartOfAccountsPanel').then(m => ({ default: m.ChartOfAccountsPanel })));
+const BankAccountPanel = lazy(() => import('../masters/BankAccountPanel').then(m => ({ default: m.BankAccountPanel })));
+const ClosingPanel = lazy(() => import('../masters/ClosingPanel').then(m => ({ default: m.ClosingPanel })));
+
+// データ管理関連
+const SampleDataPanel = lazy(() => import('../data-management/SampleDataPanel').then(m => ({ default: m.SampleDataPanel })));
+const ExportPanel = lazy(() => import('../data-management/ExportPanel').then(m => ({ default: m.ExportPanel })));
+const LocalStoragePanel = lazy(() => import('../data-management/LocalStoragePanel').then(m => ({ default: m.LocalStoragePanel })));
+
+// 設定関連
+const SettingsPanel = lazy(() => import('../settings/SettingsPanel').then(m => ({ default: m.SettingsPanel })));
+const PrintPanel = lazy(() => import('../settings/PrintPanel').then(m => ({ default: m.PrintPanel })));
+const JsonSpecView = lazy(() => import('../settings/JsonSpecView').then(m => ({ default: m.JsonSpecView })));
+const ManualView = lazy(() => import('../settings/ManualView').then(m => ({ default: m.ManualView })));
+
+// 支払関連
+const PaymentTestPanel = lazy(() => import('../payment/PaymentTestPanel'));
+
+// ローディングコンポーネント
+const Loading: React.FC = () => (
+  <div style={{ 
+    display: 'flex', 
+    justifyContent: 'center', 
+    alignItems: 'center', 
+    minHeight: '200px',
+    color: 'var(--color-text-secondary)'
+  }}>
+    <div>読み込み中...</div>
+  </div>
+);
 
 interface RouteManagerProps {
   engine: AccountingEngine;
@@ -37,18 +63,14 @@ interface RouteManagerProps {
 export const RouteManager: React.FC<RouteManagerProps> = ({ engine, onUpdate }) => {
   const { activeMenu } = useNavigationStore();
 
-  // activeMenuに基づいてコンポーネントをレンダリング
-  switch (activeMenu) {
-    case "freeeInput":
-      return (
-        <section className="mt-2">
-          <FreeeStyleJournalForm engine={engine} onChange={onUpdate} />
-        </section>
-      );
+  // コンポーネントをレンダリングする内部関数
+  const renderContent = () => {
+    switch (activeMenu) {
+      case "freeeInput":
+        return <FreeeStyleJournalForm engine={engine} onChange={onUpdate} />;
 
-    case "bankImport":
-      return (
-        <section className="mt-2">
+      case "bankImport":
+        return (
           <BankImportWizard
             accountingEngine={engine}
             onComplete={(results) => {
@@ -56,29 +78,16 @@ export const RouteManager: React.FC<RouteManagerProps> = ({ engine, onUpdate }) 
               alert(`インポート完了: ${results.importedJournals}件の仕訳を登録しました`);
             }}
           />
-        </section>
-      );
+        );
 
-    case "auxiliary":
-      return (
-        <section className="mt-2">
-          <AuxiliaryLedgerView engine={engine} onChange={onUpdate} />
-        </section>
-      );
+      case "auxiliary":
+        return <AuxiliaryLedgerView engine={engine} onChange={onUpdate} />;
 
-    case "incomeDetail":
-      return (
-        <section className="mt-2">
-          <IncomeDetailView engine={engine} />
-        </section>
-      );
+      case "incomeDetail":
+        return <IncomeDetailView engine={engine} />;
 
-    case "expenseDetail":
-      return (
-        <section className="mt-2">
-          <ExpenseDetailView engine={engine} />
-        </section>
-      );
+      case "expenseDetail":
+        return <ExpenseDetailView engine={engine} />;
 
     case "report":
       return (
@@ -139,12 +148,22 @@ export const RouteManager: React.FC<RouteManagerProps> = ({ engine, onUpdate }) 
         </section>
       );
 
-    default:
-      return (
-        <div className="text-center mt-5">
-          <h3>ページが見つかりません</h3>
-          <p>選択されたメニュー項目に対応するページが存在しません。</p>
-        </div>
-      );
-  }
+      default:
+        return (
+          <div className="text-center mt-5">
+            <h3>ページが見つかりません</h3>
+            <p>選択されたメニュー項目に対応するページが存在しません。</p>
+          </div>
+        );
+    }
+  };
+
+  // Suspenseでラップして遅延ローディングを有効化
+  return (
+    <Suspense fallback={<Loading />}>
+      <section className="mt-2">
+        {renderContent()}
+      </section>
+    </Suspense>
+  );
 };
