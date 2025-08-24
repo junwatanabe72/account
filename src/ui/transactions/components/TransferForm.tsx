@@ -22,7 +22,7 @@ export const TransferForm: React.FC = () => {
   // 振替元として選択可能な口座
   const transferAccounts = useMemo(() => {
     const fromAccountIds = [...new Set(transferableCombinations.map(c => c.from))]
-    return defaultBankAccounts.filter(account => fromAccountIds.includes(account.id))
+    return defaultBankAccounts.filter(account => fromAccountIds.includes(account.id as string))
   }, [transferableCombinations])
   
   // 振替先として選択可能な口座
@@ -30,11 +30,11 @@ export const TransferForm: React.FC = () => {
     if (!transferFromAccount) return []
     
     const validCombinations = transferableCombinations.filter(
-      c => c.from === transferFromAccount
+      c => c.from === (transferFromAccount as unknown as string)
     )
     const toAccountIds = validCombinations.map(c => c.to)
     
-    return defaultBankAccounts.filter(account => toAccountIds.includes(account.id))
+    return defaultBankAccounts.filter(account => toAccountIds.includes(account.id as string))
   }, [transferFromAccount, transferableCombinations])
   
   const handleFromAccountChange = (accountId: string) => {
