@@ -3,7 +3,7 @@ import { HierarchicalAccount } from '../services/core/AccountService'
 import { HierarchicalAccountInterface } from '../../types/services'
 
 export class MockAccountService implements IAccountService {
-  private mockAccounts = new Map<string, HierarchicalAccountInterface>()
+  private mockAccounts = new Map<string, HierarchicalAccount>()
   
   get accounts(): HierarchicalAccountInterface[] {
     return Array.from(this.mockAccounts.values())
@@ -19,37 +19,33 @@ export class MockAccountService implements IAccountService {
   
   initializeAccounts(): void {
     // テスト用の最小限の勘定科目を設定
-    this.addMockAccount({
-      code: '1101',
-      name: '現金',
-      type: 'ASSET',
-      normalBalance: 'DEBIT',
-      level: 2,
-      parentCode: null,
-      children: [],
-      balance: 0,
-      debitBalance: 0,
-      creditBalance: 0,
-      isActive: true
-    })
+    const cash = new HierarchicalAccount(
+      '1101',
+      '現金',
+      'ASSET',
+      'DEBIT',
+      ['KANRI', 'SHUZEN', 'PARKING', 'OTHER'],
+      '現金勘定',
+      true
+    )
+    cash.level = 2
+    this.mockAccounts.set('1101', cash)
     
-    this.addMockAccount({
-      code: '4111',
-      name: '管理費収入',
-      type: 'REVENUE',
-      normalBalance: 'CREDIT',
-      level: 2,
-      parentCode: null,
-      children: [],
-      balance: 0,
-      debitBalance: 0,
-      creditBalance: 0,
-      isActive: true
-    })
+    const income = new HierarchicalAccount(
+      '4111',
+      '管理費収入',
+      'REVENUE',
+      'CREDIT',
+      ['KANRI', 'SHUZEN', 'PARKING', 'OTHER'],
+      '管理費収入勘定',
+      true
+    )
+    income.level = 2
+    this.mockAccounts.set('4111', income)
   }
   
   // テスト用ヘルパーメソッド
-  addMockAccount(account: HierarchicalAccountInterface): void {
+  addMockAccount(account: HierarchicalAccount): void {
     this.mockAccounts.set(account.code, account)
   }
   

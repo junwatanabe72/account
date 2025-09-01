@@ -54,6 +54,7 @@ export class HierarchicalAccount {
   parentCode?: string
   isPostable = true
   level: number | undefined
+  division?: string
   
   constructor(
     public code: string, 

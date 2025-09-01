@@ -128,7 +128,7 @@ export class JournalService implements IJournalService {
       return this.postJournal(journal)
     }
     
-    return { success: true, journal: journal }
+    return { success: true, data: journal }
   }
   
   submitJournal(id: string): CreateJournalResult {
@@ -136,7 +136,7 @@ export class JournalService implements IJournalService {
     if (!journal) return { success: false, errors: [ERROR_MESSAGES.JOURNAL_NOT_FOUND] }
     if (journal.status !== 'DRAFT') return { success: false, errors: [ERROR_MESSAGES.JOURNAL_STATUS_INVALID] }
     journal.status = 'SUBMITTED'
-    return { success: true, journal: journal }
+    return { success: true, data: journal }
   }
   
   approveJournal(id: string): CreateJournalResult {
@@ -144,7 +144,7 @@ export class JournalService implements IJournalService {
     if (!journal) return { success: false, errors: [ERROR_MESSAGES.JOURNAL_NOT_FOUND] }
     if (journal.status !== 'SUBMITTED') return { success: false, errors: [ERROR_MESSAGES.JOURNAL_STATUS_INVALID] }
     journal.status = 'APPROVED'
-    return { success: true, journal: journal }
+    return { success: true, data: journal }
   }
   
   postJournalById(id: string): CreateJournalResult {
@@ -197,14 +197,14 @@ export class JournalService implements IJournalService {
     const errors = journal.validate()
     if (errors.length > 0) return { success: false, errors }
     
-    return { success: true, journal: journal }
+    return { success: true, data: journal }
   }
   
   validateDivisionAccounting(journal: Journal): CreateJournalResult {
     const divisionTotals = new Map<string, { debit: number, credit: number }>()
     
     for (const detail of journal.details) {
-      const acc = this.accountService.getAccount(detail.accountCode)
+      const acc = this.accountService.getAccount(detail.accountCode) as HierarchicalAccount
       if (acc && acc.division) {
         if (!divisionTotals.has(acc.division)) divisionTotals.set(acc.division, { debit: 0, credit: 0 })
         const t = divisionTotals.get(acc.division)!
@@ -240,7 +240,7 @@ export class JournalService implements IJournalService {
     if (journal.status === 'POSTED') return { success: false, errors: [ERROR_MESSAGES.JOURNAL_ALREADY_POSTED] }
     
     for (const d of journal.details) {
-      const acc = this.accountService.getAccount(d.accountCode)
+      const acc = this.accountService.getAccount(d.accountCode) as HierarchicalAccount
       if (!acc) continue
       
       acc.addToBalance(d.getAmount(), d.isDebit())
@@ -260,7 +260,7 @@ export class JournalService implements IJournalService {
     
     journal.status = 'POSTED'
     journal.postedAt = new Date()
-    return { success: true, journal: journal }
+    return { success: true, data: journal }
   }
   
   getJournals() {
